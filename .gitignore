@@ -1,5 +1,11 @@
-# IntelliJ IDEA / JetBrains
-.idea/
+# IntelliJ IDEA / JetBrains - Nur persönliche Dateien ignorieren, nicht alle!
+.idea/*
+!.idea/misc.xml
+!.idea/modules.xml
+!.idea/vcs.xml
+!.idea/compiler.xml
+!.idea/jarRepositories.xml
+!.idea/libraries/
 *.iml
 *.ipr
 *.iws
