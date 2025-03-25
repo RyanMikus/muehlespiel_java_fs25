@@ -1,0 +1,76 @@
+@startuml
+class Game {
+- board: Board
+- playerWhite: Player
+- playerBlack: Player
+- currentPlayer: Player
+- gamePhase: Phase
+--
++ startGame()
++ switchPlayer()
++ checkGameOver()
++ getWinner()
+}
+
+class Board{
+- fields: Field[][]
+--
++ initializeBoard()
++ moveSTone()
++ isMillFormed()
++ removeSTone()
++ getValidMoves()
+}
+
+class Stone{
+- owner: Player
+- currentField: Field
+--
++ moveTo()
+}
+
+class Field{
+- position: Position
+--
++ isOccupied()
+}
+
+class Player{
+- name: String
+- stones: List<Stone>
+- isCPU: bool
+--
++ placeStone()
++ removeStone()
++ moveStone()
+}
+
+class CPUPlayer{
+--
++ calculateMove()
+}
+
+class GUI{
+- game: Game
+- boardPanel: JPanel
+- controlPanel: JPanel
+--
++ initializeGUI()
++ updateBoard()
++ handleUserInput()
+}
+
+class Phase{
+- enum: ENUM
+--
+SETTING
+MOVING
+JUMPING
+GAME OVER
+}
+
+Game --> Board
+Board --> Field
+Board --> Stone
+CPUPlayer --|> Player
+@enduml
