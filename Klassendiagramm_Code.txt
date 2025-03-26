@@ -5,11 +5,16 @@ class Game {
 - playerBlack: Player
 - currentPlayer: Player
 - gamePhase: Phase
+- history: History
 --
 + startGame()
 + switchPlayer()
 + checkGameOver()
 + getWinner()
++ undoMove()
++ redoMove()
++ saveGame()
++ loadGame()
 }
 
 class Board{
@@ -46,8 +51,10 @@ class Player{
 }
 
 class CPUPlayer{
+- difficulty: Difficulty
 --
 + calculateMove()
++ setDifficulty()
 }
 
 class GUI{
@@ -58,6 +65,9 @@ class GUI{
 + initializeGUI()
 + updateBoard()
 + handleUserInput()
++ showSaveDialog()
++ showLoadDialog()
++ setDifficulty()
 }
 
 class Phase{
@@ -69,8 +79,35 @@ JUMPING
 GAME OVER
 }
 
+class Difficulty{
+- enum: ENUM
+--
+EASY
+MEDIUM
+HARD
+}
+
+class History{
+- moves: Stack<Move>
+- redoMoves: Stack<Move>
+--
++ addMove(move:Move)    
++ undo():Move           
++ redo():Move           
++ clearRedo()    
+}
+
+class Move{
+- stone: Stone          
+- fromField: Field      
+- toField: Field        
+- removedStone: Stone   
+- phase: Phase          
+}
+
 Game --> Board
 Board --> Field
 Board --> Stone
 CPUPlayer --|> Player
+History --> Move
 @enduml
