@@ -25,15 +25,17 @@ act1 --> UC2
 act1 --> UC3
 act1 --> UC4
 act1 --> UC5
-act1 --> UC6
 act1 --> UC7
 act1 --> UC8
 
 UC1 <-- act2
 UC2 <-- act2
-UC2 <-- act2
-UC5 <-- act2
+UC4 --> act2
+UC4 --> UC5
+UC5 --> UC6
+UC8 --> act2
 
 UC1 <-- act3
 UC6 --> act3
+UC7 --> act3
 @enduml
