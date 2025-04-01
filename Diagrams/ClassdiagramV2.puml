@@ -1,0 +1,197 @@
+@startuml
+
+class GameManager{
+- ruleManager : RuleManager
+- boardManager : Boardmanager
+- guiManager : GUIManager
+- playerWhite : PlayerEntity
+- playerBlack : PlayerEntity
+- currentPlayer : PlayerEntity
+--
++ startGame()
++ switchPlayer()
++ getWinner()
++ handleMove()
++ undoMove()
++ redoMove()
++ saveGame()
++ loadGame()
+}
+
+class RuleManager{
+--
++ isMoveValid() : boolean
++ isMillFormed() : boolean
++ isGameOver() : boolean
++ isPlayerBlocked() : boolean
++ isTimeOver() : boolean
++ isStalemate() : boolean
+}
+
+class BoardManager{
+- nodes : Nodes[][]
+--
+- initializeBoard()
++ placeStone()
++ removeStone()
++ moveStone()
+}
+
+class GUIManager{
+- gameManager : GameManager
+- boardPanel : JPanel
+- controlPanel : JPanel
+--
+- initializeGUI()
++ updateBoard()
++ undo()
++ redo()
++ restart()
++ save()
++ load()
++ setDifficulty()
+}
+
+interface GameState{
+--
++ {abstract} handleMove()
+}
+
+class SettingPhase{
+--
++ handleMove()
+}
+
+class MovingPhase{
+--
++ handleMove()
+}
+
+class JumpingPhase{
+--
++ handleMove()
+}
+
+class GameOverPhase{
+--
++ handleMove()
+}
+
+class Stone{
+- owner : PlayerEntity
+- currentNode : Node
+--
++ moveToNode()
+}
+
+class Node{
+- position : Position
+--
++ isOccupied()
+}
+
+abstract class PlayerEntity{
+# name : String
+# stones : List<Stones>
+# currentState : GameState
+--
++ {abstract} makeMove()
++ handleMove()
++ removeStone()
++ setState()
++ allStonesPlaced()
++ getRemainingStones()
++ getName()
+}
+
+class Player{
+--
++ makeMove()
+}
+
+class CPUPlayer{
+- strategy : 
+--
++ makeMove()
++ setDifficulty()
+}
+
+class History{
+- moves : Stack<Move>
+- redoMoves : Stack<Move>
+--
++ addMove()
++ undo() : Move
++ redo() : Move
++ clearRedo()
+}
+
+class Move{
+- stone : Stone
+- fromNode : Node
+- toNode : Node
+- removedStone : Stone
+- currentState : GameState
+}
+
+class Observable{
+- observers : Observer[]
+--
++ addObserver()
++ removeObserver()
++ notifyObservers()
+}
+
+class Observer{
+- observable : Observable
+--
++ update()
+}
+
+interface DifficultyStrategy{
++ calculateMove()
+}
+
+class EasyDifficulty{
++ calculateMove()
+}
+
+class MediumDifficulty{
++ calculateMove()
+}
+
+class HardDifficulty{
++ calculateMove()
+}
+
+RuleManager -o GameManager
+GUIManager o-- GameManager
+GameManager o- BoardManager
+History -- GameManager
+GameManager o-- PlayerEntity
+
+GameState <|.. SettingPhase
+GameState <|.. JumpingPhase
+GameState <|.. MovingPhase
+GameState <|.. GameOverPhase
+GameState -o PlayerEntity
+
+PlayerEntity <|-- Player
+PlayerEntity <|-- CPUPlayer
+CPUPlayer o- DifficultyStrategy
+PlayerEntity *- Stone
+
+DifficultyStrategy <|.. EasyDifficulty
+DifficultyStrategy <|.. MediumDifficulty
+DifficultyStrategy <|.. HardDifficulty
+
+BoardManager *-- Node
+BoardManager -|> Observable
+Stone *- Node
+Node - Node
+
+Move - History
+
+GUIManager -|> Observer
+
+@enduml
