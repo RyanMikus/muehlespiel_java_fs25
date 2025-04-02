@@ -1,0 +1,41 @@
+@startuml
+
+left to right direction
+
+:Spieler 1: as act1 << Mensch >>
+:Spieler 2: as act2 << Mensch >>
+:KI-Gegner: as act3 << Applikation >>
+
+rectangle Spiel {
+    (Spielzug machen) as UC1
+    (Spielzug rückgängig machen) as UC2
+    (Spielzustand speichern) as UC3
+}
+
+rectangle Home {
+    (neues Spiel starten) as UC4
+    (Spiel beitreten) as UC5
+    (Spielzustand laden) as UC6
+    (Schwierigkeitsgrad wählen) as UC7
+    (maximale Bedenkzeit einstellen) as UC8
+}
+
+act1 --> UC1
+act1 --> UC2
+act1 --> UC3
+act1 --> UC4
+act1 --> UC5
+act1 --> UC7
+act1 --> UC8
+
+UC1 <-- act2
+UC2 <-- act2
+UC4 --> act2
+UC4 --> UC5
+UC5 --> UC6
+UC8 --> act2
+
+UC1 <-- act3
+UC6 --> act3
+UC7 --> act3
+@enduml

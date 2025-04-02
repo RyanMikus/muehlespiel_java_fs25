@@ -1,0 +1,11 @@
+stages:
+  - render
+
+render_plantuml:
+  stage: render
+  image: plantuml/plantuml
+  script:
+    - java -jar /plantuml.jar diagram.puml
+  artifacts:
+    paths:
+      - diagram.png
