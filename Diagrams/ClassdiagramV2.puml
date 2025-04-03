@@ -29,9 +29,11 @@ class RuleManager{
 }
 
 class BoardManager{
-- nodes : Nodes[][]
+- nodes : Map<int, Node>
 --
 - initializeBoard()
+- connectNodes()
++ getNode()
 + placeStone()
 + removeStone()
 + moveStone()
@@ -85,9 +87,16 @@ class Stone{
 }
 
 class Node{
-- position : Position
+- id : int
+- stone : Stone
+- neighbors : List<Node>
 --
 + isOccupied()
++ addNeighbor()
++ getNeighbors()
++ placeStone()
++ removeStone()
++ getID()
 }
 
 abstract class PlayerEntity{
