@@ -1,8 +1,15 @@
+import java.util.Map;
+
 public class BoardManager extends Observable {
-    private Node[][] nodes;
+    private Map<Integer, Node> nodes;
 
     /**/
     private void initializeBoard() {
+
+    }
+
+    /**/
+    private void connectNodes() {
 
     }
 
@@ -19,5 +26,10 @@ public class BoardManager extends Observable {
     /**/
     public void moveStone() {
 
+    }
+
+    /**/
+    public Node getNode(int id) {
+        return null;
     }
 }
