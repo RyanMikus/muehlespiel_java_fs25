@@ -9,11 +9,11 @@ public class GUI {
     private CardLayout cardLayout;
 
     // colors
-    private final Color backgroundColor = new Color(17,35,38);      // rgb(57, 79, 88)
-    private final Color buttonColor = new Color(250, 240, 220);      // rgb(195, 156, 92)
+    private final Color BACKGROUND_COLOR = new Color(17,35,38);      // rgb(57, 79, 88)
+    private final Color BUTTON_COLOR = new Color(250, 240, 220);      // rgb(195, 156, 92)
 
     // fonts
-    private final Font buttonFont = new Font("Arial", Font.BOLD, 20);
+    private final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 20);
 
     // paths
     private final String LOGO_PATH = "/resources/muehle_logo.png";
@@ -25,12 +25,12 @@ public class GUI {
         window.setSize(900, 750);
         window.setResizable(false);
         window.setLocationRelativeTo(null);
-        window.setBackground(backgroundColor);
+        window.setBackground(BACKGROUND_COLOR);
 
         // main panel GUI
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout); // Cardlayout for multiple screens
-        cardPanel.setBackground(backgroundColor);
+        cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
         cardPanel.add(createHomeScreen(), "Home");
@@ -43,38 +43,18 @@ public class GUI {
 
     } // GUI
 
+    /**
+     * Creates the Home Screen JPanel
+     * @return JPanel
+     */
     private JPanel createHomeScreen(){
         
         // main panel Home Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setBorder(BorderFactory.createEmptyBorder(40, 0, 20, 0));
 
-        // logo - position top 
-        JLabel logo = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(LOGO_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(450, 180, Image.SCALE_SMOOTH);
-            logo.setIcon(new ImageIcon(scaled));
-            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-        
-        // logo - position middle
-        JLabel image = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(BOARD_IMAGE_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(350, 250, Image.SCALE_SMOOTH);
-            image.setIcon(new ImageIcon(scaled));
-            image.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-
-
-        // button - position bottom
+        // buttons
         JPanel buttoPanel = new JPanel(new GridBagLayout());
         buttoPanel.setOpaque(false);
 
@@ -88,240 +68,209 @@ public class GUI {
         buttoPanel.add(startButton, new GridBagConstraints());
 
         // adding all components
-        panel.add(logo);
-        panel.add(image);
+        panel.add(createHomeLogo());
+        panel.add(createHomeImage());
         panel.add(buttoPanel);
         
         return panel;
 
     } // createHomeScreen
 
+    
+    /**
+     * Creates the Menu Screen JPanel
+     * @return JPanel
+     */
     private JPanel createMenuScreen(){
         
-        // main panel Home Screen
+        // main panel Menu Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // logo - position top 
-        JLabel logo = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(LOGO_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(450, 180, Image.SCALE_SMOOTH);
-            logo.setIcon(new ImageIcon(scaled));
-            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-        
-        // logo - position middle
-        JLabel image = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(BOARD_IMAGE_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(350, 250, Image.SCALE_SMOOTH);
-            image.setIcon(new ImageIcon(scaled));
-            image.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-
-
-        // button - position bottom
+        // buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
 
-        JButton newGameButton = new JButton("neues spiel");
-        styleButton(newGameButton);
-        newGameButton.addActionListener((e) ->{
-            cardLayout.show(cardPanel, "newGame");
-        });
-
-         
-        JButton loadGameButton = new JButton("spiel laden");
-        styleButton(loadGameButton);
-        loadGameButton.addActionListener((e) ->{
-            cardLayout.show(cardPanel, "loadGame");
-        });
-
-        JButton backButton = new JButton("zurück");
-        styleButton(backButton);
-        backButton.addActionListener((e) ->{
-            cardLayout.show(cardPanel, "Home");
-        });
-
-        // positions of the buttons
+        // necessary positions settings
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;  // same row
 
-        gbc.gridx = 0;
-        gbc.insets = new Insets(0, 0, 0, 20); // Rechts-Abstand 20px
-        buttonPanel.add(newGameButton, gbc);
+        String [] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
+        String [] screenNames = {"newGame", "loadGame", "Home"};
 
-        gbc.gridx = 1;
-        gbc.insets = new Insets(0, 0, 0, 20);
-        buttonPanel.add(loadGameButton, gbc);
+        for (int i = 0; i < buttonTexts.length; i++){
+            JButton button = new JButton(buttonTexts[i]);
+            styleButton(button);
 
-        gbc.gridx = 2;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        buttonPanel.add(backButton, gbc);
+            String screenName = screenNames[i];
+            button.addActionListener(e -> {
+                cardLayout.show(cardPanel, screenName);
+            });
+
+            gbc.gridx = i;
+            gbc.insets = new Insets(0, 0, 0, (i < buttonTexts.length - 1) ? 20 : 0);
+            buttonPanel.add(button, gbc);
+        }
 
         // adding all components
-        panel.add(logo);
-        panel.add(image);
+        panel.add(createHomeLogo());
+        panel.add(createHomeImage());
         panel.add(buttonPanel);
         
         return panel;
     } // createMenuScreen
 
+
+    /**
+     * Creates the New Game Screen JPanel
+     * @return JPanel
+     */
     private JPanel createNewGameScreen(){
         
-        // main panel Home Screen
+        // main panel New Game Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // logo - position top 
-        JLabel logo = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(LOGO_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(450, 180, Image.SCALE_SMOOTH);
-            logo.setIcon(new ImageIcon(scaled));
-            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-        
-        // logo - position middle
-        JLabel image = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(BOARD_IMAGE_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(350, 250, Image.SCALE_SMOOTH);
-            image.setIcon(new ImageIcon(scaled));
-            image.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-
-
-        // button - position bottom
+        // buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
 
-        JButton newGameButton = new JButton("einzelspieler");
-        styleButton(newGameButton);
-
-         
-        JButton loadGameButton = new JButton("mehrspieler");
-        styleButton(loadGameButton);
-
-        JButton backButton = new JButton("zurück");
-        styleButton(backButton);
-        backButton.addActionListener((e) ->{
-            cardLayout.show(cardPanel, "Menu");
-        });
-
-        // positions of the buttons
+        // necessary positions settings
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;  // same row
 
-        gbc.gridx = 0;
-        gbc.insets = new Insets(0, 0, 0, 20); // Rechts-Abstand 20px
-        buttonPanel.add(newGameButton, gbc);
+        String [] buttonTexts = {"einzelspieler", "mehrspieler", "zurück"};
+        String [] screenNames = {"", "", "Menu"};
 
-        gbc.gridx = 1;
-        gbc.insets = new Insets(0, 0, 0, 20);
-        buttonPanel.add(loadGameButton, gbc);
+        for (int i = 0; i < buttonTexts.length; i++){
+            JButton button = new JButton(buttonTexts[i]);
+            styleButton(button);
 
-        gbc.gridx = 2;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        buttonPanel.add(backButton, gbc);
+            String screenName = screenNames[i];
+            button.addActionListener(e -> {
+                cardLayout.show(cardPanel, screenName);
+            });
+
+            gbc.gridx = i;
+            gbc.insets = new Insets(0, 0, 0, (i < buttonTexts.length - 1) ? 20 : 0);
+            buttonPanel.add(button, gbc);
+        }
 
         // adding all components
-        panel.add(logo);
-        panel.add(image);
+        panel.add(createHomeLogo());
+        panel.add(createHomeImage());
         panel.add(buttonPanel);
         
         return panel;
     } // createNewGameScreen
 
+
+    /**
+     * Creates the Load Screen Screen JPanel
+     * @return JPanel
+     */
     private JPanel createLoadGameScreen(){
         
-        // main panel Home Screen
+        // main panel Load Game Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // logo - position top 
-        JLabel logo = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(LOGO_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(450, 180, Image.SCALE_SMOOTH);
-            logo.setIcon(new ImageIcon(scaled));
-            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-        
-        // logo - position middle
-        JLabel image = new JLabel();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(BOARD_IMAGE_PATH));    
-            Image scaled = icon.getImage().getScaledInstance(350, 250, Image.SCALE_SMOOTH);
-            image.setIcon(new ImageIcon(scaled));
-            image.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
-        }
-
-
-        // button - position bottom
+        // buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
 
-        JButton newGameButton = new JButton("auswählen");
-        styleButton(newGameButton);
-
-        JButton backButton = new JButton("zurück");
-        styleButton(backButton);
-        backButton.addActionListener((e) ->{
-            cardLayout.show(cardPanel, "Menu");
-        });
-
-        // positions of the buttons
+        // necessary positions settings
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;  // same row
 
-        gbc.gridx = 0;
-        gbc.insets = new Insets(0, 0, 0, 20); // Rechts-Abstand 20px
-        buttonPanel.add(newGameButton, gbc);
+        String [] buttonTexts = {"auswählen", "zurück"};
+        String [] screenNames = {"", "Menu"};
 
-        gbc.gridx = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        buttonPanel.add(backButton, gbc);
+        for (int i = 0; i < buttonTexts.length; i++){
+            JButton button = new JButton(buttonTexts[i]);
+            styleButton(button);
+
+            String screenName = screenNames[i];
+            button.addActionListener(e -> {
+                cardLayout.show(cardPanel, screenName);
+            });
+
+            gbc.gridx = i;
+            gbc.insets = new Insets(0, 0, 0, (i < buttonTexts.length - 1) ? 20 : 0);
+            buttonPanel.add(button, gbc);
+        }
 
         // adding all components
-        panel.add(logo);
-        panel.add(image);
+        panel.add(createHomeLogo());
+        panel.add(createHomeImage());
         panel.add(buttonPanel);
         
         return panel;
     } // createNewGameScreen
 
 
-    /* help method to style buttons */
+    /**
+     * Creates a specific image which is shown on multiple Screens. 
+     * This method is only used to avoid code duplicates.
+     * 
+     * @return JLabel 
+     */
+    private JLabel createHomeImage(){
+        
+        JLabel image = new JLabel();
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource(BOARD_IMAGE_PATH));    
+            Image scaled = icon.getImage().getScaledInstance(350, 250, Image.SCALE_SMOOTH);
+            image.setIcon(new ImageIcon(scaled));
+            image.setAlignmentX(Component.CENTER_ALIGNMENT);
+            image.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
+        } catch (Exception e) {
+            System.out.println("Bild nicht gefunden: " + e.getMessage());
+        } 
+        return image;
+    } // createHomeImage
+
+
+    /**
+     * Creates a specific logo which is shown on multiple Screens. 
+     * This method is only used to avoid code duplicates.
+     * 
+     * @return JLabel
+     */
+    private JLabel createHomeLogo(){
+        
+        JLabel logo = new JLabel();
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource(LOGO_PATH));    
+            Image scaled = icon.getImage().getScaledInstance(450, 180, Image.SCALE_SMOOTH);
+            logo.setIcon(new ImageIcon(scaled));
+            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+            logo.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
+        } catch (Exception e) {
+            System.out.println("Bild nicht gefunden: " + e.getMessage());
+        }  
+        return logo;
+    } // createHomeLogo
+
+
+    /**
+     * Styles a button
+     * @param button 
+     */
     public void styleButton(JButton button) {
+        
         // Style
         button.setPreferredSize(new Dimension(180, 50));
-        button.setBackground(backgroundColor);
-        button.setForeground(buttonColor);
-        button.setFont(buttonFont);
+        button.setBackground(BACKGROUND_COLOR);
+        button.setForeground(BUTTON_COLOR);
+        button.setFont(BUTTON_FONT);
         button.setText(button.getText().toUpperCase());
         button.setContentAreaFilled(false);
         button.setOpaque(true);
-        button.setBorder(BorderFactory.createLineBorder(buttonColor, 3));
+        button.setBorder(BorderFactory.createLineBorder(BUTTON_COLOR, 3));
         button.setFocusPainted(false);
     
         // Hover
@@ -329,17 +278,16 @@ public class GUI {
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(buttonColor);
-                button.setForeground(backgroundColor);
+                button.setBackground(BUTTON_COLOR);
+                button.setForeground(BACKGROUND_COLOR);
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(backgroundColor);
-                button.setForeground(buttonColor);
+                button.setBackground(BACKGROUND_COLOR);
+                button.setForeground(BUTTON_COLOR);
             }
         });
-
     }// styleButton
 
 
