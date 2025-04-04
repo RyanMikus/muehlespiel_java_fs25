@@ -25,7 +25,7 @@ public class GUI {
     private CardLayout cardLayout;
 
     // colors
-    private final Color backgroundColor = new Color(17,35,38);      // rgb(27,40,45)
+    private final Color backgroundColor = new Color(17,35,38);      // rgb(57, 79, 88)
     private final Color titleColor = new Color(255, 255, 255);      // rgb(255, 255, 255)
     private final Color buttonColor = new Color(195, 156, 92);      // rgb(195, 156, 92)
     private final Color buttonTextColor = new Color(30, 30, 30);    // rgb(30, 30, 30)
