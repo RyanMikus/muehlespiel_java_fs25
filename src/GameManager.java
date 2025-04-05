@@ -1,9 +1,9 @@
 public class GameManager {
     //region Fields
     // Managers
-    private RuleManager ruleManager;
-    private BoardManager boardManager;
-    // private GUIManager guiManager;
+    private static GameManager instance;
+    private final BoardManager boardManager;
+    private final GUI guiManager;
 
     // Players
     private PlayerEntity playerWhite;
@@ -11,8 +11,28 @@ public class GameManager {
     private PlayerEntity currentPlayer;
     //endregion
 
+    /**
+     * Initialize managers
+     */
+    private GameManager() {
+        boardManager = BoardManager.getInstance();
+        guiManager = new GUI();
+    }
+
+    /**
+     * Creates a new Instance of this Manager, if there is none already.
+     *
+     * @return Instance if one already existed, creates a new one otherwise.
+     */
+    private static GameManager getInstance() {
+        if(instance == null) {
+            instance = new GameManager();
+        }
+        return instance;
+    }
+
     public static void main(String[] args) {
-        System.out.println("Hello Ursula");
+        GameManager manager =  GameManager.getInstance();
     }
 
     /**/
