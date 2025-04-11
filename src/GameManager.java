@@ -24,7 +24,7 @@ public class GameManager {
      *
      * @return Instance if one already existed, creates a new one otherwise.
      */
-    private static GameManager getInstance() {
+    public static GameManager getInstance() {
         if(instance == null) {
             instance = new GameManager();
         }
@@ -40,9 +40,16 @@ public class GameManager {
 
     }
 
-    /**/
+    /**
+     * Switches the current player, that can perform moves.
+     */
     public void switchPlayer() {
-
+        if(currentPlayer == playerWhite) {
+            currentPlayer = playerBlack;
+        }
+        else {
+            currentPlayer = playerWhite;
+        }
     }
 
     /**/
@@ -50,9 +57,21 @@ public class GameManager {
         return null;
     }
 
-    /**/
-    public void handleMove() {
+    /**
+     * Delegates the move done by a player to the current phase the player is in.
+     * Only switches the player, if the move was successful.
+     *
+     * @param player The player making a move.
+     * @param stone The stone that should be moved.
+     * @param fromNode The origin node.
+     * @param toNode The target node.
+     */
+    public void handleMove(PlayerEntity player, Stone stone, Node fromNode, Node toNode) {
+        boolean moveSuccessful = player.getPhase().handleMove(stone, fromNode, toNode);
 
+        if(moveSuccessful) {
+            switchPlayer();
+        }
     }
 
     /**/

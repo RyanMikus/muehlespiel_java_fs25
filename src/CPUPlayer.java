@@ -1,10 +1,14 @@
 public class CPUPlayer extends PlayerEntity {
     private DifficultyStrategy strategy;
 
+    public CPUPlayer(String name) {
+        super(name);
+    }
+
     /**/
     @Override
-    public void makeMove() {
-
+    public Node makeMove() {
+        return null;
     }
 
     /**/
