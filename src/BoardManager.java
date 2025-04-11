@@ -96,23 +96,68 @@ public class BoardManager extends Observable {
         }
     }
 
-    /**/
-    public void placeStone() {
+    /**
+     * Checks if the performed move is valid and places the stone on the target node if so.
+     * Checks if the placed stone forms a new mill.
+     *
+     * @param player The player performing the move.
+     * @param stone The stone that should be placed.
+     * @param toNode The target node.
+     * @return true if the performed move is valid, false otherwise.
+     */
+    public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
+        if(!ruleManager.isMoveValid()) {
+            return false;
+        }
 
+        toNode.placeStone(stone);
+        notifyObservers();
+
+        if(ruleManager.isMillFormed()) {
+            //removeStone();
+        }
+
+        return true;
     }
 
     /**/
-    public void removeStone() {
-
+    public void removeStone(Stone tagetStone) {
+        //targetStone.getOwner().getPhase().nextPhase();
+        notifyObservers();
     }
 
-    /**/
-    public void moveStone() {
+    /**
+     * Checks if the performed move is valid and moves the stone to the target if so.
+     * Checks if the moved stone forms a mill.
+     *
+     * @param player The player performing the move
+     * @param stone The stone that should be placed.
+     * @param fromNode The origin node.
+     * @param toNode The target node.
+     * @return true if the performed move is valid, false otherwise.
+     */
+    public boolean moveStone(PlayerEntity player, Stone stone, Node fromNode, Node toNode) {
+        if(!ruleManager.isMoveValid()) {
+            return false;
+        }
 
+        toNode.placeStone(stone);
+        fromNode.removeStone();
+        notifyObservers();
+
+        if(ruleManager.isMillFormed()) {
+            //removeStone();
+        }
+
+        return true;
     }
 
-    /**/
+    /**
+     * Getter for a specified node.
+     * @param id The id of the node that should be returned.
+     * @return Node according to ID.
+     */
     public Node getNode(int id) {
-        return null;
+        return nodes.get(id);
     }
 }

@@ -1,7 +1,22 @@
-public class JumpingPhase implements GameState {
+public class JumpingPhase extends GamePhase {
+    /**
+     * Sets the context.
+     *
+     * @param playerEntity Context that uses the phase.
+     */
+    public JumpingPhase(PlayerEntity playerEntity) {
+        super(playerEntity);
+    }
+
     /**/
     @Override
-    public void handleMove() {
+    public boolean handleMove(Stone stone, Node fromNode, Node toNode) {
+        return false;
+    }
+
+    /**/
+    @Override
+    public void nextPhase() {
 
     }
 }

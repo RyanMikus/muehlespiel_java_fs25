@@ -48,7 +48,7 @@ public class Node {
     }
 
     /**
-     * Assigns the given stone to this node. Can only possess one stone at a time.
+     * Assigns the given stone to this node and vice versa. Can only possess one stone at a time.
      *
      * @param stone The stone that gets assigned to this node.
      * @throws IllegalStateException if the node is already occupied.
@@ -58,6 +58,7 @@ public class Node {
             throw new IllegalStateException("Node is already occupied");
         }
         this.stone = stone;
+        stone.setNode(this);
     }
 
     /**
