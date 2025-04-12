@@ -81,4 +81,13 @@ public class Node {
     public int getID() {
         return id;
     }
+
+    /**
+     * Getter for the node's stone.
+     *
+     * @return The current stone of the node. Null if not assigned.
+     */
+    public  Stone getStone() {
+        return stone;
+    }
 }

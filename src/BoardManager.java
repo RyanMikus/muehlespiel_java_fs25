@@ -120,36 +120,37 @@ public class BoardManager extends Observable {
         return true;
     }
 
-    /**/
-    public void removeStone(Stone tagetStone) {
-        //targetStone.getOwner().getPhase().nextPhase();
-        notifyObservers();
-    }
-
     /**
      * Checks if the performed move is valid and moves the stone to the target if so.
      * Checks if the moved stone forms a mill.
      *
      * @param player The player performing the move
-     * @param stone The stone that should be placed.
      * @param fromNode The origin node.
      * @param toNode The target node.
      * @return true if the performed move is valid, false otherwise.
      */
-    public boolean moveStone(PlayerEntity player, Stone stone, Node fromNode, Node toNode) {
+    public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
         if(!ruleManager.isMoveValid()) {
             return false;
         }
 
+        Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
         notifyObservers();
 
         if(ruleManager.isMillFormed()) {
             //removeStone();
+            notifyObservers();
         }
 
         return true;
+    }
+
+    /**/
+    public void removeStone(Stone targetStone) {
+        //targetStone.getOwner().getPhase().nextPhase();
+        notifyObservers();
     }
 
     /**

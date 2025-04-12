@@ -18,22 +18,19 @@ public abstract class PlayerEntity {
         this.name = name;
         this.stones = new ArrayList<>();
         this.currentPhase = new SettingPhase(this);
-
-        initializePlayer();
-    }
-
-    /**
-     * Creates all new stones and adds them to the list.
-     */
-    private void initializePlayer()
-    {
-        for(int i = 0; i < 9; i++) {
-            stones.add(new Stone(this));
-        }
     }
 
     /**/
     public abstract Node makeMove();
+
+    /**
+     * Adds a stone to the players stone list.
+     *
+     * @param stone The stone that gets added to the list.
+     */
+    public void addStone(Stone stone) {
+        stones.add(stone);
+    }
 
     /**
      * Removes a stone from the player.
