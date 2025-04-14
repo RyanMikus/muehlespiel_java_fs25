@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class RuleManager {
     private static RuleManager instance;
     private static BoardManager boardManager;
@@ -33,7 +30,9 @@ public class RuleManager {
      * formed.
      * 
      * @param lastPlacedStone The stone that potentially formed one or two mills.
-     * @return millCount The amount of new mills formed.
+     * @return The amount of new mills formed.
+     * @throws IllegalStateException if the amount of newly formed mills is greater
+     *                               than 2.
      */
     public int countNewMillsFormed(Stone lastPlacedStone) {
         PlayerEntity player = lastPlacedStone.getOwner();
@@ -63,7 +62,7 @@ public class RuleManager {
             if (allOwned) {
                 millCount++;
                 if (millCount > 2) {
-                    throw new RuntimeException("More than 2 mills formed — invalid state.");
+                    throw new IllegalStateException("More than 2 mills formed — invalid state.");
                 }
             }
         }
