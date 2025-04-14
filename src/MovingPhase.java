@@ -10,11 +10,14 @@ public class MovingPhase extends GamePhase {
 
     /**/
     @Override
-    public boolean handleMove(Stone stone, Node fromNode, Node toNode) {
+    public boolean handleMove(Node fromNode, Node toNode) {
         // Potentially done in isMoveValid()
-        if(!fromNode.isOccupied() || !(stone.getOwner() == playerEntity)) {
-            System.out.println("Invalid origin node!");
+        if(!fromNode.isOccupied()) {
+            System.out.println("Node is not occupied!");
             return false;
+        }
+        else if(!(fromNode.getStone().getOwner() == playerEntity)) {
+            System.out.println("Stone is not owned by the player!");
         }
         else if(toNode.isOccupied()) {
             System.out.println("The node is occupied!");
@@ -25,7 +28,7 @@ public class MovingPhase extends GamePhase {
             return false;
         }
 
-        return BoardManager.getInstance().moveStone(playerEntity, stone, fromNode, toNode);
+        return BoardManager.getInstance().moveStone(playerEntity, fromNode, toNode);
     }
 
     /**

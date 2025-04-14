@@ -3,12 +3,22 @@ public class GameManager {
     // Managers
     private static GameManager instance;
     private final BoardManager boardManager;
+    private final RuleManager ruleManager;
     private final GUI guiManager;
 
     // Players
     private PlayerEntity playerWhite;
     private PlayerEntity playerBlack;
     private PlayerEntity currentPlayer;
+
+    public enum Winner {
+        DRAW,
+        WHITE,
+        BLACK
+    }
+
+    public Winner winner;
+    public int noMillTurnCounter = 0;
     //endregion
 
     /**
@@ -16,6 +26,7 @@ public class GameManager {
      */
     private GameManager() {
         boardManager = BoardManager.getInstance();
+        ruleManager = RuleManager.getInstance();
         guiManager = new GUI();
     }
 
@@ -54,7 +65,11 @@ public class GameManager {
 
     /**/
     public PlayerEntity getWinner() {
-        return null;
+        return switch(winner) {
+            case DRAW -> null;
+            case WHITE -> playerWhite;
+            case BLACK -> playerBlack;
+        };
     }
 
     /**
@@ -62,15 +77,19 @@ public class GameManager {
      * Only switches the player, if the move was successful.
      *
      * @param player The player making a move.
-     * @param stone The stone that should be moved.
      * @param fromNode The origin node.
      * @param toNode The target node.
      */
-    public void handleMove(PlayerEntity player, Stone stone, Node fromNode, Node toNode) {
-        boolean moveSuccessful = player.getPhase().handleMove(stone, fromNode, toNode);
+    public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
+        boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
 
         if(moveSuccessful) {
+            noMillTurnCounter++;
             switchPlayer();
+
+            if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+                getWinner();
+            }
         }
     }
 

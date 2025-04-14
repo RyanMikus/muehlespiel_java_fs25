@@ -10,7 +10,7 @@ public class GameOverPhase extends GamePhase {
 
     /**/
     @Override
-    public boolean handleMove(Stone stone, Node fromNode, Node toNode) {
+    public boolean handleMove(Node fromNode, Node toNode) {
         return false;
     }
 
