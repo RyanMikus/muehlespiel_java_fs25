@@ -149,8 +149,10 @@ public class BoardManager extends Observable {
         toNode.placeStone(stone);
         notifyObservers();
 
-        if (ruleManager.countNewMillsFormed(stone)) {
+        int millCount = ruleManager.countNewMillsFormed(stone);
+        while (millCount >= 0) {
             // removeStone();
+            millCount--;
         }
 
         return true;
@@ -165,7 +167,7 @@ public class BoardManager extends Observable {
     /**
      * Checks if the performed move is valid and moves the stone to the target if
      * so.
-     * Checks if the moved stone forms a mill.
+     * Checks if the moved stone forms zero, one or two mill.
      *
      * @param player   The player performing the move
      * @param stone    The stone that should be placed.
@@ -184,9 +186,11 @@ public class BoardManager extends Observable {
         fromNode.removeStone();
         notifyObservers();
 
-        if (ruleManager.isMillFormed()) {
+        int millCount = ruleManager.countNewMillsFormed(stone);
+        while (millCount >= 0) {
             // removeStone();
             notifyObservers();
+            millCount--;
         }
 
         return true;

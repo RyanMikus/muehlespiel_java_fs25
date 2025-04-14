@@ -28,15 +28,15 @@ public class RuleManager {
         return false;
     }
 
-    /*
-     * Only gets called once, when a move is made, otherwise multiple mills would be
+    /**
+     * Only gets called when a move is made, otherwise multiple mills would be
      * formed.
+     * 
+     * @param lastPlacedStone The stone that potentially formed one or two mills.
+     * @return millCount The amount of new mills formed.
      */
     public int countNewMillsFormed(Stone lastPlacedStone) {
         PlayerEntity player = lastPlacedStone.getOwner();
-        // Create a mutable list to store neighboring nodes occupied by the same owner
-        List<Node> ownersOccupiedNeighbors = new ArrayList<>();
-
         int placedPos = lastPlacedStone.getNode().getID(); // Requires Node to have getIndex()
         int millCount = 0;
 
