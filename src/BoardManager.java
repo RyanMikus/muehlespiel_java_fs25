@@ -150,8 +150,9 @@ public class BoardManager extends Observable {
         notifyObservers();
 
         int millCount = ruleManager.countNewMillsFormed(stone);
-        while (millCount >= 0) {
+        while (millCount > 0) {
             // removeStone();
+            notifyObservers();
             millCount--;
         }
 
@@ -159,7 +160,7 @@ public class BoardManager extends Observable {
     }
 
     /**/
-    public void removeStone(Stone tagetStone) {
+    public void removeStone(Stone targetStone) {
         // targetStone.getOwner().getPhase().nextPhase();
         notifyObservers();
     }
@@ -187,7 +188,7 @@ public class BoardManager extends Observable {
         notifyObservers();
 
         int millCount = ruleManager.countNewMillsFormed(stone);
-        while (millCount >= 0) {
+        while (millCount > 0) {
             // removeStone();
             notifyObservers();
             millCount--;

@@ -9,24 +9,25 @@ public class SettingPhase extends GamePhase {
     }
 
     /**
-     * In this state the player can place the stones everywhere, if the target Node is not already occupied.
+     * In this state the player can place the stones everywhere, if the target Node
+     * is not already occupied.
      * Adds a stone and its owner to the players stone list.
      *
      * @param fromNode The origin node (not used here).
-     * @param toNode The target node.
+     * @param toNode   The target node.
      * @return true if the move was successful, false otherwise.
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
-        if(toNode.isOccupied()) {   // Potentially done in isMoveValid()!
-            System.out.println("The node is occupied");
+        if (toNode.isOccupied()) { // Potentially done in isMoveValid()!
+            System.out.println("The node is occupied!");
             return false;
         }
 
         Stone stone = new Stone(playerEntity);
         playerEntity.addStone(stone);
 
-        if(BoardManager.getInstance().placeStone(playerEntity, stone, toNode)) {
+        if (BoardManager.getInstance().placeStone(playerEntity, stone, toNode)) {
             playerEntity.stonePlaced();
             nextPhase();
             return true;
@@ -41,7 +42,7 @@ public class SettingPhase extends GamePhase {
      */
     @Override
     public void nextPhase() {
-        if(playerEntity.allStonesPlaced()) {
+        if (playerEntity.allStonesPlaced()) {
             playerEntity.setPhase(new MovingPhase(playerEntity));
         }
     }

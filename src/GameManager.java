@@ -1,5 +1,5 @@
 public class GameManager {
-    //region Fields
+    // region Fields
     // Managers
     private static GameManager instance;
     private final BoardManager boardManager;
@@ -19,7 +19,7 @@ public class GameManager {
 
     public Winner winner;
     public int noMillTurnCounter = 0;
-    //endregion
+    // endregion
 
     /**
      * Initialize managers
@@ -36,14 +36,14 @@ public class GameManager {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static GameManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new GameManager();
         }
         return instance;
     }
 
     public static void main(String[] args) {
-        GameManager manager =  GameManager.getInstance();
+        GameManager manager = GameManager.getInstance();
     }
 
     /**/
@@ -55,17 +55,16 @@ public class GameManager {
      * Switches the current player, that can perform moves.
      */
     public void switchPlayer() {
-        if(currentPlayer == playerWhite) {
+        if (currentPlayer == playerWhite) {
             currentPlayer = playerBlack;
-        }
-        else {
+        } else {
             currentPlayer = playerWhite;
         }
     }
 
     /**/
     public PlayerEntity getWinner() {
-        return switch(winner) {
+        return switch (winner) {
             case DRAW -> null;
             case WHITE -> playerWhite;
             case BLACK -> playerBlack;
@@ -76,18 +75,18 @@ public class GameManager {
      * Delegates the move done by a player to the current phase the player is in.
      * Only switches the player, if the move was successful.
      *
-     * @param player The player making a move.
+     * @param player   The player making a move.
      * @param fromNode The origin node.
-     * @param toNode The target node.
+     * @param toNode   The target node.
      */
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
 
-        if(moveSuccessful) {
+        if (moveSuccessful) {
             noMillTurnCounter++;
             switchPlayer();
 
-            if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+            if (ruleManager.isGameOver(playerWhite, playerBlack)) {
                 getWinner();
             }
         }

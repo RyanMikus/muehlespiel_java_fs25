@@ -72,9 +72,10 @@ public class RuleManager {
 
     /**
      * Checks if the game is over and sets the winner if so.
-     * 1. A player has only 2 stones left (is in GameOverPhase)
+     * 1. A player has only 2 stones left (is in GameOverPhase).
      * 2. There was no mill formed for 20 turns.
-     * 3. A player can't move a stone to a valid position anymore.
+     * 3. A player can't move a stone to a valid position anymore (is in
+     * MovingPhase).
      * 4. Timer ran out.
      *
      * @param playerWhite The first player.
@@ -82,12 +83,13 @@ public class RuleManager {
      * @return true if the game is over, false otherwise.
      */
     public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack) {
-        // Player white lost
+        // TODO: integrate isTimeOver
+        // Player black won
         if (isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
             gameManager.winner = GameManager.Winner.BLACK;
             return true;
         }
-        // Player black lost
+        // Player white won
         if (isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
             gameManager.winner = GameManager.Winner.WHITE;
             return true;
@@ -140,7 +142,7 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
-        return GameManager.getInstance().noMillTurnCounter == 20;
+        return GameManager.getInstance().noMillTurnCounter >= 20;
     }
 
     /**/

@@ -12,18 +12,16 @@ public class MovingPhase extends GamePhase {
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
         // Potentially done in isMoveValid()
-        if(!fromNode.isOccupied()) {
+        if (!fromNode.isOccupied()) {
             System.out.println("Node is not occupied!");
             return false;
-        }
-        else if(!(fromNode.getStone().getOwner() == playerEntity)) {
+        } else if (fromNode.getStone().getOwner() != playerEntity) {
             System.out.println("Stone is not owned by the player!");
-        }
-        else if(toNode.isOccupied()) {
+            return false;
+        } else if (toNode.isOccupied()) {
             System.out.println("The node is occupied!");
             return false;
-        }
-        else if(!fromNode.getNeighbors().contains(toNode)) {
+        } else if (!fromNode.getNeighbors().contains(toNode)) {
             System.out.println("Can only move to neighbors!");
             return false;
         }
@@ -37,7 +35,7 @@ public class MovingPhase extends GamePhase {
      */
     @Override
     public void nextPhase() {
-        if(playerEntity.getRemainingStones().size() == 3) {
+        if (playerEntity.getRemainingStones().size() == 3) {
             playerEntity.setPhase(new JumpingPhase(playerEntity));
         }
     }

@@ -9,24 +9,23 @@ public class JumpingPhase extends GamePhase {
     }
 
     /**
-     * In this phase the player can jump everywhere, if the target Node is not already occupied.
+     * In this phase the player can jump everywhere, if the target Node is not
+     * already occupied.
      *
      * @param fromNode The origin node.
-     * @param toNode The target node.
+     * @param toNode   The target node.
      * @return true if the move was successful, false otherwise.
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
-        if(!fromNode.isOccupied()) {
-            System.out.println("Invalid origin node.");
+        if (!fromNode.isOccupied()) {
+            System.out.println("Invalid origin node!");
             return false;
-        }
-        else if(!(fromNode.getStone().getOwner() == playerEntity)) {
+        } else if (fromNode.getStone().getOwner() != playerEntity) {
             System.out.println("Stone is not owned by the player!");
             return false;
-        }
-        else if(toNode.isOccupied()) {   // Potentially done in isMoveValid()!
-            System.out.println("The node is occupied");
+        } else if (toNode.isOccupied()) { // Potentially done in isMoveValid()!
+            System.out.println("The node is occupied!");
             return false;
         }
 
@@ -39,7 +38,7 @@ public class JumpingPhase extends GamePhase {
      */
     @Override
     public void nextPhase() {
-        if(playerEntity.getRemainingStones().size() == 2) {
+        if (playerEntity.getRemainingStones().size() <= 2) {
             playerEntity.setPhase(new GameOverPhase(playerEntity));
         }
     }
