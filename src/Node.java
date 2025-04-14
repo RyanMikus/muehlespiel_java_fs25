@@ -2,11 +2,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Node {
-    //region Fields
+    // region Fields
     private final int id;
     private Stone stone;
     private final List<Node> neighbors;
-    //endregion
+    // endregion
 
     /**
      * Constructs a node with the given ID.
@@ -48,13 +48,14 @@ public class Node {
     }
 
     /**
-     * Assigns the given stone to this node and vice versa. Can only possess one stone at a time.
+     * Assigns the given stone to this node and vice versa. Can only possess one
+     * stone at a time.
      *
      * @param stone The stone that gets assigned to this node.
      * @throws IllegalStateException if the node is already occupied.
      */
     public void placeStone(Stone stone) {
-        if(this.stone != null) {
+        if (this.stone != null) {
             throw new IllegalStateException("Node is already occupied");
         }
         this.stone = stone;
@@ -67,7 +68,7 @@ public class Node {
      * @throws IllegalStateException if the node doesn't contain a stone
      */
     public void removeStone() {
-        if(this.stone == null) {
+        if (this.stone == null) {
             throw new IllegalStateException("Node is already empty");
         }
         stone = null;
