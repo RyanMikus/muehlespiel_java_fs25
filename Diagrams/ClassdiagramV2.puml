@@ -52,7 +52,7 @@ class GUIManager{
 + setDifficulty()
 }
 
-interface GameState{
+interface GamePhase{
 --
 + {abstract} handleMove()
 }
@@ -93,7 +93,7 @@ class Node{
 abstract class PlayerEntity{
 # name : String
 # stones : List<Stones>
-# currentState : GameState
+# currentState : GamePhase
 --
 + {abstract} makeMove()
 + handleMove()
@@ -131,7 +131,7 @@ class Move{
 - fromNode : Node
 - toNode : Node
 - removedStone : Stone
-- currentState : GameState
+- currentState : GamePhase
 }
 
 class Observable{
@@ -170,11 +170,11 @@ GameManager o- BoardManager
 History -- GameManager
 GameManager o-- PlayerEntity
 
-GameState <|.. SettingPhase
-GameState <|.. JumpingPhase
-GameState <|.. MovingPhase
-GameState <|.. GameOverPhase
-GameState -o PlayerEntity
+GamePhase <|.. SettingPhase
+GamePhase <|.. JumpingPhase
+GamePhase <|.. MovingPhase
+GamePhase <|.. GameOverPhase
+GamePhase -o PlayerEntity
 
 PlayerEntity <|-- Player
 PlayerEntity <|-- CPUPlayer

@@ -1,8 +1,12 @@
 public class Player extends PlayerEntity {
 
+    public Player(String name) {
+        super(name);
+    }
+
     /**/
     @Override
-    public void makeMove() {
-
+    public Node makeMove() {
+        return null;
     }
 }
