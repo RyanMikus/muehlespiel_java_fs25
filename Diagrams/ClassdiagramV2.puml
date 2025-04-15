@@ -1,16 +1,21 @@
 @startuml
 
 class GameManager{
+- {static} instance : GameManager
 - ruleManager : RuleManager
 - boardManager : Boardmanager
 - guiManager : GUIManager
 - playerWhite : PlayerEntity
 - playerBlack : PlayerEntity
 - currentPlayer : PlayerEntity
++ winner : Winner
++ noMillTurnCounter : int
 --
+- GameManager()
++ {static} getInstance() : GameManager
 + startGame()
 + switchPlayer()
-+ getWinner()
++ getWinner() : PlayerEntity
 + handleMove()
 + undoMove()
 + redoMove()
@@ -18,25 +23,44 @@ class GameManager{
 + loadGame()
 }
 
+enum Winner{
+DRAW
+WHITE
+BLACK
+}
+
 class RuleManager{
+- {static} instance : RuleManager
+- {static} boardManager : BoardManager
+- {static} gameManager : GameManager
 --
+- RuleManager()
++ {static} getInstance() : RuleManager
 + isMoveValid() : boolean
-+ isMillFormed() : boolean
++ countNewMills() : int
 + isGameOver() : boolean
++ isPlayerGameOver() : boolean
 + isPlayerBlocked() : boolean
-+ isTimeOver() : boolean
 + isStalemate() : boolean
++ isTimeOver() : boolean
 }
 
 class BoardManager{
+- {static} instance : BoardManager
+- ruleManager : RuleManager
 - nodes : Map<int, Node>
+- neighbors : int[][]
+- potentialMills : List<int[]>
 --
+- BoardManager()
++ {static} getInstance : BoardManager
 - initializeBoard()
+- initializeMills()
 - connectNodes()
-+ getNode()
-+ placeStone()
-+ removeStone()
-+ moveStone()
++ placeStone() : boolean
++ removeStone() : boolean
++ moveStone() : boolean
++ getNode() : Node
 }
 
 class GUIManager{
@@ -54,36 +78,50 @@ class GUIManager{
 + setDifficulty()
 }
 
-interface GameState{
+interface GamePhase{
+# playerEntity : PlayerEntity
 --
-+ {abstract} handleMove()
+# GamePhase()
++ {abstract} handleMove() : boolean
++ {abstract} nextPhase()
 }
 
 class SettingPhase{
 --
-+ handleMove()
++ SettingPhase()
++ handleMove() : boolean
++ nextPhase()
 }
 
 class MovingPhase{
 --
-+ handleMove()
++ MovingPhase()
++ handleMove() : boolean
++ nextPhase()
 }
 
 class JumpingPhase{
 --
-+ handleMove()
++ JumpingPhase()
++ handleMove() : boolean
++ nextPhase()
 }
 
 class GameOverPhase{
 --
-+ handleMove()
++ GameOverPhase()
++ handleMove() : boolean
++ nextPhase()
 }
 
 class Stone{
 - owner : PlayerEntity
 - currentNode : Node
 --
-+ moveToNode()
++ Stone()
++ setNode()
++ getNode() : Node
++ getOwner() : PlayerEntity
 }
 
 class Node{
@@ -91,37 +129,45 @@ class Node{
 - stone : Stone
 - neighbors : List<Node>
 --
-+ isOccupied()
++ Node()
++ isOccupied() : boolean
 + addNeighbor()
-+ getNeighbors()
++ getNeighbors() : List<Node>
 + placeStone()
 + removeStone()
-+ getID()
++ getID() : int
++ getStone() : Stone
 }
 
 abstract class PlayerEntity{
 # name : String
 # stones : List<Stones>
 # currentState : GameState
+# placedStones : int
 --
-+ {abstract} makeMove()
-+ handleMove()
+# PlayerEntity()
++ {abstract} makeMove() : Node
++ addStone()
 + removeStone()
-+ setState()
-+ allStonesPlaced()
-+ getRemainingStones()
-+ getName()
++ stonePlaced()
++ allStonesPlaced() : boolean
++ getRemainingStones() : List<Stone>
++ getName() : String
++ getPhase() : GamePhase
++ setPhase()
 }
 
 class Player{
 --
-+ makeMove()
++ Player()
++ makeMove() : Node
 }
 
 class CPUPlayer{
-- strategy : 
+- strategy : DifficultyStrategy
 --
-+ makeMove()
++ CPUPlayer()
++ makeMove() : Node
 + setDifficulty()
 }
 
@@ -176,13 +222,14 @@ class HardDifficulty{
 BoardManager o- RuleManager
 GUIManager o-- GameManager
 GameManager o- BoardManager
+Winner - GameManager
 History - GameManager
 GameManager o-- PlayerEntity
 
-GameState <|.. SettingPhase
-GameState <|.. JumpingPhase
-GameState <|.. MovingPhase
-GameState <|.. GameOverPhase
+GameState <|-- SettingPhase
+GameState <|-- JumpingPhase
+GameState <|-- MovingPhase
+GameState <|-- GameOverPhase
 GameState -o PlayerEntity
 
 Player -|> PlayerEntity
