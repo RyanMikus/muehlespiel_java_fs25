@@ -20,7 +20,14 @@ public class RuleManager {
         return instance;
     }
 
-    /**/
+    /**
+     * Checks if the intended move is valid for the current game phase.
+     * 
+     * @param player   The player that intends to perform a move.
+     * @param fromNode The origin node.
+     * @param toNode   The target node.
+     * @return true if move is valid, false if move is not valid
+     */
     public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
         String errors = "";
         if (fromNode == toNode)
@@ -56,6 +63,7 @@ public class RuleManager {
     }
 
     /**
+     * Counts the new mills formed with the newly placed or moved stone.
      * Only gets called when a move is made, otherwise multiple mills would be
      * formed.
      * 
