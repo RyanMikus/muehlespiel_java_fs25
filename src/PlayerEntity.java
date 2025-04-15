@@ -44,7 +44,7 @@ public abstract class PlayerEntity {
     /**
      * Counts how many stones of the player have already been placed.
      */
-    public void stonePlaced(){
+    public void stonePlaced() {
         placedStones++;
     }
 

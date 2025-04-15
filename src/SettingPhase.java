@@ -19,11 +19,6 @@ public class SettingPhase extends GamePhase {
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
-        if (toNode.isOccupied()) { // Potentially done in isMoveValid()!
-            System.out.println("The node is occupied!");
-            return false;
-        }
-
         Stone stone = new Stone(playerEntity);
         playerEntity.addStone(stone);
 

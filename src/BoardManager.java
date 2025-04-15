@@ -142,7 +142,7 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
-        if (!ruleManager.isMoveValid()) {
+        if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             return false;
         }
 
@@ -178,7 +178,7 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
-        if (!ruleManager.isMoveValid()) {
+        if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 

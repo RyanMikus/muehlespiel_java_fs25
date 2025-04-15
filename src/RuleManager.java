@@ -21,7 +21,37 @@ public class RuleManager {
     }
 
     /**/
-    public boolean isMoveValid() {
+    public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
+        String errors = "";
+        if (fromNode == toNode)
+            errors += "You can not place a stone on to itself!\n";
+        if (toNode.isOccupied())
+            errors += "You can not place a stone on to another stone!\n";
+        if (!fromNode.isOccupied())
+            errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
+        if (fromNode.getStone().getOwner() != player)
+            errors += "The stone on this node (id=" + fromNode.getID()
+                    + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
+
+        GamePhase currentPhase = player.getPhase();
+        if (currentPhase instanceof SettingPhase) {
+            // More errors might come up.
+        } else if (currentPhase instanceof MovingPhase) {
+            if (!fromNode.getNeighbors().contains(toNode))
+                errors += "Can only move to neighbors!\nA stone can not be moved from " + fromNode.getID() + " to "
+                        + toNode.getID() + "!\n";
+        } else if (currentPhase instanceof JumpingPhase) {
+            // More errors might come up.
+        } else if (currentPhase instanceof GameOverPhase) {
+            errors += "Game is already over. You may not make moves!";
+        } else {
+            errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
+                    + player.getPhase().getClass().toString() + "\n";
+        }
+
+        if (errors == "")
+            return true;
+        System.out.print(errors);
         return false;
     }
 

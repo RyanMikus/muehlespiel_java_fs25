@@ -11,5 +11,6 @@ public abstract class GamePhase {
     }
 
     public abstract boolean handleMove(Node fromNode, Node toNode);
+
     public abstract void nextPhase();
 }
