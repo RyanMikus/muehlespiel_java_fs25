@@ -359,8 +359,6 @@ public class GUI {
         });
     }// styleButton
 
-<<<<<<< HEAD
-=======
     /**/
     public void updateTimer(int timeLeft) {
 
@@ -371,7 +369,6 @@ public class GUI {
 
     }
 
->>>>>>> 24798e922014b42fcde4b1fd642a4bfd80005989
     public static void main(String[] args) {
         new GUI();
     } // main
