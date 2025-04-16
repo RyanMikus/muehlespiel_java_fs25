@@ -142,7 +142,7 @@ class Node{
 abstract class PlayerEntity{
 # name : String
 # stones : List<Stones>
-# currentState : GameState
+# currentState : GamePhase
 # placedStones : int
 --
 # PlayerEntity()
@@ -186,7 +186,7 @@ class Move{
 - fromNode : Node
 - toNode : Node
 - removedStone : Stone
-- currentState : GameState
+- currentState : GamePhase
 }
 
 class Observable{
@@ -226,11 +226,11 @@ Winner - GameManager
 History - GameManager
 GameManager o-- PlayerEntity
 
-GameState <|-- SettingPhase
-GameState <|-- JumpingPhase
-GameState <|-- MovingPhase
-GameState <|-- GameOverPhase
-GameState -o PlayerEntity
+GamePhase <|-- SettingPhase
+GamePhase <|-- JumpingPhase
+GamePhase <|-- MovingPhase
+GamePhase <|-- GameOverPhase
+GamePhase -o PlayerEntity
 
 Player -|> PlayerEntity
 PlayerEntity <|-- CPUPlayer
