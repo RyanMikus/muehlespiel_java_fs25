@@ -4,7 +4,7 @@ class GameManager{
 - {static} instance : GameManager
 - ruleManager : RuleManager
 - boardManager : Boardmanager
-- guiManager : GUIManager
+- guiManager : GUI
 - playerWhite : PlayerEntity
 - playerBlack : PlayerEntity
 - currentPlayer : PlayerEntity
@@ -63,7 +63,7 @@ class BoardManager{
 + getNode() : Node
 }
 
-class GUIManager{
+class GUI{
 - gameManager : GameManager
 - boardPanel : JPanel
 - controlPanel : JPanel
@@ -220,7 +220,7 @@ class HardDifficulty{
 }
 
 BoardManager o- RuleManager
-GUIManager o-- GameManager
+GUI o-- GameManager
 GameManager o- BoardManager
 Winner - GameManager
 History - GameManager
@@ -248,6 +248,6 @@ Node - Node
 
 Move - History
 
-Observer <|- GUIManager
+Observer <|- GUI
 
 @enduml
