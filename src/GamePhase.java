@@ -6,7 +6,7 @@ public abstract class GamePhase {
      *
      * @param playerEntity Context that uses the phase.
      */
-    public GamePhase(PlayerEntity playerEntity) {
+    protected GamePhase(PlayerEntity playerEntity) {
         this.playerEntity = playerEntity;
     }
 
