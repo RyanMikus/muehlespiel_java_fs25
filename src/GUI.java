@@ -290,6 +290,15 @@ public class GUI {
         });
     }// styleButton
 
+    /**/
+    public void updateTimer(int timeLeft) {
+
+    }
+
+    /**/
+    public void showTimeOverMsg(PlayerEntity currentPlayer) {
+
+    }
 
     public static void main(String[] args) {
         new GUI();

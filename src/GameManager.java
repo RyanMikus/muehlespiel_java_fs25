@@ -19,6 +19,9 @@ public class GameManager {
 
     public Winner winner;
     public int noMillTurnCounter = 0;
+    public int timePerTurn;
+    public boolean timeOver;
+    private TurnTimer timer;
     // endregion
 
     /**
@@ -86,9 +89,28 @@ public class GameManager {
             noMillTurnCounter++;
             switchPlayer();
 
-            if (ruleManager.isGameOver(playerWhite, playerBlack)) {
+            if (ruleManager.isGameOver(playerWhite, playerBlack, currentPlayer)) {
                 getWinner();
             }
+        }
+    }
+
+    public void startTurnTimer() {
+        timer = new TurnTimer(timePerTurn,
+                () -> guiManager.updateTimer(timer.getTimeLeft()),
+                () -> {
+                    timeOver = true;
+                    ruleManager.isGameOver(playerWhite, playerBlack, currentPlayer);
+                    guiManager.showTimeOverMsg(currentPlayer);
+                }
+        );
+
+        timer.startTimer();
+    }
+
+    public void stopTurnTimer() {
+        if(timer != null) {
+            timer.stopTimer();
         }
     }
 

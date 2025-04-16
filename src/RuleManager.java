@@ -82,7 +82,7 @@ public class RuleManager {
      * @param playerBlack The second player.
      * @return true if the game is over, false otherwise.
      */
-    public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack) {
+    public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack, PlayerEntity currentPlayer) {
         // TODO: integrate isTimeOver
         // Player black won
         if (isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
@@ -147,6 +147,6 @@ public class RuleManager {
 
     /**/
     public boolean isTimeOver() {
-        return false;
+        return gameManager.timeOver;
     }
 }
