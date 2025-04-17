@@ -11,14 +11,19 @@ public class GameManager {
     private PlayerEntity playerBlack;
     private PlayerEntity currentPlayer;
 
-    public enum Winner {
-        DRAW,
-        WHITE,
-        BLACK
+    public enum LossCause {
+        NONE,
+        STONECOUNT,
+        BLOCKED,
+        STALEMATE,
+        TIMEOUT
     }
+    public LossCause lossCause = LossCause.NONE;
 
-    public Winner winner;
-    public int noMillTurnCounter = 0;
+    private PlayerEntity winner;
+    private int noMillTurnCounter = 0;
+    private int timePerTurn;
+    private TurnTimer timer;
     // endregion
 
     /**
@@ -48,28 +53,95 @@ public class GameManager {
 
     /**/
     public void startGame() {
-
+        //startTurnTimer();
     }
 
     /**
      * Switches the current player, that can perform moves.
+     * Resets and starts the timer again for the next player.
      */
     public void switchPlayer() {
-        if (currentPlayer == playerWhite) {
-            currentPlayer = playerBlack;
-        } else {
-            currentPlayer = playerWhite;
+        currentPlayer = getOpponent();
+        timer.resetTimer();
+    }
+
+    /**
+     * Gets called when a loss condition gets fulfilled.
+     * Leads to the Game over screen with the winner as a parameter.
+     */
+    public void gameOver() {
+        guiManager.showGameOverScreen(winner);
+    }
+
+    //region Setters and Getters
+    /**
+     * Setter for the player that has won the game.
+     *
+     * @param winner The player that has won.
+     */
+    public void setWinner(PlayerEntity winner) {
+        this.winner = winner;
+    }
+
+    /**
+     * Getter for the player that has won the game.
+     * Can be Black, White or a null (Draw).
+     *
+     * @return PlayerBlack or PlayerWhite if there is a winner, null otherwise.
+     */
+    public PlayerEntity getWinner() {
+        return winner;
+    }
+
+    /**
+     * Getter for the player that is not currently able to perform a move.
+     * Helper method for switching players.
+     *
+     * @return playerWhite if the current player is playerBlack and vice versa.
+     */
+    public PlayerEntity getOpponent() {
+        if(currentPlayer == playerWhite) {
+            return playerBlack;
+        }
+        else {
+            return playerWhite;
         }
     }
 
-    /**/
-    public PlayerEntity getWinner() {
-        return switch (winner) {
-            case DRAW -> null;
-            case WHITE -> playerWhite;
-            case BLACK -> playerBlack;
-        };
+    /**
+     * Getter for the amount of turns that no mill was formed.
+     *
+     * @return The value of the noMillTurnCounter.
+     */
+    public int getNoMillTurnCounter() {
+        return noMillTurnCounter;
     }
+
+    /**
+     * Resets the amount of turns that no mill was formed to 0.
+     */
+    public void resetNoMillTurnCounter() {
+        noMillTurnCounter = 0;
+    }
+
+    /**
+     * Getter for the time a player has to perform a move before he loses the game.
+     *
+     * @return The currently set time a player has for his move.
+     */
+    public int getTimePerTurn() {
+        return timePerTurn;
+    }
+
+    /**
+     * Setter for the time a player has to perform a move before he loses the game.
+     *
+     * @param timePerTurn The new time a player shall have to perform a move.
+     */
+    public void setTimePerTurn(int timePerTurn) {
+        this.timePerTurn = timePerTurn;
+    }
+    //endregion
 
     /**
      * Delegates the move done by a player to the current phase the player is in.
@@ -82,13 +154,44 @@ public class GameManager {
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
 
-        if (moveSuccessful) {
-            noMillTurnCounter++;
-            switchPlayer();
+        if(!moveSuccessful) {
+            return;
+        }
 
-            if (ruleManager.isGameOver(playerWhite, playerBlack)) {
-                getWinner();
-            }
+        noMillTurnCounter++;
+        if (ruleManager.isGameOver(playerWhite, playerBlack, currentPlayer)) {
+            gameOver();
+            return;
+        }
+
+        switchPlayer();
+    }
+
+    /**
+     * Starts a new timer with the set time per turn.
+     * Updates the timer label on every tick (time per tick set in the timer class).
+     * When the time runs out, the game is over and the current player loses.
+     */
+    public void startTurnTimer() {
+        timer = new TurnTimer(timePerTurn,
+                () -> guiManager.updateTimer(timer.getTimeLeft()),
+                () -> {
+                    winner = getOpponent();
+                    lossCause = LossCause.TIMEOUT;
+                    guiManager.showTimeOverMsg(currentPlayer);
+                    gameOver();
+                }
+        );
+
+        timer.startTimer();
+    }
+
+    /**
+     * Stops the timer, if it is initialized correctly.
+     */
+    public void stopTurnTimer() {
+        if(timer != null) {
+            timer.stopTimer();
         }
     }
 
