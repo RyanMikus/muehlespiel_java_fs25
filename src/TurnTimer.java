@@ -32,8 +32,9 @@ public class TurnTimer {
                     onTimeout.run();
                 }
             }
-            timer.start();
+            
         });
+        timer.start();
     }
 
     public void stopTimer() {

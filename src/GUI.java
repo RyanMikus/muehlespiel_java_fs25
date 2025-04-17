@@ -3,31 +3,33 @@ import java.awt.*;
 
 public class GUI {
 
-
-    // GUI-elements
+    // region Fields
     private JFrame window;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private TurnTimer turnTimer;
+    private GameManager gameManager;
 
-    // colors
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38); // rgb(57, 79, 88)
     private final Color BUTTON_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
+    private final Color TIMER_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
+    private final Color TURN_TIMER_COLOR = new Color(255, 230, 0); // rgb(255, 230, 0)
 
-    // fonts
     private final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 20);
+    private final Font TIMER_FONT = new Font("Arial", Font.BOLD, 16);
+    private final Font TURN_TIMER_FONT = new Font("Arial", Font.BOLD, 20);
 
-    // paths
     private final String LOGO_PATH = "/resources/muehle_logo.png";
     private final String BOARD_IMAGE_PATH = "/resources/muehle_board.png";
+    // endregion
 
     public GUI() {
-
-
         window = new JFrame("Mühle");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(900, 750);
         window.setResizable(false);
         window.setLocationRelativeTo(null);
+        // window.setLocation(2100, 350);;
         window.setBackground(BACKGROUND_COLOR);
 
         // main panel GUI
@@ -36,10 +38,10 @@ public class GUI {
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        //cardPanel.add(createHomeScreen(), "Home");
-        //cardPanel.add(createMenuScreen(), "Menu");
-        //cardPanel.add(createNewGameScreen(), "newGame");
-        //cardPanel.add(createLoadGameScreen(), "loadGame");
+        // cardPanel.add(createHomeScreen(), "Home");
+        // cardPanel.add(createMenuScreen(), "Menu");
+        // cardPanel.add(createNewGameScreen(), "newGame");
+        // cardPanel.add(createLoadGameScreen(), "loadGame");
         cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
@@ -60,8 +62,8 @@ public class GUI {
         panel.setOpaque(false);
 
         // buttons
-        JPanel buttoPanel = new JPanel(new GridBagLayout());
-        buttoPanel.setOpaque(false);
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setOpaque(false);
 
         JButton startButton = new JButton("spiel starten");
         styleButton(startButton);
@@ -70,12 +72,12 @@ public class GUI {
             cardLayout.show(cardPanel, "Menu");
         });
 
-        buttoPanel.add(startButton, new GridBagConstraints());
+        buttonPanel.add(startButton, new GridBagConstraints());
 
         // adding all components
         panel.add(createHomeLogo());
         panel.add(createHomeImage());
-        panel.add(buttoPanel);
+        panel.add(buttonPanel);
 
         return panel;
 
@@ -223,30 +225,90 @@ public class GUI {
      */
     private JPanel createBoardScreen() {
 
-        // main panel New Game Screen
+        // main Panel Board Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(new Color(20, 35, 40));
         panel.setOpaque(false);
 
-        // timer
-        JPanel timerPanel = new JPanel();
+        // time Panel
+        JPanel timePanel = new JPanel();
+        timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.Y_AXIS));
+        timePanel.setOpaque(false);
+        timePanel.setBorder(BorderFactory.createEmptyBorder(30, 100, 0, 100));
 
-        // board
+        JPanel sliderPanel = new JPanel();
+        sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
+        sliderPanel.setOpaque(false);
+
+        JLabel sliderLabel = new JLabel("Bedenkzeit: 30s");
+        sliderLabel.setForeground(TIMER_COLOR);
+        sliderLabel.setFont(TIMER_FONT);
+        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+
+        JSlider slider = new JSlider(10, 60, 30);
+        slider.setMajorTickSpacing(10);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        slider.setOpaque(false);
+        slider.setForeground(TIMER_COLOR);
+        slider.setFont(TIMER_FONT);
+        slider.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+
+        slider.addChangeListener(e -> sliderLabel.setText("Bedenkzeit: " + slider.getValue() + "s"));
+
+        JButton startButton = new JButton("Spiel starten");
+        styleButton(startButton);
+
+        startButton.addActionListener(e -> {
+            gameManager = GameManager.getInstance();    
+            gameManager.startGame();
+        });
+            
+
+        sliderPanel.add(sliderLabel);
+        sliderPanel.add(slider);
+        sliderPanel.add(startButton);
+
+        JLabel turnTime = new JLabel("Verbleibende Zeit: 30");
+        turnTime.setForeground(TURN_TIMER_COLOR);
+        turnTime.setFont(TURN_TIMER_FONT);
+        turnTime.setAlignmentX(Component.CENTER_ALIGNMENT);
+        turnTime.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
+
+        timePanel.add(sliderPanel);
+        timePanel.add(turnTime);
+
+        turnTimer = new TurnTimer(
+                30,
+                () -> turnTime.setText("Verbleibende Zeit: " +
+                        String.valueOf(turnTimer.getTimeLeft())),
+                () -> System.out.println("Zeit abgelaufen"));
+        turnTimer.startTimer();
+
+        // board panel
         JPanel boardPanel = new JPanel();
+        boardPanel.setPreferredSize(new Dimension(900, 450));
+        boardPanel.setMinimumSize(new Dimension(900, 450));
+        boardPanel.setMaximumSize(new Dimension(900, 450));
+        boardPanel.setBackground(new Color(0, 60, 80));
+        boardPanel.setBorder(BorderFactory.createTitledBorder("Spielbrett"));
 
-        // buttons
+        // button panel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         // necessary positions settings
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); 
+        gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = { "undo", "redo", "rules", "save", "load", "quit" };
+        String[] buttonTexts = { "undo", "redo", "save", "load", "rules", "quit" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
-            styleButton(button); 
+            styleBoardButton(button);
 
             int buttonIndex = i;
             button.addActionListener(e -> {
@@ -266,18 +328,17 @@ public class GUI {
                         break;
                 }
             });
-
             // position
-            gbc.gridx = i % 3; 
-            gbc.gridy = i / 3; 
+            gbc.gridx = i % 6;
+            gbc.gridy = 0;
             buttonPanel.add(button, gbc);
         }
-
-        // adding all components
-        panel.add(timerPanel);
+        // ---------------- COMPOSE MAIN PANEL ----------------
+        panel.add(timePanel);
+        panel.add(Box.createVerticalStrut(20));
         panel.add(boardPanel);
+        panel.add(Box.createVerticalStrut(20));
         panel.add(buttonPanel);
-
         return panel;
 
     } // createBoardScreen
@@ -358,6 +419,43 @@ public class GUI {
             }
         });
     }// styleButton
+
+    /**
+     * Styles a button
+     * 
+     * @param button
+     */
+    public void styleBoardButton(JButton button) {
+
+        // Style
+        button.setPreferredSize(new Dimension(130, 40));
+        button.setMinimumSize(new Dimension(130, 40));
+        button.setMaximumSize(new Dimension(130, 40));
+        button.setBackground(BACKGROUND_COLOR);
+        button.setForeground(BUTTON_COLOR);
+        button.setFont(BUTTON_FONT);
+        button.setText(button.getText().toUpperCase());
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.setBorder(BorderFactory.createLineBorder(BUTTON_COLOR, 3));
+        button.setFocusPainted(false);
+
+        // Hover
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(BUTTON_COLOR);
+                button.setForeground(BACKGROUND_COLOR);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(BACKGROUND_COLOR);
+                button.setForeground(BUTTON_COLOR);
+            }
+        });
+    }// styleBoardButton
 
     /**/
     public void updateTimer(int timeLeft) {
