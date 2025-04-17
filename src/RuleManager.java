@@ -72,7 +72,7 @@ public class RuleManager {
      * @throws IllegalStateException if the amount of newly formed mills is greater
      *                               than 2.
      */
-    public int countNewMillsFormed(Stone lastPlacedStone) {
+    public int countMillsFormed(Stone lastPlacedStone) {
         PlayerEntity player = lastPlacedStone.getOwner();
         int placedPos = lastPlacedStone.getNode().getID(); // Requires Node to have getIndex()
         int millCount = 0;
