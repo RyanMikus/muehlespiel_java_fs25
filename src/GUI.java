@@ -300,6 +300,11 @@ public class GUI {
 
     }
 
+    /**/
+    public void showGameOverScreen(PlayerEntity winnerEntity) {
+
+    }
+
     public static void main(String[] args) {
         new GUI();
     } // main

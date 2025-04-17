@@ -3,6 +3,9 @@ public class RuleManager {
     private static BoardManager boardManager;
     private static GameManager gameManager;
 
+    /**
+     * Creates a new RuleManager and initializes the other managers, by getting their instance.
+     */
     private RuleManager() {
         boardManager = BoardManager.getInstance();
         gameManager = GameManager.getInstance();
@@ -83,27 +86,27 @@ public class RuleManager {
      * @return true if the game is over, false otherwise.
      */
     public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack, PlayerEntity currentPlayer) {
-        // TODO: integrate isTimeOver
         // Player black won
         if (isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
-            gameManager.winner = GameManager.Winner.BLACK;
+            gameManager.setWinner(playerBlack);
             return true;
         }
         // Player white won
         if (isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
-            gameManager.winner = GameManager.Winner.WHITE;
+            gameManager.setWinner(playerWhite);
             return true;
         }
 
         // Draw
         if (isStalemate()) {
-            gameManager.winner = GameManager.Winner.DRAW;
+            gameManager.setWinner(null);
             return true;
         }
 
         return false;
     }
 
+    //region Helpermethods GameOver
     /**
      * Checks if the player is in the game over phase (only 2 stones left)
      *
@@ -111,6 +114,7 @@ public class RuleManager {
      * @return true if the player is in game over phase, false otherwise.
      */
     private boolean isPlayerGameOver(PlayerEntity player) {
+        gameManager.lossCause = GameManager.LossCause.STONECOUNT;
         return player.getPhase() instanceof GameOverPhase;
     }
 
@@ -133,6 +137,7 @@ public class RuleManager {
             }
         }
 
+        gameManager.lossCause = GameManager.LossCause.BLOCKED;
         return true;
     }
 
@@ -142,11 +147,8 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
-        return GameManager.getInstance().noMillTurnCounter >= 20;
+        gameManager.lossCause = GameManager.LossCause.STALEMATE;
+        return GameManager.getInstance().getNoMillTurnCounter() >= 20;
     }
-
-    /**/
-    public boolean isTimeOver() {
-        return gameManager.timeOver;
-    }
+    //endregion
 }
