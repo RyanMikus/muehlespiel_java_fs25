@@ -2,13 +2,13 @@ public class Stone {
     private PlayerEntity owner;
     private Node currentNode;
 
+    /**
+     * Creates a stone and sets its owner.
+     *
+     * @param owner The player that owns this stone.
+     */
     public Stone(PlayerEntity owner) {
         this.owner = owner;
-    }
-
-    /**/
-    public void moveToNode(Node node) {
-
     }
 
     /**

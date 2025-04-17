@@ -75,16 +75,6 @@ public class BoardManager extends Observable {
                 }
             }
         }
-
-        /*
-         * for(Node node : nodes.values()) {
-         * System.out.println("\n" + node.getID() + ":");
-         * 
-         * for(Node neighbor : node.getNeighbors()) {
-         * System.out.println(neighbor.getID());
-         * }
-         * }
-         */
     }
 
     /**
@@ -142,16 +132,20 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
+        // Check if the stone can be placed correctly
         if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             return false;
         }
 
+        // Place stone and update GUI
         toNode.placeStone(stone);
         notifyObservers();
 
+        // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
         while (millCount > 0) {
-            System.out.println("Remove an oponents stone.");
+            System.out.println("Remove an opponents stone.");
+            // TODO: Select stone to remove
             notifyObservers(); // Has to be a blocking function
             millCount--;
         }
@@ -163,7 +157,7 @@ public class BoardManager extends Observable {
      * Checks if a stone can be removed, then removes it and sets the next GamePhase
      * if needed.
      * 
-     * @param remover    The player removing a stone.
+     * @param remover The player removing a stone.
      * @param targetNode The node chosen by the remover to remove a stone from.
      * @return true if stone got removed, false if removal was invalid.
      */
@@ -171,30 +165,36 @@ public class BoardManager extends Observable {
         boolean stoneRemoved = false;
         Stone targetStone;
         PlayerEntity opponent;
+
+        // Only remove stone, if the targetNode is valid
         if (targetNode.isOccupied() && targetNode.getStone().getOwner() != remover) {
             targetStone = targetNode.getStone();
             opponent = targetStone.getOwner();
-            boolean freeStones = false; // Does the opponent have stones which are not in a mill?
+            boolean freeStones = false;
+
+            // Check if the opponent has a stone, that is not part of a mill
             for (Stone stone : opponent.getRemainingStones()) {
-                if (ruleManager.countMillsFormed(stone) == 0)
+                if (ruleManager.countMillsFormed(stone) == 0) {
                     freeStones = true;
+                    break;
+                }
             }
+
+            // Remove stone only if the target is not part of a mill
+            // Exception if all remaining stones of the opponent are part of a mill
             if (ruleManager.countMillsFormed(targetStone) == 0 || !freeStones) {
-                opponent.removeStone(targetStone);
                 targetNode.removeStone();
+                opponent.removeStone(targetStone);
                 stoneRemoved = true;
             }
-            if (stoneRemoved && opponent.getRemainingStones().size() == 3)
-                opponent.setPhase(new JumpingPhase(opponent));
+
+            // TODO:
             // The following logic might want to be implemented in another method. Reason
             // for this being that if the opponent has 3 stones remaining, the opponent
             // should automatically lose without a player needing to take away 1 or 2
             // stones. This could be implemented in the method placeStone. If so, placeStone
             // would need access to both players.
-            if (opponent.getRemainingStones().size() <= 2) {
-                opponent.setPhase(new GameOverPhase(opponent));
-                notifyObservers(); // oponent lost, no more stones need to be removed
-            }
+            opponent.getPhase().nextPhase();
         }
         return stoneRemoved;
     }
@@ -204,26 +204,27 @@ public class BoardManager extends Observable {
      * so.
      * Checks if the moved stone forms zero, one or two mill.
      *
-     * @param player   The player performing the move
-     * @param stone    The stone that should be placed.
-     * @param player   The player performing the move
+     * @param player   The player performing the move.
      * @param fromNode The origin node.
      * @param toNode   The target node.
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
+        // Check if the stone can be moved correctly
         if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 
+        // Move the stone and update GUI
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
         notifyObservers();
 
+        // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
         while (millCount > 0) {
-            // removeStone();
+            // TODO: Select stone to remove
             notifyObservers();
             millCount--;
         }

@@ -32,6 +32,7 @@ public class RuleManager {
      * @return true if move is valid, false if move is not valid
      */
     public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
+        // General possible errors
         String errors = "";
         if (fromNode == toNode)
             errors += "You can not place a stone on to itself!\n";
@@ -43,24 +44,32 @@ public class RuleManager {
             errors += "The stone on this node (id=" + fromNode.getID()
                     + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
 
+        // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
+
         if (currentPhase instanceof SettingPhase) {
             // More errors might come up.
-        } else if (currentPhase instanceof MovingPhase) {
+        }
+        else if (currentPhase instanceof MovingPhase) {
             if (!fromNode.getNeighbors().contains(toNode))
                 errors += "Can only move to neighbors!\nA stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
-        } else if (currentPhase instanceof JumpingPhase) {
+        }
+        else if (currentPhase instanceof JumpingPhase) {
             // More errors might come up.
-        } else if (currentPhase instanceof GameOverPhase) {
-            errors += "Game is already over. You may not make moves!";
-        } else {
+        }
+        else if (currentPhase instanceof GameOverPhase) {
+            errors += "Game is already over. You must not make moves!";
+        }
+        else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
-                    + player.getPhase().getClass().toString() + "\n";
+                    + player.getPhase().getClass().getSimpleName() + "\n";
         }
 
-        if (errors == "")
+        // No errors occured
+        if (errors.isEmpty())
             return true;
+
         System.out.print(errors);
         return false;
     }
@@ -77,10 +86,11 @@ public class RuleManager {
      */
     public int countMillsFormed(Stone lastPlacedStone) {
         PlayerEntity player = lastPlacedStone.getOwner();
-        int placedPos = lastPlacedStone.getNode().getID(); // Requires Node to have getIndex()
+        int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
 
         for (int[] mill : boardManager.potentialMills) {
+            // Extract potential mills that contain the position of the newly placed stone
             boolean includesPlaced = false;
             for (int pos : mill) {
                 if (pos == placedPos) {
@@ -91,6 +101,7 @@ public class RuleManager {
             if (!includesPlaced)
                 continue;
 
+            // Check if all members of the potential mill are possessed by the current player
             boolean allOwned = true;
             for (int pos : mill) {
                 Node node = boardManager.getNode(pos);
@@ -100,6 +111,7 @@ public class RuleManager {
                 }
             }
 
+            // Add one formed mill to the counter
             if (allOwned) {
                 millCount++;
                 if (millCount > 2) {
@@ -123,7 +135,7 @@ public class RuleManager {
      * @param playerBlack The second player.
      * @return true if the game is over, false otherwise.
      */
-    public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack, PlayerEntity currentPlayer) {
+    public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack) {
         // Player black won
         if (isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
             gameManager.setWinner(playerBlack);
@@ -163,10 +175,12 @@ public class RuleManager {
      * @return true if the player can't do any valid moves anymore, false otherwise.
      */
     public boolean isPlayerBlocked(PlayerEntity player) {
+        // Player can only be blocked in the moving phase
         if (!(player.getPhase() instanceof MovingPhase)) {
             return false;
         }
 
+        // Check for each stone if a neighbor node is occupied
         for (Stone stone : player.getRemainingStones()) {
             for (Node neighbor : stone.getNode().getNeighbors()) {
                 if (!(neighbor.isOccupied())) {

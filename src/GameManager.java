@@ -159,7 +159,7 @@ public class GameManager {
         }
 
         noMillTurnCounter++;
-        if (ruleManager.isGameOver(playerWhite, playerBlack, currentPlayer)) {
+        if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();
             return;
         }
@@ -174,8 +174,8 @@ public class GameManager {
      */
     public void startTurnTimer() {
         timer = new TurnTimer(timePerTurn,
-                () -> guiManager.updateTimer(timer.getTimeLeft()),
-                () -> {
+                () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
+                () -> {                                             // Happens when the time runs out
                     winner = getOpponent();
                     lossCause = LossCause.TIMEOUT;
                     guiManager.showTimeOverMsg(currentPlayer);
