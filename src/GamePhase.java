@@ -6,10 +6,14 @@ public abstract class GamePhase {
      *
      * @param playerEntity Context that uses the phase.
      */
-    protected GamePhase(PlayerEntity playerEntity) {
+    public GamePhase(PlayerEntity playerEntity) {
         this.playerEntity = playerEntity;
     }
 
-    public abstract boolean handleMove(Node fromNode, Node toNode);
-    public abstract void nextPhase();
+    public boolean handleMove(Node fromNode, Node toNode) {
+        return false;
+    }
+
+    public void nextPhase() {
+    }
 }

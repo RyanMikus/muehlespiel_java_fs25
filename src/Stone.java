@@ -6,6 +6,11 @@ public class Stone {
         this.owner = owner;
     }
 
+    /**/
+    public void moveToNode(Node node) {
+
+    }
+
     /**
      * Sets the node the stone is placed on.
      *

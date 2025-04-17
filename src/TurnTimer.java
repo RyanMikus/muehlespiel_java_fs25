@@ -43,9 +43,9 @@ public class TurnTimer {
                 if(onTimeout != null) {
                     onTimeout.run();
                 }
-            }
+            }            
         });
-
+        
         timer.start();
     }
 

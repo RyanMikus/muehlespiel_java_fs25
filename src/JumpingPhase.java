@@ -18,17 +18,6 @@ public class JumpingPhase extends GamePhase {
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
-        if (!fromNode.isOccupied()) {
-            System.out.println("Invalid origin node!");
-            return false;
-        } else if (fromNode.getStone().getOwner() != playerEntity) {
-            System.out.println("Stone is not owned by the player!");
-            return false;
-        } else if (toNode.isOccupied()) { // Potentially done in isMoveValid()!
-            System.out.println("The node is occupied!");
-            return false;
-        }
-
         return BoardManager.getInstance().moveStone(playerEntity, fromNode, toNode);
     }
 
