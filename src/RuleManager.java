@@ -1,15 +1,7 @@
 public class RuleManager {
     private static RuleManager instance;
-    private static BoardManager boardManager;
-    private static GameManager gameManager;
-
-    /**
-     * Creates a new RuleManager and initializes the other managers, by getting their instance.
-     */
-    private RuleManager() {
-        boardManager = BoardManager.getInstance();
-        gameManager = GameManager.getInstance();
-    }
+    private BoardManager boardManager;
+    private GameManager gameManager;
 
     /**
      * Creates a new Instance of this Manager, if there is none already.
@@ -21,6 +13,24 @@ public class RuleManager {
             instance = new RuleManager();
         }
         return instance;
+    }
+
+    /**
+     * Setter for the boardManager to avoid recursive constructor calls.
+     *
+     * @param boardManager The instance of the board manager.
+     */
+    public void setBoardManager(BoardManager boardManager) {
+        this.boardManager = boardManager;
+    }
+
+    /**
+     * Setter for the gameManager to avoid recursive constructor calls.
+     *
+     * @param gameManager The instance of the game manager.
+     */
+    public void setGameManager(GameManager gameManager) {
+        this.gameManager = gameManager;
     }
 
     /**

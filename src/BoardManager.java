@@ -6,7 +6,7 @@ import java.util.Map;
 public class BoardManager extends Observable {
     // region Fields
     private static BoardManager instance;
-    private final RuleManager ruleManager;
+    private RuleManager ruleManager;
     private final Map<Integer, Node> nodes;
     private final int[][] neighbors = { { 1, 9 }, { 0, 2, 4 }, { 1, 14 }, { 4, 10 }, { 1, 3, 5, 7 }, { 4, 13 },
             { 7, 11 }, { 4, 6, 8 }, { 7, 12 },
@@ -36,7 +36,6 @@ public class BoardManager extends Observable {
      * </pre>
      */
     private BoardManager() {
-        ruleManager = RuleManager.getInstance();
         nodes = new HashMap<>();
         potentialMills = new ArrayList<>();
 
@@ -119,6 +118,15 @@ public class BoardManager extends Observable {
             node1.addNeighbor(node2);
             node2.addNeighbor(node1);
         }
+    }
+
+    /**
+     * Setter for the ruleManager to avoid recursive constructor calls.
+     *
+     * @param ruleManager The instance of the rule manager.
+     */
+    public void setRuleManager(RuleManager ruleManager) {
+        this.ruleManager = ruleManager;
     }
 
     /**

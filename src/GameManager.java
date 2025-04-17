@@ -2,8 +2,8 @@ public class GameManager {
     // region Fields
     // Managers
     private static GameManager instance;
-    private final BoardManager boardManager;
-    private final RuleManager ruleManager;
+    private BoardManager boardManager;
+    private RuleManager ruleManager;
     private final GUI guiManager;
 
     // Players
@@ -33,6 +33,12 @@ public class GameManager {
         boardManager = BoardManager.getInstance();
         ruleManager = RuleManager.getInstance();
         guiManager = new GUI();
+
+        boardManager.setRuleManager(ruleManager);
+        ruleManager.setBoardManager(boardManager);
+        ruleManager.setGameManager(this);
+
+        currentPlayer = playerWhite;
     }
 
     /**
@@ -45,10 +51,6 @@ public class GameManager {
             instance = new GameManager();
         }
         return instance;
-    }
-
-    public static void main(String[] args) {
-        GameManager manager = GameManager.getInstance();
     }
 
     /**/
