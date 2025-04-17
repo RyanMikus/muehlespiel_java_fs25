@@ -142,27 +142,61 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
-        if (!ruleManager.isMoveValid()) {
+        if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             return false;
         }
 
         toNode.placeStone(stone);
         notifyObservers();
 
-        int millCount = ruleManager.countNewMillsFormed(stone);
+        int millCount = ruleManager.countMillsFormed(stone);
         while (millCount > 0) {
-            // removeStone();
-            notifyObservers();
+            System.out.println("Remove an oponents stone.");
+            notifyObservers(); // Has to be a blocking function
             millCount--;
         }
 
         return true;
     }
 
-    /**/
-    public void removeStone(Stone targetStone) {
-        // targetStone.getOwner().getPhase().nextPhase();
-        notifyObservers();
+    /**
+     * Checks if a stone can be removed, then removes it and sets the next GamePhase
+     * if needed.
+     * 
+     * @param remover    The player removing a stone.
+     * @param targetNode The node chosen by the remover to remove a stone from.
+     * @return true if stone got removed, false if removal was invalid.
+     */
+    public boolean removeStone(PlayerEntity remover, Node targetNode) {
+        boolean stoneRemoved = false;
+        Stone targetStone;
+        PlayerEntity opponent;
+        if (targetNode.isOccupied() && targetNode.getStone().getOwner() != remover) {
+            targetStone = targetNode.getStone();
+            opponent = targetStone.getOwner();
+            boolean freeStones = false; // Does the opponent have stones which are not in a mill?
+            for (Stone stone : opponent.getRemainingStones()) {
+                if (ruleManager.countMillsFormed(stone) == 0)
+                    freeStones = true;
+            }
+            if (ruleManager.countMillsFormed(targetStone) == 0 || !freeStones) {
+                opponent.removeStone(targetStone);
+                targetNode.removeStone();
+                stoneRemoved = true;
+            }
+            if (stoneRemoved && opponent.getRemainingStones().size() == 3)
+                opponent.setPhase(new JumpingPhase(opponent));
+            // The following logic might want to be implemented in another method. Reason
+            // for this being that if the opponent has 3 stones remaining, the opponent
+            // should automatically lose without a player needing to take away 1 or 2
+            // stones. This could be implemented in the method placeStone. If so, placeStone
+            // would need access to both players.
+            if (opponent.getRemainingStones().size() <= 2) {
+                opponent.setPhase(new GameOverPhase(opponent));
+                notifyObservers(); // oponent lost, no more stones need to be removed
+            }
+        }
+        return stoneRemoved;
     }
 
     /**
@@ -178,7 +212,7 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
-        if (!ruleManager.isMoveValid()) {
+        if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 
@@ -187,7 +221,7 @@ public class BoardManager extends Observable {
         fromNode.removeStone();
         notifyObservers();
 
-        int millCount = ruleManager.countNewMillsFormed(stone);
+        int millCount = ruleManager.countMillsFormed(stone);
         while (millCount > 0) {
             // removeStone();
             notifyObservers();

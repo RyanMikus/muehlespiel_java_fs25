@@ -10,6 +10,10 @@ public abstract class GamePhase {
         this.playerEntity = playerEntity;
     }
 
-    public abstract boolean handleMove(Node fromNode, Node toNode);
-    public abstract void nextPhase();
+    public boolean handleMove(Node fromNode, Node toNode) {
+        return false;
+    }
+
+    public void nextPhase() {
+    }
 }
