@@ -171,6 +171,8 @@ public class BoardManager extends Observable {
      * Checks if the moved stone forms zero, one or two mill.
      *
      * @param player   The player performing the move
+     * @param stone    The stone that should be placed.
+     * @param player   The player performing the move
      * @param fromNode The origin node.
      * @param toNode   The target node.
      * @return true if the performed move is valid, false otherwise.
