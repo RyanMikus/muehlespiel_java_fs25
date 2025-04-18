@@ -4,11 +4,13 @@ import java.awt.*;
 public class GUI {
 
     // region Fields
+    private static GameManager gameManager;
+
     private JFrame window;
     private JPanel cardPanel;
     private CardLayout cardLayout;
-    private TurnTimer turnTimer;
-    private GameManager gameManager;
+    private JLabel turnTime;
+    private JSlider slider;
 
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38); // rgb(57, 79, 88)
     private final Color BUTTON_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
@@ -38,10 +40,10 @@ public class GUI {
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        // cardPanel.add(createHomeScreen(), "Home");
-        // cardPanel.add(createMenuScreen(), "Menu");
-        // cardPanel.add(createNewGameScreen(), "newGame");
-        // cardPanel.add(createLoadGameScreen(), "loadGame");
+        cardPanel.add(createHomeScreen(), "Home");
+        cardPanel.add(createMenuScreen(), "Menu");
+        cardPanel.add(createNewGameScreen(), "newGame");
+        cardPanel.add(createLoadGameScreen(), "loadGame");
         cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
@@ -246,7 +248,7 @@ public class GUI {
         sliderLabel.setFont(TIMER_FONT);
         sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
 
-        JSlider slider = new JSlider(10, 60, 30);
+        slider = new JSlider(10, 60, 30);
         slider.setMajorTickSpacing(10);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
@@ -255,22 +257,24 @@ public class GUI {
         slider.setFont(TIMER_FONT);
         slider.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
 
-        slider.addChangeListener(e -> sliderLabel.setText("Bedenkzeit: " + slider.getValue() + "s"));
+        slider.addChangeListener(e -> {
+            sliderLabel.setText("Bedenkzeit: " + slider.getValue() + "s");
+            turnTime.setText("Verbleibende Zeit: " + slider.getValue() + "s");
+        });
 
         JButton startButton = new JButton("Spiel starten");
         styleButton(startButton);
 
         startButton.addActionListener(e -> {
-            gameManager = GameManager.getInstance();    
+            gameManager = GameManager.getInstance();
             gameManager.startGame();
         });
-            
 
         sliderPanel.add(sliderLabel);
         sliderPanel.add(slider);
         sliderPanel.add(startButton);
 
-        JLabel turnTime = new JLabel("Verbleibende Zeit: 30");
+        turnTime = new JLabel("Verbleibende Zeit: 30s");
         turnTime.setForeground(TURN_TIMER_COLOR);
         turnTime.setFont(TURN_TIMER_FONT);
         turnTime.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -279,26 +283,20 @@ public class GUI {
         timePanel.add(sliderPanel);
         timePanel.add(turnTime);
 
-        turnTimer = new TurnTimer(
-                30,
-                () -> turnTime.setText("Verbleibende Zeit: " +
-                        String.valueOf(turnTimer.getTimeLeft())),
-                () -> System.out.println("Zeit abgelaufen"));
-        turnTimer.startTimer();
-
         // board panel
         JPanel boardPanel = new JPanel();
-        boardPanel.setPreferredSize(new Dimension(900, 450));
-        boardPanel.setMinimumSize(new Dimension(900, 450));
-        boardPanel.setMaximumSize(new Dimension(900, 450));
-        boardPanel.setBackground(new Color(0, 60, 80));
-        boardPanel.setBorder(BorderFactory.createTitledBorder("Spielbrett"));
+        boardPanel.setPreferredSize(new Dimension(900, 475));
+        boardPanel.setMinimumSize(new Dimension(900, 475));
+        boardPanel.setMaximumSize(new Dimension(900, 475));
+        boardPanel.setOpaque(false);
+
+        GUIBoard guiBoard = new GUIBoard();
+        boardPanel.add(guiBoard, BorderLayout.CENTER);
 
         // button panel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-        buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         // necessary positions settings
         GridBagConstraints gbc = new GridBagConstraints();
@@ -333,11 +331,15 @@ public class GUI {
             gbc.gridy = 0;
             buttonPanel.add(button, gbc);
         }
+
+        // for debugging
+        //timePanel.setBorder(BorderFactory.createLineBorder(Color.red));
+        //boardPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+        //buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+        
         // ---------------- COMPOSE MAIN PANEL ----------------
         panel.add(timePanel);
-        panel.add(Box.createVerticalStrut(20));
         panel.add(boardPanel);
-        panel.add(Box.createVerticalStrut(20));
         panel.add(buttonPanel);
         return panel;
 
@@ -421,7 +423,7 @@ public class GUI {
     }// styleButton
 
     /**
-     * Styles a button
+     * Styles a Boardbutton
      * 
      * @param button
      */
@@ -459,12 +461,35 @@ public class GUI {
 
     /**/
     public void updateTimer(int timeLeft) {
-
+        turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
 
     /**/
     public void showTimeOverMsg(PlayerEntity currentPlayer) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Game Over");
+        dialog.setModal(true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setSize(300, 150);
+        dialog.setLocationRelativeTo(null);
 
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.RED);
+        panel.setLayout(new BorderLayout());
+
+        // JLabel label = new JLabel(currentPlayer.getName() + " hat gewonnen!",
+        // SwingConstants.CENTER);
+        JLabel label = new JLabel("xxx hat gewonnen", SwingConstants.CENTER);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+        panel.add(label, BorderLayout.CENTER);
+
+        JButton closeButton = new JButton("OK");
+        closeButton.addActionListener(e -> dialog.dispose());
+        panel.add(closeButton, BorderLayout.SOUTH);
+
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 
     /**/
@@ -472,7 +497,17 @@ public class GUI {
 
     }
 
+    /**
+     * Getter-Method for initial Time per Turn
+     * 
+     * @return int
+     */
+    public int getTimePerTurn() {
+        return slider.getValue();
+    }
+
     public static void main(String[] args) {
-        new GUI();
+        // new GUI();
+        gameManager = GameManager.getInstance();
     } // main
 } // GUi

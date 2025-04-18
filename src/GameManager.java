@@ -55,7 +55,7 @@ public class GameManager {
 
     /**/
     public void startGame() {
-        //startTurnTimer();
+        startTurnTimer();
     }
 
     /**
@@ -175,7 +175,7 @@ public class GameManager {
      * When the time runs out, the game is over and the current player loses.
      */
     public void startTurnTimer() {
-        timer = new TurnTimer(timePerTurn,
+        timer = new TurnTimer(guiManager.getTimePerTurn(),
                 () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
                 () -> {                                             // Happens when the time runs out
                     winner = getOpponent();
