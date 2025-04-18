@@ -14,7 +14,7 @@ public abstract class PlayerEntity {
      *
      * @param name The name of the player.
      */
-    public PlayerEntity(String name) {
+    protected PlayerEntity(String name) {
         this.name = name;
         this.stones = new ArrayList<>();
         this.currentPhase = new SettingPhase(this);
