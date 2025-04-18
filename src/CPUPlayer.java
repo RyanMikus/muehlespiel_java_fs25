@@ -15,10 +15,14 @@ public class CPUPlayer extends PlayerEntity {
 
     @Override
     public Node makeMove() {
-        CPUGameState state = CPUGameStateAdapter.fromPlayers(this, opponent);
-        buildGameGraph(state, lookAhead);
-        Node[] bestMove = calculateBestMove();
-        return (bestMove != null && bestMove.length == 2) ? bestMove[1] : null;
+        List<Node[]> possibleMoves = getAllPossibleMoves(this);
+        return possibleMoves.get(0)[1];
+        /*
+         * CPUGameState state = CPUGameStateAdapter.fromPlayers(this, opponent);
+         * buildGameGraph(state, lookAhead);
+         * Node[] bestMove = calculateBestMove();
+         * return (bestMove != null && bestMove.length == 2) ? bestMove[1] : null;
+         */
     }
 
     // TODO: Do we want to get rid of strategy?
