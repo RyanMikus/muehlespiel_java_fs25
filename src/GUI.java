@@ -4,7 +4,7 @@ import java.awt.*;
 public class GUI {
 
     // region Fields
-    private static GameManager gameManager;
+    private static GameManager gameManager = GameManager.getInstance();
 
     private JFrame window;
     private JPanel cardPanel;
@@ -40,10 +40,10 @@ public class GUI {
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        cardPanel.add(createHomeScreen(), "Home");
-        cardPanel.add(createMenuScreen(), "Menu");
-        cardPanel.add(createNewGameScreen(), "newGame");
-        cardPanel.add(createLoadGameScreen(), "loadGame");
+        //cardPanel.add(createHomeScreen(), "Home");
+        //cardPanel.add(createMenuScreen(), "Menu");
+        //cardPanel.add(createNewGameScreen(), "newGame");
+        //cardPanel.add(createLoadGameScreen(), "loadGame");
         cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
@@ -266,7 +266,6 @@ public class GUI {
         styleButton(startButton);
 
         startButton.addActionListener(e -> {
-            gameManager = GameManager.getInstance();
             gameManager.startGame();
         });
 

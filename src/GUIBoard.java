@@ -25,6 +25,8 @@ public class GUIBoard extends JPanel {
     private int blackStonesLeft = 9;
 
     public GUIBoard() {
+        
+        
         setPreferredSize(new Dimension(700, 500));
         setOpaque(false);
         initNodePositions();
