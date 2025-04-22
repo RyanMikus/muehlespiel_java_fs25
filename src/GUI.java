@@ -1,11 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
+import java.nio.channels.Pipe.SourceChannel;
 
 public class GUI {
 
     // region Fields
-    private static GameManager gameManager = GameManager.getInstance();
-
     private JFrame window;
     private JPanel cardPanel;
     private CardLayout cardLayout;
@@ -40,10 +39,10 @@ public class GUI {
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        //cardPanel.add(createHomeScreen(), "Home");
-        //cardPanel.add(createMenuScreen(), "Menu");
-        //cardPanel.add(createNewGameScreen(), "newGame");
-        //cardPanel.add(createLoadGameScreen(), "loadGame");
+        cardPanel.add(createHomeScreen(), "Home");
+        cardPanel.add(createMenuScreen(), "Menu");
+        cardPanel.add(createNewGameScreen(), "newGame");
+        cardPanel.add(createLoadGameScreen(), "loadGame");
         cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
@@ -266,7 +265,7 @@ public class GUI {
         styleButton(startButton);
 
         startButton.addActionListener(e -> {
-            gameManager.startGame();
+            GameManager.getInstance().startGame();
         });
 
         sliderPanel.add(sliderLabel);
@@ -507,6 +506,6 @@ public class GUI {
 
     public static void main(String[] args) {
         // new GUI();
-        gameManager = GameManager.getInstance();
+        GameManager.getInstance();
     } // main
 } // GUi

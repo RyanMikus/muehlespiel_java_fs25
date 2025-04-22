@@ -7,8 +7,8 @@ public class GameManager {
     private final GUI guiManager;
 
     // Players
-    private PlayerEntity playerWhite;
-    private PlayerEntity playerBlack;
+    private PlayerEntity playerWhite = new Player("white");
+    private PlayerEntity playerBlack = new Player("black");
     private PlayerEntity currentPlayer;
 
     public enum LossCause {
@@ -94,6 +94,17 @@ public class GameManager {
     public PlayerEntity getWinner() {
         return winner;
     }
+
+    /**
+     * Getter for the current player
+     * 
+     * @return currentPlayer
+     */
+
+    public PlayerEntity getCurrentPlayer(){
+        return currentPlayer;
+    }
+
 
     /**
      * Getter for the player that is not currently able to perform a move.
@@ -215,5 +226,9 @@ public class GameManager {
     /**/
     public void loadGame() {
 
+    }
+
+    public RuleManager getRuleManager() {
+        return ruleManager;
     }
 }

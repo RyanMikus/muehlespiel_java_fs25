@@ -44,34 +44,35 @@ public class RuleManager {
     public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
         // General possible errors
         String errors = "";
+
+        if (fromNode != null) {
+            if (!fromNode.isOccupied())
+                errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
+            if (fromNode.getStone().getOwner() != player)
+                errors += "The stone on this node (id=" + fromNode.getID()
+                        + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
+
+        }
+
         if (fromNode == toNode)
             errors += "You can not place a stone on to itself!\n";
         if (toNode.isOccupied())
             errors += "You can not place a stone on to another stone!\n";
-        if (!fromNode.isOccupied())
-            errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
-        if (fromNode.getStone().getOwner() != player)
-            errors += "The stone on this node (id=" + fromNode.getID()
-                    + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
 
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
 
         if (currentPhase instanceof SettingPhase) {
             // More errors might come up.
-        }
-        else if (currentPhase instanceof MovingPhase) {
+        } else if (currentPhase instanceof MovingPhase) {
             if (!fromNode.getNeighbors().contains(toNode))
                 errors += "Can only move to neighbors!\nA stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
-        }
-        else if (currentPhase instanceof JumpingPhase) {
+        } else if (currentPhase instanceof JumpingPhase) {
             // More errors might come up.
-        }
-        else if (currentPhase instanceof GameOverPhase) {
+        } else if (currentPhase instanceof GameOverPhase) {
             errors += "Game is already over. You must not make moves!";
-        }
-        else {
+        } else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
                     + player.getPhase().getClass().getSimpleName() + "\n";
         }
@@ -111,7 +112,8 @@ public class RuleManager {
             if (!includesPlaced)
                 continue;
 
-            // Check if all members of the potential mill are possessed by the current player
+            // Check if all members of the potential mill are possessed by the current
+            // player
             boolean allOwned = true;
             for (int pos : mill) {
                 Node node = boardManager.getNode(pos);
@@ -166,7 +168,7 @@ public class RuleManager {
         return false;
     }
 
-    //region Helpermethods GameOver
+    // region Helpermethods GameOver
     /**
      * Checks if the player is in the game over phase (only 2 stones left)
      *
@@ -212,5 +214,5 @@ public class RuleManager {
         gameManager.lossCause = GameManager.LossCause.STALEMATE;
         return GameManager.getInstance().getNoMillTurnCounter() >= 20;
     }
-    //endregion
+    // endregion
 }
