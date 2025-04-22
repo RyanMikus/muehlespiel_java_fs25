@@ -39,7 +39,7 @@ public class GameManager {
         boardManager.setRuleManager(ruleManager);
         ruleManager.setBoardManager(boardManager);
         ruleManager.setGameManager(this);
-        guiManager.setGameManager(this);
+        guiManager.initializeManagers(this, boardManager);
 
         currentPlayer = playerWhite;
     }

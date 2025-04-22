@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.nio.channels.Pipe.SourceChannel;
 
-public class GUI {
+public class GUI implements Observer{
 
     // region Fields
     private JFrame window;
@@ -13,6 +12,7 @@ public class GUI {
 
     private static GUI instance;
     private GameManager gameManager;
+    private BoardManager boardManager;
 
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38); // rgb(57, 79, 88)
     private final Color BUTTON_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
@@ -27,6 +27,11 @@ public class GUI {
     private final String BOARD_IMAGE_PATH = "/resources/muehle_board.png";
     // endregion
 
+    //region Initialization
+    /**
+     * Initializes the GUI.
+     * Creates the window, main panel and all different screens.
+     */
     public GUI() {
         window = new JFrame("Mühle");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,14 +70,26 @@ public class GUI {
         return instance;
     }
 
-    public void setGameManager(GameManager gameManager){
-        this.gameManager = gameManager;
-    }
-
     /**
-     * Creates the Home Screen JPanel
+     * Setter for the managers to avoid recursive constructor calls.
+     *
+     * @param gameManager The instance of the game manager.
+     * @param boardManager The instance of the board manager.
+     */
+    public void initializeManagers(GameManager gameManager, BoardManager boardManager){
+        this.gameManager = gameManager;
+        this.boardManager = boardManager;
+
+        // Register to the observable
+        boardManager.addObserver(this);
+    }
+    //endregion
+
+    //region Screen creation
+    /**
+     * Creates the Home Screen JPanel.
      * 
-     * @return JPanel
+     * @return The home screen panel.
      */
     private JPanel createHomeScreen() {
 
@@ -106,7 +123,7 @@ public class GUI {
     /**
      * Creates the Menu Screen JPanel
      * 
-     * @return JPanel
+     * @return The menu screen panel.
      */
     private JPanel createMenuScreen() {
 
@@ -149,9 +166,9 @@ public class GUI {
     } // createMenuScreen
 
     /**
-     * Creates the New Game Screen JPanel
+     * Creates the New Game Screen JPanel.
      * 
-     * @return JPanel
+     * @return The new game screen panel.
      */
     private JPanel createNewGameScreen() {
 
@@ -195,9 +212,9 @@ public class GUI {
     } // createNewGameScreen
 
     /**
-     * Creates the Load Screen Screen JPanel
+     * Creates the Load Screen JPanel.
      * 
-     * @return JPanel
+     * @return The load screen panel.
      */
     private JPanel createLoadGameScreen() {
 
@@ -240,9 +257,9 @@ public class GUI {
     } // createNewGameScreen
 
     /**
-     * Creates the Board Screen Screen JPanel
+     * Creates the Board Screen JPanel.
      * 
-     * @return JPanel
+     * @return The board screen panel.
      */
     private JPanel createBoardScreen() {
 
@@ -362,12 +379,14 @@ public class GUI {
         return panel;
 
     } // createBoardScreen
+    //endregion
 
+    //region Design
     /**
      * Creates a specific image which is shown on multiple Screens.
      * This method is only used to avoid code duplicates.
      * 
-     * @return JLabel
+     * @return The created image as a label.
      */
     private JLabel createHomeImage() {
 
@@ -388,7 +407,7 @@ public class GUI {
      * Creates a specific logo which is shown on multiple Screens.
      * This method is only used to avoid code duplicates.
      * 
-     * @return JLabel
+     * @return The created logo as a label.
      */
     private JLabel createHomeLogo() {
 
@@ -406,9 +425,10 @@ public class GUI {
     } // createHomeLogo
 
     /**
-     * Styles a button
+     * Styles a button by changing its colors, font, opacity and border.
+     * Also changes the behaviour on hovering over the button.
      * 
-     * @param button
+     * @param button The button that should get styled.
      */
     public void styleButton(JButton button) {
 
@@ -441,9 +461,10 @@ public class GUI {
     }// styleButton
 
     /**
-     * Styles a Boardbutton
+     * Styles a button by changing its colors, font, opacity and border.
+     * Also changes the behaviour on hovering over the button.
      * 
-     * @param button
+     * @param button The button that should get styled.
      */
     public void styleBoardButton(JButton button) {
 
@@ -476,13 +497,23 @@ public class GUI {
             }
         });
     }// styleBoardButton
+    //endregion
 
-    /**/
+    //region Events
+    /**
+     * Updates the text displaying the remaining time to perform a move.
+     *
+     * @param timeLeft The value that should get displayed.
+     */
     public void updateTimer(int timeLeft) {
         turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
 
-    /**/
+    /**
+     * TODO: Implement different Messages depending on the way the game ended. Get correct winner.
+     * TODO: Either modify this method or implement showGameOverScreen correctly.
+     * @param currentPlayer
+     */
     public void showTimeOverMsg(PlayerEntity currentPlayer) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Game Over");
@@ -510,7 +541,10 @@ public class GUI {
         dialog.setVisible(true);
     }
 
-    /**/
+    /**
+     * TODO: Implement correctly or modify showTimeOverMsg
+     * @param winnerEntity
+     */
     public void showGameOverScreen(PlayerEntity winnerEntity) {
 
     }
@@ -518,11 +552,21 @@ public class GUI {
     /**
      * Getter-Method for initial Time per Turn
      * 
-     * @return int
+     * @return The maximum time each player should have to perform a move, set by a slider.
      */
     public int getTimePerTurn() {
         return slider.getValue();
     }
+
+    /**
+     * This method gets called, whenever the board gets updated (by its observable).
+     * Repaints the GUI.
+     */
+    @Override
+    public void update() {
+        // TODO: Update GUI according to current board.
+    }
+    //endregion
 
     public static void main(String[] args) {
         // new GUI();
