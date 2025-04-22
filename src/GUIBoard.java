@@ -10,6 +10,7 @@ public class GUIBoard extends JPanel {
 
     private Integer fromNodeId = null;
 
+    private GameManager gameManager;
 
     private final Map<Integer, Point> nodePositions = new HashMap<>();
     private final Map<Integer, Color> placedStones = new HashMap<>();
@@ -27,9 +28,10 @@ public class GUIBoard extends JPanel {
     private int whiteStonesLeft = 9;
     private int blackStonesLeft = 9;
 
-    public GUIBoard() {
-        
-        
+    public GUIBoard(GameManager gameManager) {
+
+        this.gameManager = gameManager;
+
         setPreferredSize(new Dimension(700, 500));
         setOpaque(false);
         initNodePositions();
@@ -37,89 +39,96 @@ public class GUIBoard extends JPanel {
 
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                for (int i = 0; i < whiteStonesLeft; i++) {
-                    if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                        draggedColor = Color.WHITE;
-                        dragPosition = e.getPoint();
-                        return;
+                if (gameManager.getGameStatus()) {
+                    for (int i = 0; i < whiteStonesLeft; i++) {
+                        if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                            draggedColor = Color.WHITE;
+                            dragPosition = e.getPoint();
+                            return;
+                        }
                     }
-                }
-                for (int i = 0; i < blackStonesLeft; i++) {
-                    if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                        draggedColor = Color.BLACK;
-                        dragPosition = e.getPoint();
-                        return;
+                    for (int i = 0; i < blackStonesLeft; i++) {
+                        if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                            draggedColor = Color.BLACK;
+                            dragPosition = e.getPoint();
+                            return;
+                        }
                     }
-                }
-                for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
-                    int nodeId = entry.getKey();
-                    Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
-                    if (p.distance(e.getPoint()) < 15 && placedStones.containsKey(nodeId)) {
-                        draggedColor = placedStones.get(nodeId);
-                        dragPosition = e.getPoint();
-                        fromNodeId = nodeId;
-                        return;
+                    for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
+                        int nodeId = entry.getKey();
+                        Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
+                        if (p.distance(e.getPoint()) < 15 && placedStones.containsKey(nodeId)) {
+                            draggedColor = placedStones.get(nodeId);
+                            dragPosition = e.getPoint();
+                            fromNodeId = nodeId;
+                            return;
+                        }
                     }
                 }
 
             }
 
             public void mouseReleased(MouseEvent e) {
-                if (draggedColor == null) return;
-            
-                boolean placed = false;
-            
-                // Position prüfen
-                for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
-                    int nodeId = entry.getKey();
-                    Point nodePoint = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
-            
-                    // Prüfe: Ist Cursor nah genug an einem Knoten?
-                    if (nodePoint.distance(e.getPoint()) < 15) {
-                        Node toNode = BoardManager.getInstance().getNode(nodeId);
-                        Node fromNode = null;  // beim Setzen aus der Leiste kommt der Stein von "außerhalb"
-            
-                        PlayerEntity currentPlayer = GameManager.getInstance().getCurrentPlayer();
-            
-                        // Debug
-                        System.out.println("Versuche Stein auf Node " + nodeId + " zu setzen");
-                        System.out.println("Belegt laut Logik: " + toNode.isOccupied());
-            
-                        // Prüfung: Ist der Zug erlaubt?
-                        if (GameManager.getInstance().getRuleManager().isMoveValid(currentPlayer, fromNode, toNode)) {
-                            GameManager.getInstance().handleMove(currentPlayer, fromNode, toNode);
-            
-                            // GUI aktualisieren
-                            placedStones.put(nodeId, draggedColor);
-                            if (draggedColor == Color.WHITE) whiteStonesLeft--;
-                            else if (draggedColor == Color.BLACK) blackStonesLeft--;
-            
-                            placed = true;
-                            GameManager.getInstance().switchPlayer();
-                            break;
-                        } else {
-                            System.out.println("Zug war ungültig. Kein Platzieren.");
+                if (gameManager.getGameStatus()) {
+                    if (draggedColor == null)
+                        return;
+
+                    boolean placed = false;
+
+                    // check positions
+                    for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
+                        int nodeId = entry.getKey();
+                        Point nodePoint = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
+
+                        if (nodePoint.distance(e.getPoint()) < 15) {
+                            Node toNode = BoardManager.getInstance().getNode(nodeId);
+                            Node fromNode = null; // stone is not "on" board
+
+                            PlayerEntity currentPlayer = GameManager.getInstance().getCurrentPlayer();
+
+                            // Debug
+                            // System.out.println("Versuche Stein auf Node " + nodeId + " zu setzen");
+                            // System.out.println("Belegt laut Logik: " + toNode.isOccupied());
+
+                            // check if move is valid
+                            if (gameManager.getRuleManager().isMoveValid(currentPlayer, fromNode, toNode)) {
+                                gameManager.handleMove(currentPlayer, fromNode, toNode);
+
+                                // update GUI
+                                placedStones.put(nodeId, draggedColor);
+                                if (draggedColor == Color.WHITE)
+                                    whiteStonesLeft--;
+                                else if (draggedColor == Color.BLACK)
+                                    blackStonesLeft--;
+
+                                placed = true;
+                                gameManager.switchPlayer();
+                                break;
+                            }
                         }
                     }
+
+                    // Reset der Drag-Infos
+                    dragPosition = null;
+                    draggedColor = null;
+
+                    // Neu zeichnen
+                    repaint();
                 }
-            
-                // Reset der Drag-Infos
-                dragPosition = null;
-                draggedColor = null;
-            
-                // Neu zeichnen
-                repaint();
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e) {
-                if (draggedColor != null) {
-                    dragPosition = e.getPoint();
-                    repaint();
+                if(gameManager.getGameStatus()){
+                    if (draggedColor != null) {
+                        dragPosition = e.getPoint();
+                        repaint();
+                    }
                 }
             }
         });
+
     }
 
     private void initNodePositions() {
@@ -181,6 +190,14 @@ public class GUIBoard extends JPanel {
             g2.fillOval(x - 5, y - 5, 10, 10);
         }
 
+        for (Map.Entry<Integer, Color> stoneEntry : placedStones.entrySet()) {
+            Point p = nodePositions.get(stoneEntry.getKey());
+            int x = offsetX + p.x;
+            int y = offsetY + p.y;
+            g2.setColor(stoneEntry.getValue());
+            g2.fillOval(x - stoneRadius, y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
+        }
+
         g2.setColor(Color.WHITE);
         for (int i = 0; i < whiteStonesLeft; i++) {
             Point p = whiteStoneSlots.get(i);
@@ -193,17 +210,10 @@ public class GUIBoard extends JPanel {
             g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
         }
 
-        for (Map.Entry<Integer, Color> stoneEntry : placedStones.entrySet()) {
-            Point p = nodePositions.get(stoneEntry.getKey());
-            int x = offsetX + p.x;
-            int y = offsetY + p.y;
-            g2.setColor(stoneEntry.getValue());
-            g2.fillOval(x - stoneRadius, y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
-        }
-
         if (draggedColor != null && dragPosition != null) {
             g2.setColor(draggedColor);
             g2.fillOval(dragPosition.x - stoneRadius, dragPosition.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
         }
     }
+
 }

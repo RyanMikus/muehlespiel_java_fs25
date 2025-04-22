@@ -11,6 +11,9 @@ public class GUI {
     private JLabel turnTime;
     private JSlider slider;
 
+    private static GUI instance;
+    private GameManager gameManager;
+
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38); // rgb(57, 79, 88)
     private final Color BUTTON_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
     private final Color TIMER_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
@@ -43,12 +46,28 @@ public class GUI {
         cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
         cardPanel.add(createLoadGameScreen(), "loadGame");
-        cardPanel.add(createBoardScreen(), "Board");
+        //cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
         window.setVisible(true);
 
     } // GUI
+
+    /**
+     * Creates a new Instance of this Manager, if there is none already.
+     *
+     * @return Instance if one already existed, creates a new one otherwise.
+     */
+    public static GUI getInstance() {
+        if (instance == null) {
+            instance = new GUI();
+        }
+        return instance;
+    }
+
+    public void setGameManager(GameManager gameManager){
+        this.gameManager = gameManager;
+    }
 
     /**
      * Creates the Home Screen JPanel
@@ -158,6 +177,7 @@ public class GUI {
 
             String screenName = screenNames[i];
             button.addActionListener(e -> {
+                cardPanel.add(createBoardScreen(), "Board");
                 cardLayout.show(cardPanel, screenName);
             });
 
@@ -265,7 +285,7 @@ public class GUI {
         styleButton(startButton);
 
         startButton.addActionListener(e -> {
-            GameManager.getInstance().startGame();
+            gameManager.startGame();
         });
 
         sliderPanel.add(sliderLabel);
@@ -288,7 +308,7 @@ public class GUI {
         boardPanel.setMaximumSize(new Dimension(900, 475));
         boardPanel.setOpaque(false);
 
-        GUIBoard guiBoard = new GUIBoard();
+        GUIBoard guiBoard = new GUIBoard(gameManager);
         boardPanel.add(guiBoard, BorderLayout.CENTER);
 
         // button panel

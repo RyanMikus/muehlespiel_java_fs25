@@ -20,6 +20,8 @@ public class GameManager {
     }
     public LossCause lossCause = LossCause.NONE;
 
+    private boolean gameStatus; // true when game is running
+
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
     private int timePerTurn;
@@ -32,11 +34,12 @@ public class GameManager {
     private GameManager() {
         boardManager = BoardManager.getInstance();
         ruleManager = RuleManager.getInstance();
-        guiManager = new GUI();
+        guiManager = GUI.getInstance();
 
         boardManager.setRuleManager(ruleManager);
         ruleManager.setBoardManager(boardManager);
         ruleManager.setGameManager(this);
+        guiManager.setGameManager(this);
 
         currentPlayer = playerWhite;
     }
@@ -55,6 +58,7 @@ public class GameManager {
 
     /**/
     public void startGame() {
+        gameStatus = true;
         startTurnTimer();
     }
 
@@ -230,5 +234,9 @@ public class GameManager {
 
     public RuleManager getRuleManager() {
         return ruleManager;
+    }
+
+    public boolean getGameStatus(){
+        return gameStatus;
     }
 }
