@@ -2,7 +2,7 @@ import java.util.List;
 
 public class CPUGameStateAdapter {
 
-    public static CPUGameState fromPlayers(PlayerEntity cpu, PlayerEntity opponent) {
+    public static CPUGameState fromPlayers(ImaginativePlayer cpu, ImaginativePlayer opponent) {
         byte[] cpuStones = getStonePositions(cpu);
         byte[] opponentStones = getStonePositions(opponent);
 
@@ -12,7 +12,7 @@ public class CPUGameStateAdapter {
         return new CPUGameState(cpuStones, opponentStones, cpuState, opponentState);
     }
 
-    private static byte[] getStonePositions(PlayerEntity player) {
+    private static byte[] getStonePositions(ImaginativePlayer player) {
         List<Stone> stones = player.getRemainingStones();
         byte[] positions = new byte[stones.size()];
         for (int i = 0; i < stones.size(); i++) {

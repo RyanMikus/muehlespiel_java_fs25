@@ -81,6 +81,41 @@ public class RuleManager {
         return false;
     }
 
+    public boolean isRemovalValid(PlayerEntity remover, Node targetNode) {
+        boolean removalValid = false;
+        Stone targetStone;
+        PlayerEntity opponent;
+
+        // Only remove stone, if the targetNode is valid
+        if (targetNode.isOccupied() && targetNode.getStone().getOwner() == remover) {
+            targetStone = targetNode.getStone();
+            opponent = targetStone.getOwner();
+            boolean freeStones = false;
+
+            // Check if the opponent has a stone, that is not part of a mill
+            for (Stone stone : opponent.getRemainingStones()) {
+                if (countMillsFormed(stone) == 0) {
+                    freeStones = true;
+                    break;
+                }
+            }
+
+            // Remove stone only if the target is not part of a mill
+            // Exception if all remaining stones of the opponent are part of a mill
+            if (countMillsFormed(targetStone) == 0 || !freeStones)
+                removalValid = true;
+
+            // TODO:
+            // The following logic might want to be implemented in another method. Reason
+            // for this being that if the opponent has 3 stones remaining, the opponent
+            // should automatically lose without a player needing to take away 1 or 2
+            // stones. This could be implemented in the method placeStone. If so, placeStone
+            // would need access to both players.
+            // opponent.getPhase().nextPhase();
+        }
+        return removalValid;
+    }
+
     /**
      * Counts the new mills formed with the newly placed or moved stone.
      * Only gets called when a move is made, otherwise multiple mills would be

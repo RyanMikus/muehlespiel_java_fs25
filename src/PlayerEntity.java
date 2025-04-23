@@ -2,10 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PlayerEntity {
-    private String name;
-    private List<Stone> stones;
-    private GamePhase currentPhase;
-    private int placedStones = 0;
+    protected String name;
+    protected List<Stone> stones;
+    protected GamePhase currentPhase;
+    protected int placedStones = 0;
 
     /**
      * Constructs a player with the given name.

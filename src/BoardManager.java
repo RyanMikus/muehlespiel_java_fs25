@@ -165,44 +165,18 @@ public class BoardManager extends Observable {
      * Checks if a stone can be removed, then removes it and sets the next GamePhase
      * if needed.
      * 
-     * @param remover The player removing a stone.
+     * @param remover    The player removing a stone.
      * @param targetNode The node chosen by the remover to remove a stone from.
      * @return true if stone got removed, false if removal was invalid.
      */
     public boolean removeStone(PlayerEntity remover, Node targetNode) {
         boolean stoneRemoved = false;
-        Stone targetStone;
-        PlayerEntity opponent;
-
-        // Only remove stone, if the targetNode is valid
-        if (targetNode.isOccupied() && targetNode.getStone().getOwner() != remover) {
-            targetStone = targetNode.getStone();
-            opponent = targetStone.getOwner();
-            boolean freeStones = false;
-
-            // Check if the opponent has a stone, that is not part of a mill
-            for (Stone stone : opponent.getRemainingStones()) {
-                if (ruleManager.countMillsFormed(stone) == 0) {
-                    freeStones = true;
-                    break;
-                }
-            }
-
-            // Remove stone only if the target is not part of a mill
-            // Exception if all remaining stones of the opponent are part of a mill
-            if (ruleManager.countMillsFormed(targetStone) == 0 || !freeStones) {
-                targetNode.removeStone();
-                opponent.removeStone(targetStone);
-                stoneRemoved = true;
-            }
-
-            // TODO:
-            // The following logic might want to be implemented in another method. Reason
-            // for this being that if the opponent has 3 stones remaining, the opponent
-            // should automatically lose without a player needing to take away 1 or 2
-            // stones. This could be implemented in the method placeStone. If so, placeStone
-            // would need access to both players.
-            opponent.getPhase().nextPhase();
+        if (ruleManager.isRemovalValid(remover, targetNode)) {
+            Stone targetStone = targetNode.getStone();
+            PlayerEntity opponent = targetStone.getOwner();
+            targetNode.removeStone();
+            opponent.removeStone(targetStone);
+            stoneRemoved = true;
         }
         return stoneRemoved;
     }
