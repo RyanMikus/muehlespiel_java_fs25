@@ -40,19 +40,23 @@ public class GUIBoard extends JPanel {
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if (gameManager.getGameStatus()) {
-                    for (int i = 0; i < whiteStonesLeft; i++) {
-                        if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                            draggedColor = Color.WHITE;
-                            dragPosition = e.getPoint();
-                            return;
+                    if (gameManager.getCurrentPlayer().getName() == "white"){
+                        for (int i = 0; i < whiteStonesLeft; i++) {
+                            if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                                draggedColor = Color.WHITE;
+                                dragPosition = e.getPoint();
+                                return;
+                            }
                         }
                     }
-                    for (int i = 0; i < blackStonesLeft; i++) {
-                        if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                            draggedColor = Color.BLACK;
-                            dragPosition = e.getPoint();
-                            return;
-                        }
+                    if (gameManager.getCurrentPlayer().getName() == "black"){
+                        for (int i = 0; i < blackStonesLeft; i++) {
+                            if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                                draggedColor = Color.BLACK;
+                                dragPosition = e.getPoint();
+                                return;
+                            }
+                    }
                     }
                     for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
                         int nodeId = entry.getKey();
@@ -85,7 +89,7 @@ public class GUIBoard extends JPanel {
                             Node fromNode = null; // stone is not "on" board
 
                             PlayerEntity currentPlayer = GameManager.getInstance().getCurrentPlayer();
-
+                            System.out.println(currentPlayer.getName());
                             // Debug
                             // System.out.println("Versuche Stein auf Node " + nodeId + " zu setzen");
                             // System.out.println("Belegt laut Logik: " + toNode.isOccupied());
@@ -102,7 +106,6 @@ public class GUIBoard extends JPanel {
                                     blackStonesLeft--;
 
                                 placed = true;
-                                gameManager.switchPlayer();
                                 break;
                             }
                         }
