@@ -100,9 +100,9 @@ public class GameManager {
     }
 
     /**
-     * Getter for the current player
+     * Getter for the player that is currently able to perform a move.
      * 
-     * @return currentPlayer
+     * @return playerWhite or playerBlack
      */
 
     public PlayerEntity getCurrentPlayer(){

@@ -51,7 +51,6 @@ public class GUI implements Observer{
         cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
         cardPanel.add(createLoadGameScreen(), "loadGame");
-        //cardPanel.add(createBoardScreen(), "Board");
 
         window.add(cardPanel);
         window.setVisible(true);
