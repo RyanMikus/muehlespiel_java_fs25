@@ -212,7 +212,7 @@ public class RuleManager {
      */
     public boolean isStalemate() {
         gameManager.lossCause = GameManager.LossCause.STALEMATE;
-        return GameManager.getInstance().getNoMillTurnCounter() >= 20;
+        return GameManager.getInstance().getNoMillTurnCounter() >= 50;
     }
     // endregion
 }
