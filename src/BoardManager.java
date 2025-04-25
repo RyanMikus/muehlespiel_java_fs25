@@ -155,6 +155,8 @@ public class BoardManager extends Observable {
             return false;
         }
 
+        
+
         // Place stone and update GUI
         toNode.placeStone(stone);
         notifyObservers();

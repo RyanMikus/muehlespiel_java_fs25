@@ -179,7 +179,6 @@ public class GameManager {
         }
 
         
-        noMillTurnCounter++;
         if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();
             return;
