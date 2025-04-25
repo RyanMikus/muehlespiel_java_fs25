@@ -273,6 +273,8 @@ public class GUIBoard extends JPanel{
         }
     }
 
+    //test comment
+
     /**
      * When GUI-Board is initialized, this method will be called automaticly
      * to draw the Lines, Nodes and Stones.
