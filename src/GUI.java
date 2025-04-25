@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Consumer;
 
 public class GUI implements Observer{
 
@@ -566,10 +567,17 @@ public class GUI implements Observer{
     }
 
     /**
-     * 
+     * Initiates the remove stone process by enabling remove mode in the GUI board.
+     * This allows the player to select an opponent's stone for removal.
+     * The provided callback will be triggered once the removal attempt is
+     * completed.
+     *
+     * @param callback A Consumer<Boolean> that receives true if a stone was
+     *                 successfully removed,
+     *                 or false if the removal was aborted or invalid.
      */
-    public void removeStone(){
-        guiBoard.removeStone();
+    public void removeStone(Consumer<Boolean> callback) {
+        guiBoard.removeStone(callback);
     }
 
     /**

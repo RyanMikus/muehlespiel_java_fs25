@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,9 @@ public class GUIBoard extends JPanel{
 
     private Integer fromNodeId = null;
     private Node fromNode = null;
+    
     private boolean removeMode = false;
+    private Consumer<Boolean> onRemoveCallback = null;
 
     private final Map<Integer, Point> nodePositions = new HashMap<>();
     private final int boardSize = 400;
@@ -240,8 +243,9 @@ public class GUIBoard extends JPanel{
      * Listeners are blocked and only the remoing listeners are 
      * available
      */
-    public void removeStone(){
+    public void removeStone(Consumer<Boolean> onSuccess){
         removeMode = true;
+        onRemoveCallback = onSuccess;
     }
 
     /**
@@ -266,6 +270,17 @@ public class GUIBoard extends JPanel{
                         removeMode = false;
                         currentRemover = null;
                         repaint();
+    
+                        if (onRemoveCallback != null) {
+                            onRemoveCallback.accept(true);
+                            onRemoveCallback = null;
+                        }
+                    } 
+                    else {
+                        if (onRemoveCallback != null) {
+                            onRemoveCallback.accept(false);
+                            onRemoveCallback = null;
+                        }
                     }
                 }
                 return;
@@ -273,7 +288,7 @@ public class GUIBoard extends JPanel{
         }
     }
 
-    //test comment
+    
 
     /**
      * When GUI-Board is initialized, this method will be called automaticly

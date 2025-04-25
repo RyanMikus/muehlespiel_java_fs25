@@ -161,14 +161,44 @@ public class BoardManager extends Observable {
 
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
-        while (millCount > 0) {
+        startRemoveLoop(millCount);
+
+        
+        /**
+         * while (millCount > 0) {
             System.out.println("Remove an opponents stone.");
             guiManager.removeStone();
             notifyObservers(); // Has to be a blocking function
             millCount--;
         }
+         */
+
+
 
         return true;
+    }
+
+    /**
+    * Starts a loop to remove a given number of opponent stones from the board.
+    * This is typically triggered when a player forms a mill and is allowed to remove
+    * one or more of the opponent's stones.
+    * The method is recursive and will call itself until the specified number of
+    * stones have been successfully removed. It uses the GUI to allow the player
+    * to select which stone to remove. After each successful removal, observers are notified.
+    *
+    * @param remaining The number of stones that still need to be removed.
+    */
+    public void startRemoveLoop(int remaining) {
+        if (remaining <= 0) return;
+    
+        guiManager.removeStone(success -> {
+            if (success) {
+                notifyObservers();
+                startRemoveLoop(remaining - 1);
+            } else {
+                System.out.println("Remove failed.");
+            }
+        });
     }
 
     /**
