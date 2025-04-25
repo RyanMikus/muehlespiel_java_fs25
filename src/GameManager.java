@@ -76,6 +76,7 @@ public class GameManager {
      * Leads to the Game over screen with the winner as a parameter.
      */
     public void gameOver() {
+        stopTurnTimer();
         guiManager.showGameOverScreen(winner);
     }
 
@@ -104,11 +105,9 @@ public class GameManager {
      * 
      * @return playerWhite or playerBlack
      */
-
     public PlayerEntity getCurrentPlayer(){
         return currentPlayer;
     }
-
 
     /**
      * Getter for the player that is not currently able to perform a move.
@@ -135,6 +134,13 @@ public class GameManager {
     }
 
     /**
+     * Increments the amount of turns no mill was formed by 1.
+     */
+    public void incNoMillTurnCounter() {
+        noMillTurnCounter++;
+    }
+
+    /**
      * Resets the amount of turns that no mill was formed to 0.
      */
     public void resetNoMillTurnCounter() {
@@ -158,11 +164,30 @@ public class GameManager {
     public void setTimePerTurn(int timePerTurn) {
         this.timePerTurn = timePerTurn;
     }
+
+    /**
+     * Getter for the ruleManager.
+     *
+     * @return The RuleManager-Instance.
+     */
+    public RuleManager getRuleManager() {
+        return ruleManager;
+    }
+
+    /**
+     * Getter for the current status of the game.
+     *
+     * @return true if the game is running, false otherwise.
+     */
+    public boolean getGameStatus(){
+        return gameStatus;
+    }
     //endregion
 
     /**
      * Delegates the move done by a player to the current phase the player is in.
      * Only switches the player, if the move was successful.
+     * Terminates the game, if a Gameover-condition is met.
      *
      * @param player   The player making a move.
      * @param fromNode The origin node.
@@ -175,7 +200,6 @@ public class GameManager {
             return;
         }
 
-        noMillTurnCounter++;
         if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();
             return;
@@ -184,6 +208,7 @@ public class GameManager {
         switchPlayer();
     }
 
+    //region Timer
     /**
      * Starts a new timer with the set time per turn.
      * Updates the timer label on every tick (time per tick set in the timer class).
@@ -211,6 +236,7 @@ public class GameManager {
             timer.stopTimer();
         }
     }
+    //endregion
 
     /**/
     public void undoMove() {
@@ -230,13 +256,5 @@ public class GameManager {
     /**/
     public void loadGame() {
 
-    }
-
-    public RuleManager getRuleManager() {
-        return ruleManager;
-    }
-
-    public boolean getGameStatus(){
-        return gameStatus;
     }
 }

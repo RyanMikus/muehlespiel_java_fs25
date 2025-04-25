@@ -549,8 +549,8 @@ public class GUI implements Observer{
     }
 
     /**
-     * Getter-Method for initial Time per Turn
-     * 
+     * Getter for initial Time per Turn.
+     *
      * @return The maximum time each player should have to perform a move, set by a slider.
      */
     public int getTimePerTurn() {
