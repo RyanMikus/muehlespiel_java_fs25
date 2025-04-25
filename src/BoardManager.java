@@ -155,7 +155,7 @@ public class BoardManager extends Observable {
             return false;
         }
 
-        
+        GameManager.getInstance().incNoMillTurnCounter();
 
         // Place stone and update GUI
         toNode.placeStone(stone);
@@ -164,6 +164,10 @@ public class BoardManager extends Observable {
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
         startRemoveLoop(millCount);
+        // Reset the noMillTurnCounter when a mill was formed
+        if(millCount > 0){
+            GameManager.getInstance().resetNoMillTurnCounter();
+        }
 
         
         /**
@@ -265,6 +269,8 @@ public class BoardManager extends Observable {
             return false;
         }
 
+        GameManager.getInstance().incNoMillTurnCounter();
+
         // Move the stone and update GUI
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
@@ -273,11 +279,17 @@ public class BoardManager extends Observable {
 
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
-        while (millCount > 0) {
+        startRemoveLoop(millCount);
+        // Reset the noMillTurnCounter when a mill was formed
+        if(millCount > 0){
+            GameManager.getInstance().resetNoMillTurnCounter();
+        }
+
+        /*while (millCount > 0) {
             // TODO: Select stone to remove
             notifyObservers();
             millCount--;
-        }
+        }*/
 
         return true;
     }
