@@ -167,7 +167,6 @@ public class RuleManager {
     }
 
     // region Helpermethods GameOver
-
     /**
      * Checks if the player is in the game over phase (only 2 stones left).
      * Sets the loss cause to STONECOUNT if so.
@@ -216,7 +215,7 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
-        boolean stalemate = gameManager.getNoMillTurnCounter() >= 20;
+        boolean stalemate = gameManager.getNoMillTurnCounter() >= 50;
         if(stalemate) {
             gameManager.lossCause = GameManager.LossCause.STALEMATE;
         }

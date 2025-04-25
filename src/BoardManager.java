@@ -7,6 +7,7 @@ public class BoardManager extends Observable {
     // region Fields
     private static BoardManager instance;
     private RuleManager ruleManager;
+    private GUI guiManager;
     private final Map<Integer, Node> nodes;
     private final int[][] neighbors = { { 1, 9 }, { 0, 2, 4 }, { 1, 14 }, { 4, 10 }, { 1, 3, 5, 7 }, { 4, 13 },
             { 7, 11 }, { 4, 6, 8 }, { 7, 12 },
@@ -130,6 +131,15 @@ public class BoardManager extends Observable {
     }
 
     /**
+     * Setter for the guiManager to avoid recursive constructor calls.
+     *
+     * @param guiManager The instance of the GUI.
+     */
+    public void setGuiManager(GUI guiManager) {
+        this.guiManager = guiManager;
+    }
+
+    /**
      * Checks if the performed move is valid and places the stone on the target node
      * if so.
      * Checks if the placed stone forms a new mill.
@@ -145,20 +155,52 @@ public class BoardManager extends Observable {
             return false;
         }
 
+        
+
         // Place stone and update GUI
         toNode.placeStone(stone);
         notifyObservers();
 
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
-        while (millCount > 0) {
+        startRemoveLoop(millCount);
+
+        
+        /**
+         * while (millCount > 0) {
             System.out.println("Remove an opponents stone.");
-            // TODO: Select stone to remove
+            guiManager.removeStone();
             notifyObservers(); // Has to be a blocking function
             millCount--;
         }
+         */
+
+
 
         return true;
+    }
+
+    /**
+    * Starts a loop to remove a given number of opponent stones from the board.
+    * This is typically triggered when a player forms a mill and is allowed to remove
+    * one or more of the opponent's stones.
+    * The method is recursive and will call itself until the specified number of
+    * stones have been successfully removed. It uses the GUI to allow the player
+    * to select which stone to remove. After each successful removal, observers are notified.
+    *
+    * @param remaining The number of stones that still need to be removed.
+    */
+    public void startRemoveLoop(int remaining) {
+        if (remaining <= 0) return;
+    
+        guiManager.removeStone(success -> {
+            if (success) {
+                notifyObservers();
+                startRemoveLoop(remaining - 1);
+            } else {
+                System.out.println("Remove failed.");
+            }
+        });
     }
 
     /**

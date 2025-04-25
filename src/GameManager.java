@@ -37,6 +37,7 @@ public class GameManager {
         guiManager = GUI.getInstance();
 
         boardManager.setRuleManager(ruleManager);
+        boardManager.setGuiManager(guiManager);
         ruleManager.setBoardManager(boardManager);
         ruleManager.setGameManager(this);
         guiManager.initializeManagers(this, boardManager);
@@ -182,6 +183,14 @@ public class GameManager {
     public boolean getGameStatus(){
         return gameStatus;
     }
+
+    /**
+     * Getter for the boardManager.
+     * @return The BoardManager-Instance
+     */
+    public BoardManager getBoardManager(){
+        return boardManager;
+    }
     //endregion
 
     /**
@@ -199,6 +208,7 @@ public class GameManager {
         if(!moveSuccessful) {
             return;
         }
+
 
         if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();

@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Consumer;
 
 public class GUI implements Observer{
 
@@ -9,6 +10,7 @@ public class GUI implements Observer{
     private CardLayout cardLayout;
     private JLabel turnTime;
     private JSlider slider;
+    private GUIBoard guiBoard;
 
     private static GUI instance;
     private GameManager gameManager;
@@ -33,6 +35,7 @@ public class GUI implements Observer{
      * Creates the window, main panel and all different screens.
      */
     public GUI() {
+        
         window = new JFrame("Mühle");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(900, 750);
@@ -47,10 +50,10 @@ public class GUI implements Observer{
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        cardPanel.add(createHomeScreen(), "Home");
-        cardPanel.add(createMenuScreen(), "Menu");
+        //cardPanel.add(createHomeScreen(), "Home");
+        //cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
-        cardPanel.add(createLoadGameScreen(), "loadGame");
+        //cardPanel.add(createLoadGameScreen(), "loadGame");
 
         window.add(cardPanel);
         window.setVisible(true);
@@ -299,9 +302,15 @@ public class GUI implements Observer{
 
         JButton startButton = new JButton("Spiel starten");
         styleButton(startButton);
-
+        
         startButton.addActionListener(e -> {
-            gameManager.startGame();
+            if(!gameManager.getGameStatus()){
+                slider.setEnabled(false);
+                gameManager.startGame();
+            }
+            else{
+                System.out.println("Game is already running!");
+            }
         });
 
         sliderPanel.add(sliderLabel);
@@ -324,7 +333,7 @@ public class GUI implements Observer{
         boardPanel.setMaximumSize(new Dimension(900, 475));
         boardPanel.setOpaque(false);
 
-        GUIBoard guiBoard = new GUIBoard(gameManager);
+        guiBoard = new GUIBoard(gameManager, boardManager);
         boardPanel.add(guiBoard, BorderLayout.CENTER);
 
         // button panel
@@ -558,17 +567,30 @@ public class GUI implements Observer{
     }
 
     /**
+     * Initiates the remove stone process by enabling remove mode in the GUI board.
+     * This allows the player to select an opponent's stone for removal.
+     * The provided callback will be triggered once the removal attempt is
+     * completed.
+     *
+     * @param callback A Consumer<Boolean> that receives true if a stone was
+     *                 successfully removed,
+     *                 or false if the removal was aborted or invalid.
+     */
+    public void removeStone(Consumer<Boolean> callback) {
+        guiBoard.removeStone(callback);
+    }
+
+    /**
      * This method gets called, whenever the board gets updated (by its observable).
      * Repaints the GUI.
      */
     @Override
     public void update() {
-        // TODO: Update GUI according to current board.
+        guiBoard.repaint();
     }
     //endregion
 
     public static void main(String[] args) {
-        // new GUI();
         GameManager.getInstance();
     } // main
 } // GUi
