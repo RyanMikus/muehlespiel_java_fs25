@@ -7,8 +7,9 @@ public class GameManager {
     private final GUI guiManager;
 
     // Players
-    private PlayerEntity playerWhite = new Player("white");
-    private PlayerEntity playerBlack = new Player("black");
+    private PlayerEntity playerWhite;
+    private PlayerEntity playerBlack;
+    private PlayerEntity CPUPlayer;
     private PlayerEntity currentPlayer;
 
     public enum LossCause {
@@ -42,7 +43,7 @@ public class GameManager {
         ruleManager.setGameManager(this);
         guiManager.initializeManagers(this, boardManager);
 
-        currentPlayer = playerWhite;
+        //currentPlayer = playerWhite;
     }
 
     /**
@@ -58,9 +59,30 @@ public class GameManager {
     }
 
     /**/
-    public void startGame() {
-        gameStatus = true;
-        startTurnTimer();
+    public void startGame(String mode) {
+        if (mode.equalsIgnoreCase("singleplayer")) {
+            playerWhite = new Player("white");
+            CPUPlayer = new CPUPlayer("black");
+            gameStatus = true;
+            currentPlayer = playerWhite;
+            startTurnTimer();
+        } else if (mode.equalsIgnoreCase("multiplayer")) {
+            playerWhite = new Player("white");
+            playerBlack = new Player("black");
+            gameStatus = true;
+            currentPlayer = playerWhite;
+            startTurnTimer();
+        } else {
+            System.out.println("Error 404... Spiel konnte nicht gestartet werden");
+        }
+    }
+
+    /**
+     * 
+     */
+    public void resetGame(String mode) {
+        gameStatus = false;
+        startGame(mode);
     }
 
     /**
@@ -78,7 +100,10 @@ public class GameManager {
      */
     public void gameOver() {
         stopTurnTimer();
-        guiManager.showGameOverScreen(winner);
+        gameStatus = false;
+        String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
+        System.out.println(strLossCause); 
+        guiManager.showGameOverMsg(winner, strLossCause);
     }
 
     //region Setters and Getters
@@ -89,6 +114,7 @@ public class GameManager {
      */
     public void setWinner(PlayerEntity winner) {
         this.winner = winner;
+        System.out.println("Gewinner : " + winner.getName());
     }
 
     /**
@@ -191,6 +217,7 @@ public class GameManager {
     public BoardManager getBoardManager(){
         return boardManager;
     }
+
     //endregion
 
     /**
@@ -230,7 +257,8 @@ public class GameManager {
                 () -> {                                             // Happens when the time runs out
                     winner = getOpponent();
                     lossCause = LossCause.TIMEOUT;
-                    guiManager.showTimeOverMsg(currentPlayer);
+                    String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
+                    guiManager.showGameOverMsg(winner, strLossCause);
                     gameOver();
                 }
         );
@@ -267,4 +295,6 @@ public class GameManager {
     public void loadGame() {
 
     }
+
+    
 }

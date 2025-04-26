@@ -1,8 +1,10 @@
 import javax.swing.*;
+
 import java.awt.*;
+import java.io.File;
 import java.util.function.Consumer;
 
-public class GUI implements Observer{
+public class GUI implements Observer {
 
     // region Fields
     private JFrame window;
@@ -16,26 +18,32 @@ public class GUI implements Observer{
     private GameManager gameManager;
     private BoardManager boardManager;
 
-    private final Color BACKGROUND_COLOR = new Color(17, 35, 38); // rgb(57, 79, 88)
-    private final Color BUTTON_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
-    private final Color TIMER_COLOR = new Color(250, 240, 220); // rgb(195, 156, 92)
-    private final Color TURN_TIMER_COLOR = new Color(255, 230, 0); // rgb(255, 230, 0)
+    // Color-Picker for RGB Values : rgb(0, 255, 4)
+    private final Color BACKGROUND_COLOR = new Color(17, 35, 38);
+    private final Color BUTTON_COLOR = new Color(250, 240, 220);
+    private final Color TIMER_COLOR = new Color(250, 240, 220);
+    private final Color TURN_TIMER_COLOR = new Color(255, 230, 0);
+    private final Color GAME_OVER_BACKGROUND_COLOR = new Color(47, 47, 47);
+    private final Color GAME_OVER_BUTTON_COLOR = new Color(0, 255, 0);
 
     private final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 20);
     private final Font TIMER_FONT = new Font("Arial", Font.BOLD, 16);
     private final Font TURN_TIMER_FONT = new Font("Arial", Font.BOLD, 20);
+    private final Font GAME_OVER_BUTTON_FONT = new Font("Arial", Font.BOLD, 20);
 
     private final String LOGO_PATH = "/resources/muehle_logo.png";
     private final String BOARD_IMAGE_PATH = "/resources/muehle_board.png";
+    private final String DRAW_GIF_PATH = "/resources/draw.gif";
+    private final String WIN_GIF_PATH = "/resources/win.gif";
     // endregion
 
-    //region Initialization
+    // region Initialization
     /**
      * Initializes the GUI.
      * Creates the window, main panel and all different screens.
      */
     public GUI() {
-        
+
         window = new JFrame("Mühle");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(900, 750);
@@ -50,10 +58,10 @@ public class GUI implements Observer{
         cardPanel.setBackground(BACKGROUND_COLOR);
 
         // screens
-        //cardPanel.add(createHomeScreen(), "Home");
-        //cardPanel.add(createMenuScreen(), "Menu");
+        cardPanel.add(createHomeScreen(), "Home");
+        cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
-        //cardPanel.add(createLoadGameScreen(), "loadGame");
+        cardPanel.add(createLoadGameScreen(), "loadGame");
 
         window.add(cardPanel);
         window.setVisible(true);
@@ -75,19 +83,19 @@ public class GUI implements Observer{
     /**
      * Setter for the managers to avoid recursive constructor calls.
      *
-     * @param gameManager The instance of the game manager.
+     * @param gameManager  The instance of the game manager.
      * @param boardManager The instance of the board manager.
      */
-    public void initializeManagers(GameManager gameManager, BoardManager boardManager){
+    public void initializeManagers(GameManager gameManager, BoardManager boardManager) {
         this.gameManager = gameManager;
         this.boardManager = boardManager;
 
         // Register to the observable
         boardManager.addObserver(this);
     }
-    //endregion
+    // endregion
 
-    //region Screen creation
+    // region Screen creation
     /**
      * Creates the Home Screen JPanel.
      * 
@@ -188,16 +196,27 @@ public class GUI implements Observer{
         gbc.gridy = 0; // same row
 
         String[] buttonTexts = { "einzelspieler", "mehrspieler", "zurück" };
-        String[] screenNames = { "Board", "Board", "Menu" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
             styleButton(button);
 
-            String screenName = screenNames[i];
+            int buttonIndex = i;
             button.addActionListener(e -> {
-                cardPanel.add(createBoardScreen(), "Board");
-                cardLayout.show(cardPanel, screenName);
+                switch (buttonIndex) {
+                    case 0:
+                        cardPanel.add(createBoardScreen("singleplayer"), "Board");
+                        cardLayout.show(cardPanel, "Board");
+                        break;
+                    case 1:
+                        cardPanel.add(createBoardScreen("multiplayer"), "Board");
+                        cardLayout.show(cardPanel, "Board");
+                        break;
+                    case 2:
+                        cardLayout.show(cardPanel, "Menu");
+                        break;
+
+                }
             });
 
             gbc.gridx = i;
@@ -263,7 +282,7 @@ public class GUI implements Observer{
      * 
      * @return The board screen panel.
      */
-    private JPanel createBoardScreen() {
+    private JPanel createBoardScreen(String mode) {
 
         // main Panel Board Screen
         JPanel panel = new JPanel();
@@ -302,13 +321,12 @@ public class GUI implements Observer{
 
         JButton startButton = new JButton("Spiel starten");
         styleButton(startButton);
-        
+
         startButton.addActionListener(e -> {
-            if(!gameManager.getGameStatus()){
+            if (!gameManager.getGameStatus()) {
                 slider.setEnabled(false);
-                gameManager.startGame();
-            }
-            else{
+                gameManager.startGame(mode);
+            } else {
                 System.out.println("Game is already running!");
             }
         });
@@ -355,17 +373,23 @@ public class GUI implements Observer{
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
+                        gameManager.undoMove();
                         break;
                     case 1:
+                        gameManager.redoMove();
                         break;
                     case 2:
+                        gameManager.saveGame();
                         break;
                     case 3:
+                        gameManager.loadGame();
                         break;
                     case 4:
+                        // TODO implement rules (optional)
                         break;
                     case 5:
                         cardLayout.show(cardPanel, "Menu");
+                        // TODO implement reset Game
                         break;
                 }
             });
@@ -376,10 +400,10 @@ public class GUI implements Observer{
         }
 
         // for debugging
-        //timePanel.setBorder(BorderFactory.createLineBorder(Color.red));
-        //boardPanel.setBorder(BorderFactory.createLineBorder(Color.red));
-        //buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
-        
+        // timePanel.setBorder(BorderFactory.createLineBorder(Color.red));
+        // boardPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+        // buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+
         // ---------------- COMPOSE MAIN PANEL ----------------
         panel.add(timePanel);
         panel.add(boardPanel);
@@ -387,9 +411,9 @@ public class GUI implements Observer{
         return panel;
 
     } // createBoardScreen
-    //endregion
+      // endregion
 
-    //region Design
+    // region Design
     /**
      * Creates a specific image which is shown on multiple Screens.
      * This method is only used to avoid code duplicates.
@@ -505,9 +529,48 @@ public class GUI implements Observer{
             }
         });
     }// styleBoardButton
-    //endregion
 
-    //region Events
+    /**
+     * Styles a button by changing its colors, font, opacity and border.
+     * Also changes the behaviour on hovering over the button.
+     * 
+     * @param button The button that should get styled.
+     */
+    public void styleGameOverMsgButton(JButton button) {
+
+        // Style
+        button.setPreferredSize(new Dimension(200, 50));
+        button.setMinimumSize(new Dimension(200, 50));
+        button.setMaximumSize(new Dimension(200, 50));
+        button.setBackground(GAME_OVER_BUTTON_COLOR);
+        button.setForeground(GAME_OVER_BACKGROUND_COLOR);
+        button.setFont(BUTTON_FONT);
+        button.setText(button.getText().toUpperCase());
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.setBorder(BorderFactory.createLineBorder(GAME_OVER_BUTTON_COLOR, 3));
+        button.setFocusPainted(false);
+
+        // Hover
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(GAME_OVER_BACKGROUND_COLOR);
+                button.setForeground(GAME_OVER_BUTTON_COLOR);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(GAME_OVER_BUTTON_COLOR);
+                button.setForeground(GAME_OVER_BACKGROUND_COLOR);
+            }
+        });
+    }// styleBoardButton
+
+    // endregion
+
+    // region Events
     /**
      * Updates the text displaying the remaining time to perform a move.
      *
@@ -518,49 +581,120 @@ public class GUI implements Observer{
     }
 
     /**
-     * TODO: Implement different Messages depending on the way the game ended. Get correct winner.
-     * TODO: Either modify this method or implement showGameOverScreen correctly.
+     * Build the Game Over Pop-Up Window. Depending on the way the game
+     * ends, the Window will show different Messages.
+     * 
      * @param currentPlayer
      */
-    public void showTimeOverMsg(PlayerEntity currentPlayer) {
+    public void showGameOverMsg(PlayerEntity currentPlayer, String lossCause) {
+
         JDialog dialog = new JDialog();
         dialog.setTitle("Game Over");
         dialog.setModal(true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setSize(300, 150);
+        dialog.setSize(600, 600);
         dialog.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.RED);
-        panel.setLayout(new BorderLayout());
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(GAME_OVER_BACKGROUND_COLOR);
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        // JLabel label = new JLabel(currentPlayer.getName() + " hat gewonnen!",
-        // SwingConstants.CENTER);
-        JLabel label = new JLabel("xxx hat gewonnen", SwingConstants.CENTER);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(label, BorderLayout.CENTER);
+        JLabel topText = new JLabel("GAME OVER", SwingConstants.CENTER);
+        topText.setFont(new Font("Arial", Font.BOLD, 70));
+        topText.setForeground(Color.WHITE);
+        topText.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton closeButton = new JButton("OK");
-        closeButton.addActionListener(e -> dialog.dispose());
-        panel.add(closeButton, BorderLayout.SOUTH);
+        JLabel gifLabel = new JLabel();
+        gifLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gifLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gifLabel.setPreferredSize(new Dimension(250, 250));
+        gifLabel.setMaximumSize(new Dimension(250, 250));
+        gifLabel.setMinimumSize(new Dimension(250, 250));
 
-        dialog.add(panel);
+        JLabel winnerText = new JLabel();
+        winnerText.setFont(new Font("Arial", Font.BOLD, 50));
+        winnerText.setForeground(Color.WHITE);
+        winnerText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel infoText = new JLabel();
+        infoText.setFont(new Font("Arial", Font.BOLD, 20));
+        infoText.setForeground(Color.WHITE);
+        infoText.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        infoText.setAlignmentX(Component.CENTER_ALIGNMENT);
+        infoText.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JButton newGameButton = new JButton("Neues Spiel");
+        newGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        styleGameOverMsgButton(newGameButton);
+
+        newGameButton.addActionListener(e -> {
+            if (gameManager.getCurrentPlayer() instanceof Player && gameManager.getOpponent() instanceof Player) {
+                gameManager.resetGame("multiplayer");
+                dialog.dispose();
+            } else {
+                gameManager.resetGame("singleplayer");
+                dialog.dispose();
+            }
+
+        });
+
+        String winner;
+        String looser;
+        Image winGif = (new ImageIcon(getClass().getResource(WIN_GIF_PATH))).getImage().getScaledInstance(250, 250,
+                Image.SCALE_DEFAULT);
+        Image drawGif = (new ImageIcon(getClass().getResource(DRAW_GIF_PATH))).getImage().getScaledInstance(250, 250,
+                Image.SCALE_DEFAULT);
+
+        if (gameManager.getWinner().getName().equalsIgnoreCase("white")) {
+            winner = "Weiss";
+            looser = "Schwarz";
+        } else {
+            winner = "Schwarz";
+            looser = "Weiss";
+        }
+
+        switch (lossCause) {
+            case "STONECOUNT":
+                gifLabel.setIcon(new ImageIcon(winGif));
+                winnerText.setText("Sieger: " + winner);
+                infoText.setText("Siegursache: " + looser + " hat weniger als 3 Steine");
+                break;
+            case "BLOCKED":
+                gifLabel.setIcon(new ImageIcon(winGif));
+                winnerText.setText("Sieger: " + winner);
+                infoText.setText("Siegursache: " + looser + " wurde blockiert. Keine Züge mehr möglich");
+                break;
+            case "STALEMATE":
+                gifLabel.setIcon(new ImageIcon(drawGif));
+                winnerText.setText("Unentschieden");
+                infoText.setText("Während 20 Zügen wurde keine Mühle gebildet");
+                break;
+            case "TIMEOUT":
+                gifLabel.setIcon(new ImageIcon(winGif));
+                winnerText.setText("Sieger: " + winner);
+                infoText.setText("Siegursache: Spielzeit von " + looser + " abgelaufen");
+                break;
+        }
+
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(topText);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mainPanel.add(gifLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mainPanel.add(winnerText);
+        mainPanel.add(infoText);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        mainPanel.add(newGameButton);
+
+        dialog.add(mainPanel);
         dialog.setVisible(true);
-    }
-
-    /**
-     * TODO: Implement correctly or modify showTimeOverMsg
-     * @param winnerEntity
-     */
-    public void showGameOverScreen(PlayerEntity winnerEntity) {
-
     }
 
     /**
      * Getter for initial Time per Turn.
      *
-     * @return The maximum time each player should have to perform a move, set by a slider.
+     * @return The maximum time each player should have to perform a move, set by a
+     *         slider.
      */
     public int getTimePerTurn() {
         return slider.getValue();
@@ -588,7 +722,7 @@ public class GUI implements Observer{
     public void update() {
         guiBoard.repaint();
     }
-    //endregion
+    // endregion
 
     public static void main(String[] args) {
         GameManager.getInstance();

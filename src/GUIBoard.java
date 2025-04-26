@@ -134,7 +134,7 @@ public class GUIBoard extends JPanel{
                         PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
 
                         // debug
-                        System.out.println("  MR - Current Player -> " + currentPlayer.getName());
+                        //System.out.println("  MR - Current Player -> " + currentPlayer.getName());
 
                         // check if move is valid
                         if (gameManager.getRuleManager().isMoveValid(currentPlayer, fromNode, toNode)) {
@@ -255,7 +255,9 @@ public class GUIBoard extends JPanel{
      */
     public void removeStoneHandler(Point targetPoint){
         PlayerEntity currentRemover = gameManager.getOpponent();
-        System.out.println("RSM - currentRemover -> " + currentRemover.getName());
+        
+        // debug
+        //System.out.println("RSM - currentRemover -> " + currentRemover.getName());
 
         for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
             int nodeId = entry.getKey();

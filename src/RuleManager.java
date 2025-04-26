@@ -54,7 +54,7 @@ public class RuleManager {
         }
         if(fromNode == toNode)
             errors += "You can not place a stone on to itself!\n";
-        if(toNode.isOccupied())
+        if(fromNode != toNode && toNode.isOccupied())
             errors += "You can not place a stone on to another stone!\n";
 
         // Errors specific to phases
@@ -123,6 +123,9 @@ public class RuleManager {
 
             // Add one formed mill to the counter
             if(allOwned) {
+                //debug
+                //System.out.println("Mühle erkannt");
+                
                 millCount++;
                 if(millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
@@ -215,7 +218,7 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
-        boolean stalemate = gameManager.getNoMillTurnCounter() >= 50;
+        boolean stalemate = gameManager.getNoMillTurnCounter() >= 20;
         if(stalemate) {
             gameManager.lossCause = GameManager.LossCause.STALEMATE;
         }

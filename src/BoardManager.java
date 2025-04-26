@@ -8,7 +8,7 @@ public class BoardManager extends Observable {
     private static BoardManager instance;
     private RuleManager ruleManager;
     private GUI guiManager;
-    private final Map<Integer, Node> nodes;
+    private Map<Integer, Node> nodes;
     private final int[][] neighbors = { { 1, 9 }, { 0, 2, 4 }, { 1, 14 }, { 4, 10 }, { 1, 3, 5, 7 }, { 4, 13 },
             { 7, 11 }, { 4, 6, 8 }, { 7, 12 },
             { 0, 10, 21 }, { 3, 9, 11, 18 }, { 6, 10, 15 }, { 8, 13, 17 }, { 5, 12, 14, 20 }, { 2, 13, 23 }, { 11, 16 },
@@ -155,8 +155,6 @@ public class BoardManager extends Observable {
             return false;
         }
 
-        
-
         // Place stone and update GUI
         toNode.placeStone(stone);
         notifyObservers();
@@ -174,9 +172,7 @@ public class BoardManager extends Observable {
             millCount--;
         }
          */
-
-
-
+        
         return true;
     }
 
@@ -196,6 +192,10 @@ public class BoardManager extends Observable {
         guiManager.removeStone(success -> {
             if (success) {
                 notifyObservers();
+
+                // debug
+                //System.out.println("Stein entfernt");
+
                 startRemoveLoop(remaining - 1);
             } else {
                 System.out.println("Remove failed.");
@@ -271,13 +271,20 @@ public class BoardManager extends Observable {
         fromNode.removeStone();
         notifyObservers();
 
+        //debug
+        //System.out.println("Stein verschoben Player: " + player.getName());
+
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
-        while (millCount > 0) {
+        startRemoveLoop(millCount);
+
+        /**
+         * while (millCount > 0) {
             // TODO: Select stone to remove
             notifyObservers();
             millCount--;
         }
+         */
 
         return true;
     }
