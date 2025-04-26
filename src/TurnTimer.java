@@ -75,4 +75,13 @@ public class TurnTimer {
     public int getTimeLeft() {
         return timeLeft;
     }
+
+    /**
+     * Sets the remaining time left to perform a move.
+     *
+     * @param timeLeft The remaining time that should be set.
+     */
+    public void setTimeLeft(int timeLeft) {
+        this.timeLeft = timeLeft;
+    }
 }

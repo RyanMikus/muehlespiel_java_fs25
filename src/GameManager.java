@@ -2,9 +2,10 @@ public class GameManager {
     // region Fields
     // Managers
     private static GameManager instance;
-    private BoardManager boardManager;
-    private RuleManager ruleManager;
+    private final BoardManager boardManager;
+    private final RuleManager ruleManager;
     private final GUI guiManager;
+    private final History history;
 
     // Players
     private PlayerEntity playerWhite;
@@ -18,6 +19,7 @@ public class GameManager {
         STALEMATE,
         TIMEOUT
     }
+
     public LossCause lossCause = LossCause.NONE;
 
     private PlayerEntity winner;
@@ -25,6 +27,8 @@ public class GameManager {
     private int timePerTurn;
     private TurnTimer timer;
     // endregion
+
+    //region Initialization
 
     /**
      * Initialize managers
@@ -38,7 +42,7 @@ public class GameManager {
         ruleManager.setBoardManager(boardManager);
         ruleManager.setGameManager(this);
 
-        currentPlayer = playerWhite;
+        history = new History();
     }
 
     /**
@@ -47,15 +51,29 @@ public class GameManager {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static GameManager getInstance() {
-        if (instance == null) {
+        if(instance == null) {
             instance = new GameManager();
         }
         return instance;
     }
 
+    //endregion
+
+    //region Gameflow
+
     /**/
     public void startGame() {
-        //startTurnTimer();
+        // Initialize players
+        // TODO: Second player can be CPU or another player depending on playing Singleplayer or Multiplayer
+        playerWhite = new Player("White");
+        playerBlack = new CPUPlayer("Black");
+        currentPlayer = playerWhite;
+
+        // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
+        Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
+        history.addMove(initialMove);
+
+        startTurnTimer();
     }
 
     /**
@@ -68,6 +86,31 @@ public class GameManager {
     }
 
     /**
+     * Delegates the move done by a player to the current phase the player is in.
+     * Saves the last move and switches the player, if the move was successful.
+     *
+     * @param player   The player making a move.
+     * @param fromNode The origin node.
+     * @param toNode   The target node.
+     */
+    public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
+        boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
+
+        if(!moveSuccessful) {
+            return;
+        }
+
+        noMillTurnCounter++;
+        if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+            gameOver();
+            return;
+        }
+
+        saveMove();
+        switchPlayer();
+    }
+
+    /**
      * Gets called when a loss condition gets fulfilled.
      * Leads to the Game over screen with the winner as a parameter.
      */
@@ -75,7 +118,10 @@ public class GameManager {
         guiManager.showGameOverScreen(winner);
     }
 
-    //region Setters and Getters
+    //endregion
+
+    //region Setters / Getters
+
     /**
      * Setter for the player that has won the game.
      *
@@ -104,8 +150,7 @@ public class GameManager {
     public PlayerEntity getOpponent() {
         if(currentPlayer == playerWhite) {
             return playerBlack;
-        }
-        else {
+        } else {
             return playerWhite;
         }
     }
@@ -145,29 +190,7 @@ public class GameManager {
     }
     //endregion
 
-    /**
-     * Delegates the move done by a player to the current phase the player is in.
-     * Only switches the player, if the move was successful.
-     *
-     * @param player   The player making a move.
-     * @param fromNode The origin node.
-     * @param toNode   The target node.
-     */
-    public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
-        boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
-
-        if(!moveSuccessful) {
-            return;
-        }
-
-        noMillTurnCounter++;
-        if (ruleManager.isGameOver(playerWhite, playerBlack)) {
-            gameOver();
-            return;
-        }
-
-        switchPlayer();
-    }
+    //region Timer
 
     /**
      * Starts a new timer with the set time per turn.
@@ -197,14 +220,67 @@ public class GameManager {
         }
     }
 
-    /**/
-    public void undoMove() {
+    //endregion
 
+    //region Save / Restore
+
+    /**
+     * Adds the current state of the game to the History (Memento).
+     * This includes both players, the current state of the board, the number of moves no mill was formed
+     * and the time left for the move.
+     */
+    public void saveMove() {
+        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter, timer.getTimeLeft());
+        history.addMove(move);
     }
 
-    /**/
-    public void redoMove() {
+    /**
+     * Undoes a move, restoring the state before the last performed move, if there is a undo move.
+     *
+     * @see #loadMove(Move)
+     */
+    public void undoMove() {
+        Move lastMove = history.undoMove();
+        if(lastMove != null) {
+            loadMove(lastMove);
+        }
+    }
 
+    /**
+     * Redoes a move, restoring the state that was undone prior, if there is a move to redo.
+     *
+     * @see #loadMove(Move)
+     */
+    public void redoMove() {
+        Move nextMove = history.redoMove();
+        if(nextMove != null) {
+            loadMove(nextMove);
+        }
+    }
+
+    /**
+     * Helper-Method for undoing or redoing a move.
+     * Resets all Parameters that got changed after performing a move.
+     *
+     * @param move The move that should be loaded. Can be an undo or redo move.
+     * @see #undoMove()
+     * @see #redoMove()
+     */
+    private void loadMove(Move move) {
+        // Restore players and set the current player
+        currentPlayer = move.getCurrentPlayer();
+        if(currentPlayer.getName().equalsIgnoreCase("white")) {
+            playerWhite = currentPlayer;
+            playerBlack = move.getOpponent();
+        } else {
+            playerBlack = currentPlayer;
+            playerWhite = move.getOpponent();
+        }
+
+        // Restore the single parameters that get updated each move.
+        boardManager.setBoard(move.getBoardSnapshot());
+        noMillTurnCounter = move.getNoMillTurnCounter();
+        timer.setTimeLeft(move.getTimeLeft());
     }
 
     /**/
@@ -216,4 +292,6 @@ public class GameManager {
     public void loadGame() {
 
     }
+
+    // endregion
 }
