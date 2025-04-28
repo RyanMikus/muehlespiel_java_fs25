@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImaginativePlayer extends PlayerEntity {
-    public RuleManager ruleManager;
+    private RuleManager ruleManager;
     private PlayerEntity player;
 
     public ImaginativePlayer(PlayerEntity playerSelf, RuleManager ruleManager) {
@@ -50,10 +50,13 @@ public class ImaginativePlayer extends PlayerEntity {
         return possibleMoves;
     }
 
-    /**/
-    @Override
-    public Node makeMove() {
-        return null;
+    public List<Node> getAllPossibleRemovals(PlayerEntity opponent) {
+        List<Node> possibleRemovals = new ArrayList<>();
+        for (Stone stone : opponent.getRemainingStones()) {
+            if (ruleManager.isRemovalValid(this, stone.getNode())) {
+                possibleRemovals.add(stone.getNode());
+            }
+        }
+        return possibleRemovals;
     }
-
 }

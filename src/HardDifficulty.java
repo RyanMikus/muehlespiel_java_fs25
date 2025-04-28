@@ -9,7 +9,12 @@ public class HardDifficulty implements DifficultyStrategy {
 
     /**/
     @Override
-    public Node[] calculateMove(PlayerEntity player, PlayerEntity opponent) {
+    public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
+        return null;
+    }
+
+    @Override
+    public Node calculateRemoval(ImaginativePlayer player, ImaginativePlayer opponent) {
         return null;
     }
 }

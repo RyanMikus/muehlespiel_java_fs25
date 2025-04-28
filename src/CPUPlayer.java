@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class CPUPlayer extends PlayerEntity {
     private DifficultyStrategy strategy;
     private PlayerEntity opponent;
@@ -12,14 +9,12 @@ public class CPUPlayer extends PlayerEntity {
         this.ruleManager = ruleManager;
     }
 
-    @Override
-    public Node makeMove() {
+    public Node[] makeMove() {
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this, ruleManager);
         ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
-        strategy.buildGameTree(imaginativeSelf, imaginativeOpponent);
+        // strategy.buildGameTree(imaginativeSelf, imaginativeOpponent);
         Node[] move = strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
-        // TODO: do the actual move
-        return null;
+        return move;
     }
 
     public void setDifficulty(DifficultyStrategy strategy) {

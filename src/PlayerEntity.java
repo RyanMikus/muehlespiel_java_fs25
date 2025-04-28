@@ -20,9 +20,6 @@ public abstract class PlayerEntity {
         this.currentPhase = new SettingPhase(this);
     }
 
-    /**/
-    public abstract Node makeMove();
-
     /**
      * Adds a stone to the players stone list.
      *

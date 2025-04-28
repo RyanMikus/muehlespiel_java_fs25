@@ -6,7 +6,7 @@ public class GameTree {
 
     public TreeNode buildGameTree(ImaginativePlayer cpuPlayer, ImaginativePlayer opponentPlayer, byte lookAhead) {
         CPUGameState initialState = CPUGameStateAdapter.fromPlayers(cpuPlayer, opponentPlayer);
-        this.ruleManager = cpuPlayer.ruleManager;
+        // this.ruleManager = cpuPlayer.ruleManager; // not public anymore
         return buildRecursive(initialState, cpuPlayer, opponentPlayer, lookAhead);
     }
 

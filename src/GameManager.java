@@ -18,6 +18,7 @@ public class GameManager {
         STALEMATE,
         TIMEOUT
     }
+
     public LossCause lossCause = LossCause.NONE;
 
     private PlayerEntity winner;
@@ -55,7 +56,7 @@ public class GameManager {
 
     /**/
     public void startGame() {
-        //startTurnTimer();
+        // startTurnTimer();
     }
 
     /**
@@ -75,7 +76,7 @@ public class GameManager {
         guiManager.showGameOverScreen(winner);
     }
 
-    //region Setters and Getters
+    // region Setters and Getters
     /**
      * Setter for the player that has won the game.
      *
@@ -102,10 +103,9 @@ public class GameManager {
      * @return playerWhite if the current player is playerBlack and vice versa.
      */
     public PlayerEntity getOpponent() {
-        if(currentPlayer == playerWhite) {
+        if (currentPlayer == playerWhite) {
             return playerBlack;
-        }
-        else {
+        } else {
             return playerWhite;
         }
     }
@@ -143,7 +143,7 @@ public class GameManager {
     public void setTimePerTurn(int timePerTurn) {
         this.timePerTurn = timePerTurn;
     }
-    //endregion
+    // endregion
 
     /**
      * Delegates the move done by a player to the current phase the player is in.
@@ -154,9 +154,14 @@ public class GameManager {
      * @param toNode   The target node.
      */
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
+        if (player instanceof CPUPlayer) {
+            Node[] move = ((CPUPlayer) player).makeMove();
+            fromNode = move[0];
+            toNode = move[1];
+        }
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
 
-        if(!moveSuccessful) {
+        if (!moveSuccessful) {
             return;
         }
 
@@ -176,14 +181,13 @@ public class GameManager {
      */
     public void startTurnTimer() {
         timer = new TurnTimer(timePerTurn,
-                () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
-                () -> {                                             // Happens when the time runs out
+                () -> guiManager.updateTimer(timer.getTimeLeft()), // Happens each Tick
+                () -> { // Happens when the time runs out
                     winner = getOpponent();
                     lossCause = LossCause.TIMEOUT;
                     guiManager.showTimeOverMsg(currentPlayer);
                     gameOver();
-                }
-        );
+                });
 
         timer.startTimer();
     }
@@ -192,7 +196,7 @@ public class GameManager {
      * Stops the timer, if it is initialized correctly.
      */
     public void stopTurnTimer() {
-        if(timer != null) {
+        if (timer != null) {
             timer.stopTimer();
         }
     }

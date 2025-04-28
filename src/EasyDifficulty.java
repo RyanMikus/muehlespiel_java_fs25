@@ -7,20 +7,21 @@ public class EasyDifficulty implements DifficultyStrategy {
 
     @Override
     public void buildGameTree(ImaginativePlayer imaginativeCPUPlayer, ImaginativePlayer imaginativeOpponent) {
-        GameTree gameTree = new GameTree();
-        root = gameTree.buildGameTree(imaginativeCPUPlayer, imaginativeOpponent, lookAhead);
+        return;
     }
 
     /**/
     @Override
-    public Node[] calculateMove(PlayerEntity player, PlayerEntity opponent) {
-        if (root == null || root.getChildren().isEmpty()) {
-            System.out.println("Game tree is empty!");
-            return new Node[0]; // Kein Zug möglich
-        }
+    public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
+        List<Node[]> moves = player.getAllPossibleMoves();
         Random random = new Random();
-        List<TreeNode> children = root.getChildren();
-        TreeNode randomChild = children.get(random.nextInt(children.size()));
-        return randomChild.getMove();
+        return moves.get(random.nextInt(moves.size()));
+    }
+
+    @Override
+    public Node calculateRemoval(ImaginativePlayer player, ImaginativePlayer opponent) {
+        List<Node> removals = player.getAllPossibleRemovals(opponent);
+        Random random = new Random();
+        return removals.get(random.nextInt(removals.size()));
     }
 }
