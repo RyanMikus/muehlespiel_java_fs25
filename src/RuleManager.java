@@ -79,8 +79,44 @@ public class RuleManager {
         if(errors.isEmpty())
             return true;
 
-        System.out.print(errors);
+        if (player instanceof Player)
+            System.out.print(errors);
         return false;
+    }
+
+    public boolean isRemovalValid(PlayerEntity remover, Node targetNode) {
+        boolean removalValid = false;
+        Stone targetStone;
+        PlayerEntity opponent;
+
+        // Only remove stone, if the targetNode is valid
+        if (targetNode.isOccupied() && targetNode.getStone().getOwner() == remover) {
+            targetStone = targetNode.getStone();
+            opponent = targetStone.getOwner();
+            boolean freeStones = false;
+
+            // Check if the opponent has a stone, that is not part of a mill
+            for (Stone stone : opponent.getRemainingStones()) {
+                if (countMillsFormed(stone) == 0) {
+                    freeStones = true;
+                    break;
+                }
+            }
+
+            // Remove stone only if the target is not part of a mill
+            // Exception if all remaining stones of the opponent are part of a mill
+            if (countMillsFormed(targetStone) == 0 || !freeStones)
+                removalValid = true;
+
+            // TODO:
+            // The following logic might want to be implemented in another method. Reason
+            // for this being that if the opponent has 3 stones remaining, the opponent
+            // should automatically lose without a player needing to take away 1 or 2
+            // stones. This could be implemented in the method placeStone. If so, placeStone
+            // would need access to both players.
+            // opponent.getPhase().nextPhase();
+        }
+        return removalValid;
     }
 
     /**
@@ -110,8 +146,7 @@ public class RuleManager {
             if(!includesPlaced)
                 continue;
 
-            // Check if all members of the potential mill are possessed by the current
-            // player
+            // Check if all members of the potential mill are possessed by the current player
             boolean allOwned = true;
             for(int pos : mill) {
                 Node node = boardManager.getNode(pos);
@@ -125,7 +160,7 @@ public class RuleManager {
             if(allOwned) {
                 //debug
                 //System.out.println("Mühle erkannt");
-                
+
                 millCount++;
                 if(millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
@@ -169,7 +204,7 @@ public class RuleManager {
         return false;
     }
 
-    // region Helpermethods GameOver
+    //region Helpermethods GameOver
     /**
      * Checks if the player is in the game over phase (only 2 stones left).
      * Sets the loss cause to STONECOUNT if so.

@@ -90,7 +90,7 @@ public class GameManager {
     }
 
     /**
-     * 
+     *
      */
     public void resetGame(String mode) {
         gameStatus = false;
@@ -115,6 +115,11 @@ public class GameManager {
      * @param toNode   The target node.
      */
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
+        if (player instanceof CPUPlayer) {
+            Node[] move = ((CPUPlayer) player).makeMove();
+            fromNode = move[0];
+            toNode = move[1];
+        }
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
 
         if(!moveSuccessful) {
@@ -139,7 +144,7 @@ public class GameManager {
         stopTurnTimer();
         gameStatus = false;
         String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
-        System.out.println(strLossCause); 
+        System.out.println(strLossCause);
         guiManager.showGameOverMsg(winner, strLossCause);
     }
 
@@ -169,7 +174,7 @@ public class GameManager {
 
     /**
      * Getter for the player that is currently able to perform a move.
-     * 
+     *
      * @return playerWhite or playerBlack
      */
     public PlayerEntity getCurrentPlayer(){
@@ -183,7 +188,7 @@ public class GameManager {
      * @return playerWhite if the current player is playerBlack and vice versa.
      */
     public PlayerEntity getOpponent() {
-        if(currentPlayer == playerWhite) {
+        if (currentPlayer == playerWhite) {
             return playerBlack;
         } else {
             return playerWhite;
@@ -274,8 +279,7 @@ public class GameManager {
                     String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
                     guiManager.showGameOverMsg(winner, strLossCause);
                     gameOver();
-                }
-        );
+                });
 
         timer.startTimer();
     }
@@ -284,7 +288,7 @@ public class GameManager {
      * Stops the timer, if it is initialized correctly.
      */
     public void stopTurnTimer() {
-        if(timer != null) {
+        if (timer != null) {
             timer.stopTimer();
         }
     }
