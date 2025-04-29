@@ -23,7 +23,7 @@ public class MovingPhase extends GamePhase {
         if (playerEntity.getRemainingStones().size() == 3) {
             playerEntity.setPhase(new JumpingPhase(playerEntity));
             //debug
-            //System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : " + playerEntity.getPhase().getClass().getSimpleName());
+            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : " + playerEntity.getPhase().getClass().getSimpleName());
         }
     }
 

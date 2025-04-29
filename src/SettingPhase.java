@@ -43,7 +43,7 @@ public class SettingPhase extends GamePhase {
         if (playerEntity.allStonesPlaced()) {
             playerEntity.setPhase(new MovingPhase(playerEntity));
             //debug
-            //System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : " + playerEntity.getPhase().getClass().getSimpleName());
+            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : " + playerEntity.getPhase().getClass().getSimpleName());
         }
     }
 }
