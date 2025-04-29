@@ -9,6 +9,7 @@ public class GameManager {
     // Players
     private PlayerEntity playerWhite;
     private PlayerEntity playerBlack;
+    private PlayerEntity CPUPlayer;
     private PlayerEntity currentPlayer;
 
     public enum LossCause {
@@ -19,6 +20,8 @@ public class GameManager {
         TIMEOUT
     }
     public LossCause lossCause = LossCause.NONE;
+
+    private boolean gameStatus; // true when game is running
 
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
@@ -32,13 +35,15 @@ public class GameManager {
     private GameManager() {
         boardManager = BoardManager.getInstance();
         ruleManager = RuleManager.getInstance();
-        guiManager = new GUI();
+        guiManager = GUI.getInstance();
 
         boardManager.setRuleManager(ruleManager);
+        boardManager.setGuiManager(guiManager);
         ruleManager.setBoardManager(boardManager);
         ruleManager.setGameManager(this);
+        guiManager.initializeManagers(this, boardManager);
 
-        currentPlayer = playerWhite;
+        //currentPlayer = playerWhite;
     }
 
     /**
@@ -54,8 +59,30 @@ public class GameManager {
     }
 
     /**/
-    public void startGame() {
-        //startTurnTimer();
+    public void startGame(String mode) {
+        if (mode.equalsIgnoreCase("singleplayer")) {
+            playerWhite = new Player("white");
+            CPUPlayer = new CPUPlayer("black");
+            gameStatus = true;
+            currentPlayer = playerWhite;
+            startTurnTimer();
+        } else if (mode.equalsIgnoreCase("multiplayer")) {
+            playerWhite = new Player("white");
+            playerBlack = new Player("black");
+            gameStatus = true;
+            currentPlayer = playerWhite;
+            startTurnTimer();
+        } else {
+            System.out.println("Error 404... Spiel konnte nicht gestartet werden");
+        }
+    }
+
+    /**
+     * 
+     */
+    public void resetGame(String mode) {
+        gameStatus = false;
+        startGame(mode);
     }
 
     /**
@@ -72,7 +99,11 @@ public class GameManager {
      * Leads to the Game over screen with the winner as a parameter.
      */
     public void gameOver() {
-        guiManager.showGameOverScreen(winner);
+        stopTurnTimer();
+        gameStatus = false;
+        String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
+        System.out.println(strLossCause); 
+        guiManager.showGameOverMsg(winner, strLossCause);
     }
 
     //region Setters and Getters
@@ -83,6 +114,7 @@ public class GameManager {
      */
     public void setWinner(PlayerEntity winner) {
         this.winner = winner;
+        System.out.println("Gewinner : " + winner.getName());
     }
 
     /**
@@ -93,6 +125,15 @@ public class GameManager {
      */
     public PlayerEntity getWinner() {
         return winner;
+    }
+
+    /**
+     * Getter for the player that is currently able to perform a move.
+     * 
+     * @return playerWhite or playerBlack
+     */
+    public PlayerEntity getCurrentPlayer(){
+        return currentPlayer;
     }
 
     /**
@@ -120,6 +161,13 @@ public class GameManager {
     }
 
     /**
+     * Increments the amount of turns no mill was formed by 1.
+     */
+    public void incNoMillTurnCounter() {
+        noMillTurnCounter++;
+    }
+
+    /**
      * Resets the amount of turns that no mill was formed to 0.
      */
     public void resetNoMillTurnCounter() {
@@ -143,11 +191,39 @@ public class GameManager {
     public void setTimePerTurn(int timePerTurn) {
         this.timePerTurn = timePerTurn;
     }
+
+    /**
+     * Getter for the ruleManager.
+     *
+     * @return The RuleManager-Instance.
+     */
+    public RuleManager getRuleManager() {
+        return ruleManager;
+    }
+
+    /**
+     * Getter for the current status of the game.
+     *
+     * @return true if the game is running, false otherwise.
+     */
+    public boolean getGameStatus(){
+        return gameStatus;
+    }
+
+    /**
+     * Getter for the boardManager.
+     * @return The BoardManager-Instance
+     */
+    public BoardManager getBoardManager(){
+        return boardManager;
+    }
+
     //endregion
 
     /**
      * Delegates the move done by a player to the current phase the player is in.
      * Only switches the player, if the move was successful.
+     * Terminates the game, if a Gameover-condition is met.
      *
      * @param player   The player making a move.
      * @param fromNode The origin node.
@@ -160,7 +236,7 @@ public class GameManager {
             return;
         }
 
-        noMillTurnCounter++;
+
         if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();
             return;
@@ -169,18 +245,20 @@ public class GameManager {
         switchPlayer();
     }
 
+    //region Timer
     /**
      * Starts a new timer with the set time per turn.
      * Updates the timer label on every tick (time per tick set in the timer class).
      * When the time runs out, the game is over and the current player loses.
      */
     public void startTurnTimer() {
-        timer = new TurnTimer(timePerTurn,
+        timer = new TurnTimer(guiManager.getTimePerTurn(),
                 () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
                 () -> {                                             // Happens when the time runs out
                     winner = getOpponent();
                     lossCause = LossCause.TIMEOUT;
-                    guiManager.showTimeOverMsg(currentPlayer);
+                    String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
+                    guiManager.showGameOverMsg(winner, strLossCause);
                     gameOver();
                 }
         );
@@ -196,6 +274,7 @@ public class GameManager {
             timer.stopTimer();
         }
     }
+    //endregion
 
     /**/
     public void undoMove() {
@@ -216,4 +295,6 @@ public class GameManager {
     public void loadGame() {
 
     }
+
+    
 }

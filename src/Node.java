@@ -26,7 +26,7 @@ public class Node {
      * @return true if a stone is placed on this node, false otherwise.
      */
     public boolean isOccupied() {
-        return stone == null;
+        return stone != null;
     }
 
     /**
