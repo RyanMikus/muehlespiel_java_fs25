@@ -90,7 +90,7 @@ public class RuleManager {
         PlayerEntity opponent;
 
         // Only remove stone, if the targetNode is valid
-        if (targetNode.isOccupied() && targetNode.getStone().getOwner() == remover) {
+        if (targetNode.isOccupied() && targetNode.getStone().getOwner() != remover) {
             targetStone = targetNode.getStone();
             opponent = targetStone.getOwner();
             boolean freeStones = false;

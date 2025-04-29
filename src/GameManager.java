@@ -74,7 +74,7 @@ public class GameManager {
 
         if (mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
-            CPUPlayer = new CPUPlayer("black");
+            //CPUPlayer = new CPUPlayer("black");
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();

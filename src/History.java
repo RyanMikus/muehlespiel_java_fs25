@@ -1,8 +1,8 @@
 import java.util.Stack;
 
 public class History {
-    private Stack<Move> undoMoves;
-    private Stack<Move> redoMoves;
+    private Stack<Move> undoMoves = new Stack<>();
+    private Stack<Move> redoMoves = new Stack<>();
 
     /**
      * Stores a performed move containing the state of the game to a Stack.

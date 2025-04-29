@@ -194,13 +194,14 @@ public class BoardManager extends Observable {
     */
     public void startRemoveLoop(int remaining) {
         if (remaining <= 0) return;
+        System.out.println("BM - Remaining removes: " + remaining);
 
         guiManager.removeStone(success -> {
             if (success) {
                 notifyObservers();
 
                 // debug
-                //System.out.println("Stein entfernt");
+                System.out.println("BM - Stein entfernt");
 
                 startRemoveLoop(remaining - 1);
             } else {
@@ -220,6 +221,7 @@ public class BoardManager extends Observable {
     public boolean removeStone(PlayerEntity remover, Node targetNode) {
         boolean stoneRemoved = false;
         if (ruleManager.isRemovalValid(remover, targetNode)) {
+            System.out.println("Remove valid in BM");
             Stone targetStone = targetNode.getStone();
             PlayerEntity opponent = targetStone.getOwner();
             targetNode.removeStone();
