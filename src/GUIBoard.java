@@ -257,7 +257,7 @@ public class GUIBoard extends JPanel{
         PlayerEntity currentRemover = gameManager.getOpponent();
         
         // debug
-        System.out.println("RSM - currentRemover -> " + currentRemover.getName());
+        //System.out.println("RSM - currentRemover -> " + currentRemover.getName());
 
         for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
             int nodeId = entry.getKey();
@@ -269,7 +269,9 @@ public class GUIBoard extends JPanel{
                 if (targetNode.isOccupied() && targetNode.getStone().getOwner() != currentRemover) {
                     boolean removed = boardManager.removeStone(currentRemover, targetNode);
                     if (removed) {
-                        System.out.println("RSH - Removed");
+                        //debug
+                        //System.out.println("RSH - Removed");
+                        
                         removeMode = false;
                         currentRemover = null;
                         repaint();

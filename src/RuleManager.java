@@ -159,7 +159,7 @@ public class RuleManager {
             // Add one formed mill to the counter
             if(allOwned) {
                 //debug
-                //System.out.println("Mühle erkannt");
+                System.out.println("Mühle erkannt");
 
                 millCount++;
                 if(millCount > 2) {

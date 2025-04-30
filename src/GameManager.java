@@ -68,9 +68,7 @@ public class GameManager {
 
     /**/
     public void startGame(String mode) {
-        // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
-        Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
-        history.addMove(initialMove);
+        
 
         if (mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
@@ -87,6 +85,10 @@ public class GameManager {
         } else {
             System.out.println("Error 404... Spiel konnte nicht gestartet werden");
         }
+
+        // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
+        Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
+        history.addMove(initialMove);
     }
 
     /**
