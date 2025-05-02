@@ -29,8 +29,21 @@ public class JumpingPhase extends GamePhase {
     public void nextPhase() {
         if (playerEntity.getRemainingStones().size() <= 2) {
             playerEntity.setPhase(new GameOverPhase(playerEntity));
-            //debug
-            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : " + playerEntity.getPhase().getClass().getSimpleName());
+            // debug
+            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : "
+                    + playerEntity.getPhase().getClass().getSimpleName());
         }
     }
+
+    /**
+     * Creates a deep copy of this JumpingPhase with a new player context.
+     *
+     * @param newOwner The copied player to whom this phase should belong.
+     * @return A new instance of JumpingPhase assigned to the specified player.
+     */
+    @Override
+    public GamePhase deepCopy(PlayerEntity newOwner) {
+        return new JumpingPhase(newOwner);
+    }
+
 }

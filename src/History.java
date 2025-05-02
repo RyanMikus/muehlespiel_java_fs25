@@ -15,6 +15,7 @@ public class History {
     public void addMove(Move move) {
         undoMoves.push(move);
         clearRedo();
+        System.out.println("[HISTORY] Neuer Move gespeichert → UndoStack Größe: " + undoMoves.size());
     }
 
     /**
@@ -31,7 +32,6 @@ public class History {
             redoMoves.push(undoMove);
             return undoMoves.peek();
         }
-
         return null;
     }
 
@@ -44,12 +44,14 @@ public class History {
      * @return The move representing the next game state, or null if redo is not possible.
      */
     public Move redoMove() {
-        if(!redoMoves.empty()) {
+        if (!redoMoves.empty()) {
             Move redoMove = redoMoves.pop();
             undoMoves.push(redoMove);
+            System.out.println("[HISTORY] RedoMove aufgerufen → RedoStack Größe danach: " + redoMoves.size());
             return redoMove;
         }
-
+    
+        System.out.println("[HISTORY] RedoMove → Stack war leer");
         return null;
     }
 
@@ -57,6 +59,18 @@ public class History {
      * Clears the redo stack by removing every element.
      */
     private void clearRedo() {
-        redoMoves.clear();
+        System.out.println("[HISTORY] clearRedo() aufgerufen – RedoStack Größe: " + redoMoves.size());
+        if (!redoMoves.isEmpty()) {
+            System.out.println("[HISTORY] RedoStack wird geleert (" + redoMoves.size() + " Einträge)");
+            redoMoves.clear();
+        }
+    }
+
+
+    public Move peekUndo() {
+        if (!undoMoves.isEmpty()) {
+            return undoMoves.peek();
+        }
+        return null;
     }
 }

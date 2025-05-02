@@ -88,7 +88,28 @@ public class Node {
      *
      * @return The current stone of the node. Null if not assigned.
      */
-    public  Stone getStone() {
+    public Stone getStone() {
         return stone;
+    }
+
+    /**
+     * Creates a deep copy of this node including its stone (if present),
+     * but without neighbor references. Neighbors must be connected separately.
+     *
+     * @param currentPlayer The copied current player.
+     * @param opponent      The copied opponent player.
+     * @return A new Node with the same ID and copied stone.
+     */
+    public Node deepCopy(PlayerEntity currentPlayer, PlayerEntity opponent) {
+        Node copy = new Node(this.id);
+
+        if (this.stone != null) {
+            PlayerEntity owner = this.stone.getOwner();
+            PlayerEntity newOwner = owner.getName().equals(currentPlayer.getName()) ? currentPlayer : opponent;
+            Stone copiedStone = this.stone.deepCopy(newOwner);
+            copy.placeStone(copiedStone);
+        }
+
+        return copy;
     }
 }

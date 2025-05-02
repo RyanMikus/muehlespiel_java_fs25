@@ -91,4 +91,12 @@ public abstract class PlayerEntity {
         currentPhase = phase;
     }
 
+
+    /**
+     * Creates a deep Copy of a Player inclusive Stones and Phase.
+     * 
+     * @return Deep Copy of a new Player
+     */
+    public abstract PlayerEntity deepCopy();
+
 }

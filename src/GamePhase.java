@@ -16,4 +16,12 @@ public abstract class GamePhase {
 
     public void nextPhase() {
     }
+
+    /**
+     * Creates a deep Copy of this Phase
+     *
+     * @param newOwner The new Player which should get this Phase
+     * @return new copy of this Phase
+     */
+    public abstract GamePhase deepCopy(PlayerEntity newOwner);
 }

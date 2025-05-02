@@ -1,3 +1,5 @@
+import java.util.Map;
+
 public class GameManager {
     // region Fields
     // Managers
@@ -12,6 +14,12 @@ public class GameManager {
     private PlayerEntity playerBlack;
     private PlayerEntity CPUPlayer;
     private PlayerEntity currentPlayer;
+    private PlayerEntity opponent;
+
+    // Copys
+    private PlayerEntity currentPlayerCopy;
+    private PlayerEntity opponentCopy;
+    private Map<Integer, Node> boardCopy;
 
     public enum LossCause {
         NONE,
@@ -31,7 +39,7 @@ public class GameManager {
     private TurnTimer timer;
     // endregion
 
-    //region Initialization
+    // region Initialization
 
     /**
      * Initialize managers
@@ -56,25 +64,22 @@ public class GameManager {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static GameManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new GameManager();
         }
         return instance;
     }
 
-    //endregion
+    // endregion
 
-    //region Gameflow
+    // region Gameflow
 
     /**/
     public void startGame(String mode) {
-        // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
-        Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
-        history.addMove(initialMove);
 
         if (mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
-            //CPUPlayer = new CPUPlayer("black");
+            // CPUPlayer = new CPUPlayer("black");
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
@@ -87,6 +92,17 @@ public class GameManager {
         } else {
             System.out.println("Error 404... Spiel konnte nicht gestartet werden");
         }
+
+        // Adding the initial state of the game to the history, allowing to undo until
+        // the very start of the game.
+        Move initialMove = new Move(
+                playerWhite.deepCopy(),
+                playerBlack.deepCopy(),
+                boardManager.copyBoard(playerWhite.deepCopy(), playerBlack.deepCopy()),
+                0,
+                guiManager.getTimePerTurn());
+        history.addMove(initialMove);
+
     }
 
     /**
@@ -120,19 +136,23 @@ public class GameManager {
             fromNode = move[0];
             toNode = move[1];
         }
+    
+        System.out.println("[DEBUG] handleMove: Spieler = " + player.getName() + ", Ziel-Node = " + toNode.getID());
+    
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
-
-        if(!moveSuccessful) {
+    
+        if (!moveSuccessful) {
+            System.out.println("[DEBUG] → Zug fehlgeschlagen – kein Speichern");
             return;
         }
-
+    
         noMillTurnCounter++;
-        if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+        if (ruleManager.isGameOver(playerWhite, playerBlack)) {
             gameOver();
             return;
         }
-
-        saveMove();
+    
+        saveMove(); // ✅ Zug war erfolgreich – Zustand sichern
         switchPlayer();
     }
 
@@ -148,9 +168,9 @@ public class GameManager {
         guiManager.showGameOverMsg(winner, strLossCause);
     }
 
-    //endregion
+    // endregion
 
-    //region Setters / Getters
+    // region Setters / Getters
 
     /**
      * Setter for the player that has won the game.
@@ -177,7 +197,7 @@ public class GameManager {
      *
      * @return playerWhite or playerBlack
      */
-    public PlayerEntity getCurrentPlayer(){
+    public PlayerEntity getCurrentPlayer() {
         return currentPlayer;
     }
 
@@ -250,21 +270,22 @@ public class GameManager {
      *
      * @return true if the game is running, false otherwise.
      */
-    public boolean getGameStatus(){
+    public boolean getGameStatus() {
         return gameStatus;
     }
 
     /**
      * Getter for the boardManager.
+     * 
      * @return The BoardManager-Instance
      */
-    public BoardManager getBoardManager(){
+    public BoardManager getBoardManager() {
         return boardManager;
     }
 
-    //endregion
+    // endregion
 
-    //region Timer
+    // region Timer
     /**
      * Starts a new timer with the set time per turn.
      * Updates the timer label on every tick (time per tick set in the timer class).
@@ -272,8 +293,8 @@ public class GameManager {
      */
     public void startTurnTimer() {
         timer = new TurnTimer(guiManager.getTimePerTurn(),
-                () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
-                () -> {                                             // Happens when the time runs out
+                () -> guiManager.updateTimer(timer.getTimeLeft()), // Happens each Tick
+                () -> { // Happens when the time runs out
                     winner = getOpponent();
                     lossCause = LossCause.TIMEOUT;
                     String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
@@ -292,41 +313,58 @@ public class GameManager {
             timer.stopTimer();
         }
     }
-    //endregion
+    // endregion
 
-    //region Save / Restore
+    // region Save / Restore
 
     /**
      * Adds the current state of the game to the History (Memento).
-     * This includes both players, the current state of the board, the number of moves no mill was formed
+     * This includes both players, the current state of the board, the number of
+     * moves no mill was formed
      * and the time left for the move.
      */
     public void saveMove() {
-        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter, timer.getTimeLeft());
+        currentPlayerCopy = currentPlayer.deepCopy();
+        opponentCopy = getOpponent().deepCopy();
+        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+
+        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+        
+        Move lastMove = history.peekUndo();
+    if (lastMove == null || !move.equals(lastMove)) {
         history.addMove(move);
+        System.out.println("[DEBUG] Neuer Move gespeichert → Spieler: " + currentPlayerCopy.getName());
+    } else {
+        System.out.println("[DEBUG] Neuer Move identisch → nicht gespeichert");
+    }
     }
 
     /**
-     * Undoes a move, restoring the state before the last performed move, if there is a undo move.
+     * Undoes a move, restoring the state before the last performed move, if there
+     * is a undo move.
      *
      * @see #loadMove(Move)
      */
     public void undoMove() {
         Move lastMove = history.undoMove();
-        if(lastMove != null) {
+        if (lastMove != null) {
             loadMove(lastMove);
         }
     }
 
     /**
-     * Redoes a move, restoring the state that was undone prior, if there is a move to redo.
+     * Redoes a move, restoring the state that was undone prior, if there is a move
+     * to redo.
      *
      * @see #loadMove(Move)
      */
     public void redoMove() {
         Move nextMove = history.redoMove();
-        if(nextMove != null) {
+        if (nextMove != null) {
+            System.out.println("[DEBUG] RedoMove ausgeführt → Spieler: " + nextMove.getCurrentPlayer().getName());
             loadMove(nextMove);
+        } else {
+            System.out.println("[INFO] Redo nicht möglich – Stack leer");
         }
     }
 
@@ -338,10 +376,17 @@ public class GameManager {
      * @see #undoMove()
      * @see #redoMove()
      */
-    private void loadMove(Move move) {
+    public void loadMove(Move move) {
+
+        if (move == null) {
+            System.out.println("[FATAL] loadMove wurde mit null aufgerufen – verbotener Pfad!");
+            new Exception().printStackTrace(); // <-- zeigt dir die Stelle
+            return;
+        }
+
         // Restore players and set the current player
         currentPlayer = move.getCurrentPlayer();
-        if(currentPlayer.getName().equalsIgnoreCase("white")) {
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
             playerWhite = currentPlayer;
             playerBlack = move.getOpponent();
         } else {
@@ -353,6 +398,10 @@ public class GameManager {
         boardManager.setBoard(move.getBoardSnapshot());
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
+
+        boardManager.notifyObservers();
+
+        System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
     }
 
     /**/
@@ -363,6 +412,19 @@ public class GameManager {
     /**/
     public void loadGame() {
 
+    }
+
+    // for UndoRedotest
+    public void setCurrentPlayer(PlayerEntity player) {
+        currentPlayer = player;
+    }
+
+    public void setOpponent(PlayerEntity player) {
+        opponent = player;
+    }
+
+    public void setTurnTimer(TurnTimer timer2) {
+        timer = timer2;
     }
 
     // endregion

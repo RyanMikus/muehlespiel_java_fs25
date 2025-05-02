@@ -50,7 +50,7 @@ public class BoardManager extends Observable {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static BoardManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new BoardManager();
         }
         return instance;
@@ -62,15 +62,15 @@ public class BoardManager extends Observable {
      */
     public void initializeBoard() {
         // Adding all nodes to the dictionary
-        for(int i = 0; i < 24; i++) {
+        for (int i = 0; i < 24; i++) {
             nodes.put(i, new Node(i));
         }
 
         // Connecting all nodes
-        for(int node = 0; node < neighbors.length; node++) {
-            for(int neighbor : neighbors[node]) {
+        for (int node = 0; node < neighbors.length; node++) {
+            for (int neighbor : neighbors[node]) {
                 // Prevent duplicates
-                if(node < neighbor) {
+                if (node < neighbor) {
                     connectNodes(node, neighbor);
                 }
             }
@@ -83,24 +83,24 @@ public class BoardManager extends Observable {
      */
     private void initializeMills() {
         // Horizontal mills
-        potentialMills.add(new int[]{0, 1, 2});
-        potentialMills.add(new int[]{3, 4, 5});
-        potentialMills.add(new int[]{6, 7, 8});
-        potentialMills.add(new int[]{9, 10, 11});
-        potentialMills.add(new int[]{12, 13, 14});
-        potentialMills.add(new int[]{15, 16, 17});
-        potentialMills.add(new int[]{18, 19, 20});
-        potentialMills.add(new int[]{21, 22, 23});
+        potentialMills.add(new int[] { 0, 1, 2 });
+        potentialMills.add(new int[] { 3, 4, 5 });
+        potentialMills.add(new int[] { 6, 7, 8 });
+        potentialMills.add(new int[] { 9, 10, 11 });
+        potentialMills.add(new int[] { 12, 13, 14 });
+        potentialMills.add(new int[] { 15, 16, 17 });
+        potentialMills.add(new int[] { 18, 19, 20 });
+        potentialMills.add(new int[] { 21, 22, 23 });
 
         // Vertical mills
-        potentialMills.add(new int[]{0, 9, 21});
-        potentialMills.add(new int[]{3, 10, 18});
-        potentialMills.add(new int[]{6, 11, 15});
-        potentialMills.add(new int[]{1, 4, 7});
-        potentialMills.add(new int[]{16, 19, 22});
-        potentialMills.add(new int[]{8, 12, 17});
-        potentialMills.add(new int[]{5, 13, 20});
-        potentialMills.add(new int[]{2, 14, 23});
+        potentialMills.add(new int[] { 0, 9, 21 });
+        potentialMills.add(new int[] { 3, 10, 18 });
+        potentialMills.add(new int[] { 6, 11, 15 });
+        potentialMills.add(new int[] { 1, 4, 7 });
+        potentialMills.add(new int[] { 16, 19, 22 });
+        potentialMills.add(new int[] { 8, 12, 17 });
+        potentialMills.add(new int[] { 5, 13, 20 });
+        potentialMills.add(new int[] { 2, 14, 23 });
     }
 
     /**
@@ -115,7 +115,7 @@ public class BoardManager extends Observable {
         Node node2 = nodes.get(id2);
 
         // Adding each other to their neighbors
-        if(node1 != null && node2 != null) {
+        if (node1 != null && node2 != null) {
             node1.addNeighbor(node2);
             node2.addNeighbor(node1);
         }
@@ -150,8 +150,11 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
+        //System.out.println("[DEBUG] placeStone(): Prüfe Node " + toNode.getID() + " | isOccupied: " + toNode.isOccupied());
+        
         // Check if the stone can be placed correctly
-        if(!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
+        if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
+            //System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
             return false;
         }
 
@@ -159,49 +162,52 @@ public class BoardManager extends Observable {
 
         // Place stone and update GUI
         toNode.placeStone(stone);
+        //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
         notifyObservers();
 
         // Remove stones according to amount of newly mills formed
         int millCount = ruleManager.countMillsFormed(stone);
         startRemoveLoop(millCount);
         // Reset the noMillTurnCounter when a mill was formed
-        if(millCount > 0) {
+        if (millCount > 0) {
             GameManager.getInstance().resetNoMillTurnCounter();
         }
 
-
         /**
          * while (millCount > 0) {
-            System.out.println("Remove an opponents stone.");
-            guiManager.removeStone();
-            notifyObservers(); // Has to be a blocking function
-            millCount--;
-        }
+         * System.out.println("Remove an opponents stone.");
+         * guiManager.removeStone();
+         * notifyObservers(); // Has to be a blocking function
+         * millCount--;
+         * }
          */
 
         return true;
     }
 
     /**
-    * Starts a loop to remove a given number of opponent stones from the board.
-    * This is typically triggered when a player forms a mill and is allowed to remove
-    * one or more of the opponent's stones.
-    * The method is recursive and will call itself until the specified number of
-    * stones have been successfully removed. It uses the GUI to allow the player
-    * to select which stone to remove. After each successful removal, observers are notified.
-    *
-    * @param remaining The number of stones that still need to be removed.
-    */
+     * Starts a loop to remove a given number of opponent stones from the board.
+     * This is typically triggered when a player forms a mill and is allowed to
+     * remove
+     * one or more of the opponent's stones.
+     * The method is recursive and will call itself until the specified number of
+     * stones have been successfully removed. It uses the GUI to allow the player
+     * to select which stone to remove. After each successful removal, observers are
+     * notified.
+     *
+     * @param remaining The number of stones that still need to be removed.
+     */
     public void startRemoveLoop(int remaining) {
-        if (remaining <= 0) return;
-        //System.out.println("BM - Remaining removes: " + remaining);
+        if (remaining <= 0)
+            return;
+        // System.out.println("BM - Remaining removes: " + remaining);
 
         guiManager.removeStone(success -> {
             if (success) {
                 notifyObservers();
 
                 // debug
-                //System.out.println("BM - Stein entfernt");
+                // System.out.println("BM - Stein entfernt");
 
                 startRemoveLoop(remaining - 1);
             } else {
@@ -244,7 +250,7 @@ public class BoardManager extends Observable {
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
         // Check if the stone can be moved correctly
-        if(!ruleManager.isMoveValid(player, fromNode, toNode)) {
+        if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 
@@ -260,15 +266,17 @@ public class BoardManager extends Observable {
         int millCount = ruleManager.countMillsFormed(stone);
         startRemoveLoop(millCount);
         // Reset the noMillTurnCounter when a mill was formed
-        if(millCount > 0){
+        if (millCount > 0) {
             GameManager.getInstance().resetNoMillTurnCounter();
         }
 
-        /*while (millCount > 0) {
-            // TODO: Select stone to remove
-            notifyObservers();
-            millCount--;
-        }*/
+        /*
+         * while (millCount > 0) {
+         * // TODO: Select stone to remove
+         * notifyObservers();
+         * millCount--;
+         * }
+         */
 
         return true;
     }
@@ -289,6 +297,7 @@ public class BoardManager extends Observable {
      */
     public void setBoard(Map<Integer, Node> newBoard) {
         nodes = newBoard;
+        notifyObservers();
     }
 
     /**
@@ -306,10 +315,45 @@ public class BoardManager extends Observable {
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
     public void printBoard() {
-        for(Node node : nodes.values()) {
-            String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
+        for (Node node : nodes.values()) {
+            if(node.isOccupied()){
+                String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
+            }
+            
         }
     }
+
+    /**
+     * Creates a deep copy of the current board, including all nodes, stones,
+     * and their neighbor relationships.
+     *
+     * @param currentPlayerCopy The copied current player.
+     * @param opponentCopy      The copied opponent player.
+     * @return A fully deep-copied board as a map of node IDs to Node instances.
+     */
+    public Map<Integer, Node> copyBoard(PlayerEntity currentPlayerCopy, PlayerEntity opponentCopy) {
+        Map<Integer, Node> copiedBoard = new HashMap<>();
+
+        // Step 1: Copy nodes (without neighbors)
+        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copiedNode = originalNode.deepCopy(currentPlayerCopy, opponentCopy);
+            copiedBoard.put(entry.getKey(), copiedNode);
+        }
+
+        // Step 2: Reconnect neighbors
+        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copiedNode = copiedBoard.get(entry.getKey());
+
+            for (Node neighbor : originalNode.getNeighbors()) {
+                copiedNode.addNeighbor(copiedBoard.get(neighbor.getID()));
+            }
+        }
+
+        return copiedBoard;
+    }
+
 }
