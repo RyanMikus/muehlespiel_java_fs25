@@ -9,14 +9,12 @@ import java.util.List;
 
 public class GUIBoard extends JPanel{
     // region Fields
-    private GameManager gameManager;
-    private BoardManager boardManager;
-
     private Integer fromNodeId = null;
     private Node fromNode = null;
     
     private boolean removeMode = false;
     private Consumer<Boolean> onRemoveCallback = null;
+    private Consumer<Node[]> moveListener = null;
 
     private final Map<Integer, Point> nodePositions = new HashMap<>();
     private final int boardSize = 400;
@@ -34,10 +32,9 @@ public class GUIBoard extends JPanel{
     private int blackStonesLeft = 9;
     // endregion
 
-    public GUIBoard(GameManager gameManager, BoardManager boardManager) {
-
-        this.gameManager = gameManager;
-        this.boardManager = boardManager;
+    public GUIBoard() {
+        GameManager gameManager = GameManager.getInstance();
+        BoardManager boardManager = BoardManager.getInstance();
 
         setPreferredSize(new Dimension(700, 500));
         setOpaque(false);
@@ -50,10 +47,12 @@ public class GUIBoard extends JPanel{
                     return;
                 }
 
+                System.out.println("Mouse pressed wurde ausgelöst!");
+
                 if(!removeMode){
                     PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
 
-                    // checks if the wants to move his own stone
+                    // Checks if the white player wants to move his own stone
                     if (currentPlayer.getName().equalsIgnoreCase("white")) {
                         for (int i = 0; i < whiteStonesLeft; i++) {
                             if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
@@ -64,7 +63,7 @@ public class GUIBoard extends JPanel{
                         }
                     }
 
-                    // checks if the wants to move his own stone
+                    // Checks if the black player wants to move his own stone
                     if (currentPlayer.getName().equalsIgnoreCase("black")) {
                         for (int i = 0; i < blackStonesLeft; i++) {
                             if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
@@ -75,7 +74,7 @@ public class GUIBoard extends JPanel{
                         }
                     }
 
-
+                    // Checks if a node has been clicked (not necessary for the setting phase) and gets it if so
                     for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
                         int guiNodeId = entry.getKey();
                         Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
@@ -86,6 +85,7 @@ public class GUIBoard extends JPanel{
                             // debug
                             //System.out.println("MP - Snapping Node Board -> " + node.getID());
 
+                            // Valid node clicked
                             if (node.isOccupied() && node.getStone().getOwner() == currentPlayer) {
                                 fromNodeId = guiNodeId;
                                 dragPosition = e.getPoint();
@@ -101,11 +101,10 @@ public class GUIBoard extends JPanel{
                     }
                 }
 
+                // Starting to remove a stone
                 if(removeMode){
                     removeStoneHandler(e.getPoint());
-                    return;
                 }
-
             }
 
             public void mouseReleased(MouseEvent e) {
@@ -113,6 +112,9 @@ public class GUIBoard extends JPanel{
                     return;
                 }
 
+                System.out.println("Mouse released wurde ausgelöst!");
+
+                // Checks if a stone has been released over a node and gets it if so
                 for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
                     int guiNodeId = entry.getKey();
                     Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
@@ -123,7 +125,7 @@ public class GUIBoard extends JPanel{
                         // debug
                         //System.out.println("MR - Snapping Node Board -> " + toNode.getID());
 
-                        // check if the stone was played from outside or not
+                        // Checks if the stone was played from outside the edge of the game board or not
                         if (fromNodeId != null) {
                             fromNode = boardManager.getNode(fromNodeId);
                             
@@ -136,20 +138,18 @@ public class GUIBoard extends JPanel{
                         // debug
                         //System.out.println("  MR - Current Player -> " + currentPlayer.getName());
 
-                        // check if move is valid
+                        // Check if move is valid
                         if (gameManager.getRuleManager().isMoveValid(currentPlayer, fromNode, toNode)) {
-                            
                             // debug
                             //System.out.println("   MR - Move was valid");
                             //System.out.println("    MR - Handle Move.. Player Phase -> " + currentPlayer.getPhase().getClass().getSimpleName());
-                            
-                            
-                            gameManager.handleMove(currentPlayer, fromNode, toNode);
+
+                            signalPlayerMove(fromNode ,toNode);
                             
                             // debug
                             //System.out.println("     MR - Move handled correct.. new Player: " + gameManager.getCurrentPlayer().getName());
                             
-                            // update GUI
+                            // Update amount of stones on edge of the game board
                             if (draggedColor == Color.WHITE && whiteStonesLeft > 0){
                                 whiteStonesLeft--;
                                 
@@ -164,12 +164,13 @@ public class GUIBoard extends JPanel{
                             }
                                 
                             fromNode = null;
+                            toNode = null;
                             break;
                         } 
                     }
                 }
 
-                // when player "loses" the stone without snapping into Node
+                // When player "loses" the stone without snapping into a valid Node
                 repaint();
 
                 // Reset der Drag-Infos
@@ -239,8 +240,32 @@ public class GUIBoard extends JPanel{
     // region Events
 
     /**
+     * Sets a listener that will be notified when a complete move (from and to node) is selected.
+     *
+     * @param listener A consumer that accepts a Node array of length 2: [fromNode, toNode].
+     */
+    public void setMoveListener(Consumer<Node[]> listener) {
+        this.moveListener = listener;
+    }
+
+    /**
+     * Signals that the player has selected a move.
+     * This should be called once both mousePressed and mouseReleased have been processed.
+     *
+     * @param from The node the stone is moved from.
+     * @param to The node the stone is moved to.
+     */
+    public void signalPlayerMove(Node from, Node to) {
+        if (moveListener != null) {
+            moveListener.accept(new Node[] { from, to });
+        } else {
+            System.out.println("No moveListener was registered");
+        }
+    }
+
+    /**
      * Setter Method - if the removedMode sets to true, the game
-     * Listeners are blocked and only the remoing listeners are 
+     * Listeners are blocked and only the removing listeners are
      * available
      */
     public void removeStone(Consumer<Boolean> onSuccess){
@@ -253,8 +278,9 @@ public class GUIBoard extends JPanel{
      * 
      * @param targetPoint - The Point(Stone) the Player wants to remove
      */
-    public void removeStoneHandler(Point targetPoint){
-        PlayerEntity currentRemover = gameManager.getOpponent();
+    public void removeStoneHandler(Point targetPoint) {
+        BoardManager boardManager = BoardManager.getInstance();
+        PlayerEntity currentRemover = GameManager.getInstance().getOpponent();
         
         // debug
         //System.out.println("RSM - currentRemover -> " + currentRemover.getName());

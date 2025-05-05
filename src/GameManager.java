@@ -24,6 +24,7 @@ public class GameManager {
     public LossCause lossCause = LossCause.NONE;
 
     private boolean gameStatus; // true when game is running
+    private volatile Node[] playerMove; // Store current move input
 
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
@@ -41,12 +42,6 @@ public class GameManager {
         ruleManager = RuleManager.getInstance();
         guiManager = GUI.getInstance();
 
-        boardManager.setRuleManager(ruleManager);
-        boardManager.setGuiManager(guiManager);
-        ruleManager.setBoardManager(boardManager);
-        ruleManager.setGameManager(this);
-        guiManager.initializeManagers(this, boardManager);
-
         history = new History();
     }
 
@@ -62,21 +57,33 @@ public class GameManager {
         return instance;
     }
 
+    /**
+     * Registers a listener in the GUI that receives completed player moves.
+     * <p>
+     * When a move is received, it stores it and wakes up the waiting game loop.
+     */
+    public void initializeMoveListener(GUIBoard guiBoard) {
+        guiBoard.setMoveListener(move -> {
+            this.playerMove = move;
+            synchronized(this) {
+                this.notify();
+            }
+        });
+    }
+
     //endregion
 
     //region Gameflow
 
     /**/
     public void startGame(String mode) {
-        
-
-        if (mode.equalsIgnoreCase("singleplayer")) {
+        if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
             //CPUPlayer = new CPUPlayer("black");
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
-        } else if (mode.equalsIgnoreCase("multiplayer")) {
+        } else if(mode.equalsIgnoreCase("multiplayer")) {
             playerWhite = new Player("white");
             playerBlack = new Player("black");
             gameStatus = true;
@@ -89,6 +96,36 @@ public class GameManager {
         // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
         Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
         history.addMove(initialMove);
+
+        new Thread(this::runGame).start();
+    }
+
+    public void runGame() {
+        Node[] move;
+
+        while(gameStatus) {
+            if(currentPlayer instanceof Player) {
+                playerMove = null;
+
+                synchronized(this) {
+                    while(playerMove == null) {
+                        try {
+                            this.wait();
+                        } catch(InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                    }
+                }
+                move = playerMove;
+            } else {
+                move = ((CPUPlayer) currentPlayer).makeMove();
+            }
+
+            Node fromNode = move[0];
+            Node toNode = move[1];
+            handleMove(currentPlayer, fromNode, toNode);
+        }
     }
 
     /**
@@ -117,7 +154,7 @@ public class GameManager {
      * @param toNode   The target node.
      */
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
-        if (player instanceof CPUPlayer) {
+        if(player instanceof CPUPlayer) {
             Node[] move = ((CPUPlayer) player).makeMove();
             fromNode = move[0];
             toNode = move[1];
@@ -130,6 +167,7 @@ public class GameManager {
 
         noMillTurnCounter++;
         if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+            System.out.println("--Spiel ist vorbei--");
             gameOver();
             return;
         }
@@ -149,7 +187,6 @@ public class GameManager {
         System.out.println(strLossCause);
         guiManager.showGameOverMsg(winner, strLossCause);
     }
-
     //endregion
 
     //region Setters / Getters
@@ -179,7 +216,7 @@ public class GameManager {
      *
      * @return playerWhite or playerBlack
      */
-    public PlayerEntity getCurrentPlayer(){
+    public PlayerEntity getCurrentPlayer() {
         return currentPlayer;
     }
 
@@ -190,7 +227,7 @@ public class GameManager {
      * @return playerWhite if the current player is playerBlack and vice versa.
      */
     public PlayerEntity getOpponent() {
-        if (currentPlayer == playerWhite) {
+        if(currentPlayer == playerWhite) {
             return playerBlack;
         } else {
             return playerWhite;
@@ -252,21 +289,23 @@ public class GameManager {
      *
      * @return true if the game is running, false otherwise.
      */
-    public boolean getGameStatus(){
+    public boolean getGameStatus() {
         return gameStatus;
     }
 
     /**
      * Getter for the boardManager.
+     *
      * @return The BoardManager-Instance
      */
-    public BoardManager getBoardManager(){
+    public BoardManager getBoardManager() {
         return boardManager;
     }
 
     //endregion
 
     //region Timer
+
     /**
      * Starts a new timer with the set time per turn.
      * Updates the timer label on every tick (time per tick set in the timer class).
@@ -290,7 +329,7 @@ public class GameManager {
      * Stops the timer, if it is initialized correctly.
      */
     public void stopTurnTimer() {
-        if (timer != null) {
+        if(timer != null) {
             timer.stopTimer();
         }
     }

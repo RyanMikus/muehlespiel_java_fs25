@@ -6,8 +6,6 @@ import java.util.Map;
 public class BoardManager extends Observable {
     // region Fields
     private static BoardManager instance;
-    private RuleManager ruleManager;
-    private GUI guiManager;
     private Map<Integer, Node> nodes;
     private final int[][] neighbors = { { 1, 9 }, { 0, 2, 4 }, { 1, 14 }, { 4, 10 }, { 1, 3, 5, 7 }, { 4, 13 },
             { 7, 11 }, { 4, 6, 8 }, { 7, 12 },
@@ -122,24 +120,6 @@ public class BoardManager extends Observable {
     }
 
     /**
-     * Setter for the ruleManager to avoid recursive constructor calls.
-     *
-     * @param ruleManager The instance of the rule manager.
-     */
-    public void setRuleManager(RuleManager ruleManager) {
-        this.ruleManager = ruleManager;
-    }
-
-    /**
-     * Setter for the guiManager to avoid recursive constructor calls.
-     *
-     * @param guiManager The instance of the GUI.
-     */
-    public void setGuiManager(GUI guiManager) {
-        this.guiManager = guiManager;
-    }
-
-    /**
      * Checks if the performed move is valid and places the stone on the target node
      * if so.
      * Checks if the placed stone forms a new mill.
@@ -150,6 +130,8 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
+        RuleManager ruleManager = RuleManager.getInstance();
+
         // Check if the stone can be placed correctly
         if(!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             return false;
@@ -196,7 +178,7 @@ public class BoardManager extends Observable {
         if (remaining <= 0) return;
         //System.out.println("BM - Remaining removes: " + remaining);
 
-        guiManager.removeStone(success -> {
+        GUI.getInstance().removeStone(success -> {
             if (success) {
                 notifyObservers();
 
@@ -220,7 +202,7 @@ public class BoardManager extends Observable {
      */
     public boolean removeStone(PlayerEntity remover, Node targetNode) {
         boolean stoneRemoved = false;
-        if (ruleManager.isRemovalValid(remover, targetNode)) {
+        if (RuleManager.getInstance().isRemovalValid(remover, targetNode)) {
             System.out.println("Stein auf Position " + targetNode.getID() + " wird entfernt");
             Stone targetStone = targetNode.getStone();
             PlayerEntity opponent = targetStone.getOwner();
@@ -243,6 +225,8 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
+        RuleManager ruleManager = RuleManager.getInstance();
+        
         // Check if the stone can be moved correctly
         if(!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;

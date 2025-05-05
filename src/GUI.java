@@ -15,8 +15,6 @@ public class GUI implements Observer {
     private GUIBoard guiBoard;
 
     private static GUI instance;
-    private GameManager gameManager;
-    private BoardManager boardManager;
 
     // Color-Picker for RGB Values : rgb(0, 255, 4)
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38);
@@ -78,20 +76,6 @@ public class GUI implements Observer {
             instance = new GUI();
         }
         return instance;
-    }
-
-    /**
-     * Setter for the managers to avoid recursive constructor calls.
-     *
-     * @param gameManager  The instance of the game manager.
-     * @param boardManager The instance of the board manager.
-     */
-    public void initializeManagers(GameManager gameManager, BoardManager boardManager) {
-        this.gameManager = gameManager;
-        this.boardManager = boardManager;
-
-        // Register to the observable
-        boardManager.addObserver(this);
     }
     // endregion
 
@@ -283,6 +267,8 @@ public class GUI implements Observer {
      * @return The board screen panel.
      */
     private JPanel createBoardScreen(String mode) {
+        GameManager gameManager = GameManager.getInstance();
+        BoardManager boardManager = BoardManager.getInstance();
 
         // main Panel Board Screen
         JPanel panel = new JPanel();
@@ -351,8 +337,9 @@ public class GUI implements Observer {
         boardPanel.setMaximumSize(new Dimension(900, 475));
         boardPanel.setOpaque(false);
 
-        guiBoard = new GUIBoard(gameManager, boardManager);
+        guiBoard = new GUIBoard();
         boardPanel.add(guiBoard, BorderLayout.CENTER);
+        gameManager.initializeMoveListener(guiBoard);
 
         // button panel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
@@ -587,6 +574,7 @@ public class GUI implements Observer {
      * @param currentPlayer
      */
     public void showGameOverMsg(PlayerEntity currentPlayer, String lossCause) {
+        GameManager gameManager = GameManager.getInstance();
 
         JDialog dialog = new JDialog();
         dialog.setTitle("Game Over");

@@ -1,7 +1,5 @@
 public class RuleManager {
     private static RuleManager instance;
-    private BoardManager boardManager;
-    private GameManager gameManager;
 
     /**
      * Creates a new Instance of this Manager, if there is none already.
@@ -13,24 +11,6 @@ public class RuleManager {
             instance = new RuleManager();
         }
         return instance;
-    }
-
-    /**
-     * Setter for the boardManager to avoid recursive constructor calls.
-     *
-     * @param boardManager The instance of the board manager.
-     */
-    public void setBoardManager(BoardManager boardManager) {
-        this.boardManager = boardManager;
-    }
-
-    /**
-     * Setter for the gameManager to avoid recursive constructor calls.
-     *
-     * @param gameManager The instance of the game manager.
-     */
-    public void setGameManager(GameManager gameManager) {
-        this.gameManager = gameManager;
     }
 
     /**
@@ -130,6 +110,7 @@ public class RuleManager {
      *                               than 2.
      */
     public int countMillsFormed(Stone lastPlacedStone) {
+        BoardManager boardManager = BoardManager.getInstance();
         PlayerEntity player = lastPlacedStone.getOwner();
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
@@ -184,19 +165,24 @@ public class RuleManager {
      * @return true if the game is over, false otherwise.
      */
     public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack) {
+        GameManager gameManager = GameManager.getInstance();
+
         // Player black won
         if(isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
+            System.out.println("Spieler schwarz hat gewonnen!");
             gameManager.setWinner(playerBlack);
             return true;
         }
         // Player white won
         if(isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
+            System.out.println("Spieler weiss hat gewonnen!");
             gameManager.setWinner(playerWhite);
             return true;
         }
 
         // Draw
         if(isStalemate()) {
+            System.out.println("Unentschieden!");
             gameManager.setWinner(null);
             return true;
         }
@@ -215,7 +201,7 @@ public class RuleManager {
     private boolean isPlayerGameOver(PlayerEntity player) {
         boolean isGameOver = player.getPhase() instanceof GameOverPhase;
         if(isGameOver) {
-            gameManager.lossCause = GameManager.LossCause.STONECOUNT;
+            GameManager.getInstance().lossCause = GameManager.LossCause.STONECOUNT;
         }
         return isGameOver;
     }
@@ -242,7 +228,7 @@ public class RuleManager {
             }
         }
 
-        gameManager.lossCause = GameManager.LossCause.BLOCKED;
+        GameManager.getInstance().lossCause = GameManager.LossCause.BLOCKED;
         return true;
     }
 
@@ -253,7 +239,9 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
+        GameManager gameManager = GameManager.getInstance();
         boolean stalemate = gameManager.getNoMillTurnCounter() >= 20;
+
         if(stalemate) {
             gameManager.lossCause = GameManager.LossCause.STALEMATE;
         }
