@@ -25,6 +25,7 @@ public class GameManager {
 
     private boolean gameStatus; // true when game is running
     private volatile Node[] playerMove; // Store current move input
+    private volatile Node playerRemove; // Store removal move input
 
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
@@ -62,9 +63,16 @@ public class GameManager {
      * <p>
      * When a move is received, it stores it and wakes up the waiting game loop.
      */
-    public void initializeMoveListener(GUIBoard guiBoard) {
+    public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
             this.playerMove = move;
+            synchronized(this) {
+                this.notify();
+            }
+        });
+
+        guiBoard.setRemoveListener(move -> {
+            this.playerRemove = move;
             synchronized(this) {
                 this.notify();
             }
@@ -75,7 +83,10 @@ public class GameManager {
 
     //region Gameflow
 
-    /**/
+    /**
+     *
+     * @param mode
+     */
     public void startGame(String mode) {
         if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
@@ -102,9 +113,12 @@ public class GameManager {
 
     public void runGame() {
         Node[] move;
+        Node remove;
+        boolean isPlayer = currentPlayer instanceof Player;
 
         while(gameStatus) {
-            if(currentPlayer instanceof Player) {
+            // Handling moves of players
+            if(isPlayer) {
                 playerMove = null;
 
                 synchronized(this) {
@@ -122,9 +136,49 @@ public class GameManager {
                 move = ((CPUPlayer) currentPlayer).makeMove();
             }
 
+            // Perform move according to choices of players
             Node fromNode = move[0];
             Node toNode = move[1];
             handleMove(currentPlayer, fromNode, toNode);
+            noMillTurnCounter++;
+
+            // Handling removal of stones
+            int millCount = ruleManager.countMillsFormed(toNode.getStone());
+            while(millCount > 0) {
+                noMillTurnCounter = 0;
+                guiManager.getGuiBoard().activateRemoveMode();
+                if(isPlayer) {
+                    playerRemove = null;
+
+                    synchronized(this) {
+                        while(playerRemove == null) {
+                            try {
+                                this.wait();
+                            } catch(InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                return;
+                            }
+                        }
+                    }
+                    remove = playerRemove;
+                } else {
+                    remove = ((CPUPlayer)currentPlayer).makeRemove();
+                }
+
+                // Perform remove according to choices of players
+                if(!boardManager.removeStone(currentPlayer, remove)) {
+                    continue;
+                }
+                millCount--;
+            }
+
+            if(ruleManager.isGameOver(playerWhite, playerBlack)) {
+                gameOver();
+            }
+
+            // Add performed move to the history and switch player
+            saveMove();
+            switchPlayer();
         }
     }
 
@@ -160,20 +214,6 @@ public class GameManager {
             toNode = move[1];
         }
         boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
-
-        if(!moveSuccessful) {
-            return;
-        }
-
-        noMillTurnCounter++;
-        if(ruleManager.isGameOver(playerWhite, playerBlack)) {
-            System.out.println("--Spiel ist vorbei--");
-            gameOver();
-            return;
-        }
-
-        saveMove();
-        switchPlayer();
     }
 
     /**
@@ -198,7 +238,6 @@ public class GameManager {
      */
     public void setWinner(PlayerEntity winner) {
         this.winner = winner;
-        System.out.println("Gewinner : " + winner.getName());
     }
 
     /**
@@ -244,20 +283,6 @@ public class GameManager {
     }
 
     /**
-     * Increments the amount of turns no mill was formed by 1.
-     */
-    public void incNoMillTurnCounter() {
-        noMillTurnCounter++;
-    }
-
-    /**
-     * Resets the amount of turns that no mill was formed to 0.
-     */
-    public void resetNoMillTurnCounter() {
-        noMillTurnCounter = 0;
-    }
-
-    /**
      * Getter for the time a player has to perform a move before he loses the game.
      *
      * @return The currently set time a player has for his move.
@@ -291,15 +316,6 @@ public class GameManager {
      */
     public boolean getGameStatus() {
         return gameStatus;
-    }
-
-    /**
-     * Getter for the boardManager.
-     *
-     * @return The BoardManager-Instance
-     */
-    public BoardManager getBoardManager() {
-        return boardManager;
     }
 
     //endregion

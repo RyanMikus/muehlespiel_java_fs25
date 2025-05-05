@@ -1,7 +1,6 @@
 import javax.swing.*;
 
 import java.awt.*;
-import java.io.File;
 import java.util.function.Consumer;
 
 public class GUI implements Observer {
@@ -339,7 +338,7 @@ public class GUI implements Observer {
 
         guiBoard = new GUIBoard();
         boardPanel.add(guiBoard, BorderLayout.CENTER);
-        gameManager.initializeMoveListener(guiBoard);
+        gameManager.initializeListeners(guiBoard);
 
         // button panel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
@@ -626,19 +625,22 @@ public class GUI implements Observer {
 
         });
 
-        String winner;
-        String looser;
+        String winner = "";
+        String looser = "";
         Image winGif = (new ImageIcon(getClass().getResource(WIN_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
         Image drawGif = (new ImageIcon(getClass().getResource(DRAW_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
 
-        if (gameManager.getWinner().getName().equalsIgnoreCase("white")) {
-            winner = "Weiss";
-            looser = "Schwarz";
-        } else {
-            winner = "Schwarz";
-            looser = "Weiss";
+        PlayerEntity winnerEntity = gameManager.getWinner();
+        if(winnerEntity != null) {
+            if(winnerEntity.getName().equalsIgnoreCase("white")) {
+                winner = "Weiss";
+                looser = "Schwarz";
+            } else {
+                winner = "Schwarz";
+                looser = "Weiss";
+            }
         }
 
         switch (lossCause) {
@@ -679,6 +681,15 @@ public class GUI implements Observer {
     }
 
     /**
+     * Getter for the initialized guiBoard.
+     *
+     * @return The guiBoard that creates the board and repaints on change.
+     */
+    public GUIBoard getGuiBoard() {
+        return guiBoard;
+    }
+
+    /**
      * Getter for initial Time per Turn.
      *
      * @return The maximum time each player should have to perform a move, set by a
@@ -687,21 +698,7 @@ public class GUI implements Observer {
     public int getTimePerTurn() {
         return slider.getValue();
     }
-
-    /**
-     * Initiates the remove stone process by enabling remove mode in the GUI board.
-     * This allows the player to select an opponent's stone for removal.
-     * The provided callback will be triggered once the removal attempt is
-     * completed.
-     *
-     * @param callback A Consumer<Boolean> that receives true if a stone was
-     *                 successfully removed,
-     *                 or false if the removal was aborted or invalid.
-     */
-    public void removeStone(Consumer<Boolean> callback) {
-        guiBoard.removeStone(callback);
-    }
-
+    
     /**
      * This method gets called, whenever the board gets updated (by its observable).
      * Repaints the GUI.

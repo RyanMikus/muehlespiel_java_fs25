@@ -65,6 +65,7 @@ public class RuleManager {
     }
 
     public boolean isRemovalValid(PlayerEntity remover, Node targetNode) {
+        System.out.println("Remover: " + remover.getName());
         boolean removalValid = false;
         Stone targetStone;
         PlayerEntity opponent;
