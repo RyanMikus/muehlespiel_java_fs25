@@ -154,17 +154,22 @@ public class GUI implements Observer {
     private JMenu createCreditsMenu() {
         JMenu credits = new JMenu("Credits");
 
-        String creditsText = 
-                "<html><div style='text-align: center;'>" +
+        String creditsText = "<html><div style='text-align: center;'>" +
                 "<h2>Silvan Balloni - SCRUM Master</h2>" +
-                "Hat die Regeln so verdrahtet, dass selbst Aristoteles beim Spielen nicken würde.<br>Ohne ihn gäbe es entweder 47 Züge auf einmal - oder gar keine.<br><br>" +
-                "Dank ihm gibt es endlich einen Spielablauf, der mit jeder Aktion neue Fragen aufwirft.<br> Seine Game-Logik hat die Grenzen der Realität überschritten - leider auch die der Spielbarkeit.<br><br>" +
+                "Hat die Regeln so verdrahtet, dass selbst Aristoteles beim Spielen nicken würde.<br>Ohne ihn gäbe es entweder 47 Züge auf einmal - oder gar keine.<br><br>"
+                +
+                "Dank ihm gibt es endlich einen Spielablauf, der mit jeder Aktion neue Fragen aufwirft.<br> Seine Game-Logik hat die Grenzen der Realität überschritten - leider auch die der Spielbarkeit.<br><br>"
+                +
                 "<h2>Rino Diskuss - Product Owner</h2>" +
-                "Seine KI ist so schlau, dass sie beim Spielen gegen sich selbst verloren hat - freiwillig, aus Höflichkeit.<br><br>" +
-                "Ihre KI trifft Entscheidungen auf Basis von über 7 Millionen Parametern - keiner davon sinnvoll.<br>Sie spielt zwar nicht gut, aber sie spielt überzeugt. Manchmal sogar gegen sich selbst. Und verliert trotzdem.<br><br>"+
+                "Seine KI ist so schlau, dass sie beim Spielen gegen sich selbst verloren hat - freiwillig, aus Höflichkeit.<br><br>"
+                +
+                "Ihre KI trifft Entscheidungen auf Basis von über 7 Millionen Parametern - keiner davon sinnvoll.<br>Sie spielt zwar nicht gut, aber sie spielt überzeugt. Manchmal sogar gegen sich selbst. Und verliert trotzdem.<br><br>"
+                +
                 "<h2>Christian Sutter - Praktikant</h2>" +
-                "Designte die Oberfläche so edel, dass der Louvre sie für die Dauerausstellung angefragt hat.<br> Die Buttons sind ergonomisch, empathisch und geben einem das Gefühl, geliebt zu werden.<br><br>" +
-                "Investierte 95 % der Entwicklungszeit in die perfekten Schattenverläufe und Button-Rundungen.<br> Die GUI glänzt, funkelt und tanzt - nur leider weiß niemand, wie man das Spiel startet. Oder beendet. Oder spielt." +
+                "Designte die Oberfläche so edel, dass der Louvre sie für die Dauerausstellung angefragt hat.<br> Die Buttons sind ergonomisch, empathisch und geben einem das Gefühl, geliebt zu werden.<br><br>"
+                +
+                "Investierte 95 % der Entwicklungszeit in die perfekten Schattenverläufe und Button-Rundungen.<br> Die GUI glänzt, funkelt und tanzt - nur leider weiß niemand, wie man das Spiel startet. Oder beendet. Oder spielt."
+                +
                 "</div></html>";
 
         credits.addMouseListener(new MouseAdapter() {
