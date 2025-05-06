@@ -309,6 +309,7 @@ public class GUI implements Observer {
 
         startButton.addActionListener(e -> {
             if (!gameManager.getGameStatus()) {
+                gameManager.setTimePerTurn(slider.getValue());
                 slider.setEnabled(false);
                 gameManager.startGame(mode);
             } else {
@@ -570,9 +571,10 @@ public class GUI implements Observer {
      * Build the Game Over Pop-Up Window. Depending on the way the game
      * ends, the Window will show different Messages.
      * 
-     * @param currentPlayer
+     * @param winner The player that has won the game.
+     * @param loser The player that has lost the game. The opponent of the winner.
      */
-    public void showGameOverMsg(PlayerEntity currentPlayer, String lossCause) {
+    public void showGameOverMsg(PlayerEntity winner, PlayerEntity loser) {
         GameManager gameManager = GameManager.getInstance();
 
         JDialog dialog = new JDialog();
@@ -625,44 +627,43 @@ public class GUI implements Observer {
 
         });
 
-        String winner = "";
-        String looser = "";
         Image winGif = (new ImageIcon(getClass().getResource(WIN_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
         Image drawGif = (new ImageIcon(getClass().getResource(DRAW_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
 
-        PlayerEntity winnerEntity = gameManager.getWinner();
-        if(winnerEntity != null) {
-            if(winnerEntity.getName().equalsIgnoreCase("white")) {
-                winner = "Weiss";
-                looser = "Schwarz";
+        String winnerOutput = "";
+        String loserOutput = "";
+        if(winner != null) {
+            if(winner.getName().equalsIgnoreCase("white")) {
+                winnerOutput = "Weiss";
+                loserOutput = "Schwarz";
             } else {
-                winner = "Schwarz";
-                looser = "Weiss";
+                winnerOutput = "Schwarz";
+                loserOutput = "Weiss";
             }
         }
 
-        switch (lossCause) {
-            case "STONECOUNT":
+        switch (gameManager.lossCause) {
+            case STONECOUNT:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: " + looser + " hat weniger als 3 Steine");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: " + loserOutput + " hat weniger als 3 Steine");
                 break;
-            case "BLOCKED":
+            case BLOCKED:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: " + looser + " wurde blockiert. Keine Züge mehr möglich");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: " + loserOutput + " wurde blockiert. Keine Züge mehr möglich");
                 break;
-            case "STALEMATE":
+            case STALEMATE:
                 gifLabel.setIcon(new ImageIcon(drawGif));
                 winnerText.setText("Unentschieden");
                 infoText.setText("Während 20 Zügen wurde keine Mühle gebildet");
                 break;
-            case "TIMEOUT":
+            case TIMEOUT:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: Spielzeit von " + looser + " abgelaufen");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: Spielzeit von " + loserOutput + " abgelaufen");
                 break;
         }
 
@@ -688,17 +689,7 @@ public class GUI implements Observer {
     public GUIBoard getGuiBoard() {
         return guiBoard;
     }
-
-    /**
-     * Getter for initial Time per Turn.
-     *
-     * @return The maximum time each player should have to perform a move, set by a
-     *         slider.
-     */
-    public int getTimePerTurn() {
-        return slider.getValue();
-    }
-    
+        
     /**
      * This method gets called, whenever the board gets updated (by its observable).
      * Repaints the GUI.

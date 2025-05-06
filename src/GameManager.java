@@ -29,7 +29,7 @@ public class GameManager {
 
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
-    private int timePerTurn;
+    private int timePerTurn = 30;
     private TurnTimer timer;
     // endregion
 
@@ -90,7 +90,7 @@ public class GameManager {
     public void startGame(String mode) {
         if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
-            //CPUPlayer = new CPUPlayer("black");
+            CPUPlayer = new CPUPlayer("black", getOpponent(), ruleManager);
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
@@ -196,6 +196,7 @@ public class GameManager {
      */
     public void switchPlayer() {
         currentPlayer = getOpponent();
+        guiManager.updateTimer(timePerTurn);
         timer.resetTimer();
     }
 
@@ -213,7 +214,7 @@ public class GameManager {
             fromNode = move[0];
             toNode = move[1];
         }
-        boolean moveSuccessful = player.getPhase().handleMove(fromNode, toNode);
+        player.getPhase().handleMove(fromNode, toNode);
     }
 
     /**
@@ -223,9 +224,7 @@ public class GameManager {
     public void gameOver() {
         stopTurnTimer();
         gameStatus = false;
-        String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
-        System.out.println(strLossCause);
-        guiManager.showGameOverMsg(winner, strLossCause);
+        guiManager.showGameOverMsg(winner, getOpponent());
     }
     //endregion
 
@@ -238,16 +237,6 @@ public class GameManager {
      */
     public void setWinner(PlayerEntity winner) {
         this.winner = winner;
-    }
-
-    /**
-     * Getter for the player that has won the game.
-     * Can be Black, White or a null (Draw).
-     *
-     * @return PlayerBlack or PlayerWhite if there is a winner, null otherwise.
-     */
-    public PlayerEntity getWinner() {
-        return winner;
     }
 
     /**
@@ -280,15 +269,6 @@ public class GameManager {
      */
     public int getNoMillTurnCounter() {
         return noMillTurnCounter;
-    }
-
-    /**
-     * Getter for the time a player has to perform a move before he loses the game.
-     *
-     * @return The currently set time a player has for his move.
-     */
-    public int getTimePerTurn() {
-        return timePerTurn;
     }
 
     /**
@@ -328,13 +308,10 @@ public class GameManager {
      * When the time runs out, the game is over and the current player loses.
      */
     public void startTurnTimer() {
-        timer = new TurnTimer(guiManager.getTimePerTurn(),
+        timer = new TurnTimer(timePerTurn,
                 () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
                 () -> {                                             // Happens when the time runs out
-                    winner = getOpponent();
-                    lossCause = LossCause.TIMEOUT;
-                    String strLossCause = lossCause.name(); // TODO - Maybe there is a better Solution for that
-                    guiManager.showGameOverMsg(winner, strLossCause);
+                    guiManager.showGameOverMsg(getOpponent(), currentPlayer);
                     gameOver();
                 });
 
