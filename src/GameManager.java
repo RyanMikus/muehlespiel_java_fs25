@@ -186,6 +186,7 @@ public class GameManager {
      *
      */
     public void resetGame(String mode) {
+        // TODO: this method Silvio
         gameStatus = false;
         startGame(mode);
     }
@@ -336,7 +337,8 @@ public class GameManager {
      * and the time left for the move.
      */
     public void saveMove() {
-        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter, timer.getTimeLeft());
+        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter,
+                timer.getTimeLeft());
         history.addMove(move);
     }
 
