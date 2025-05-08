@@ -88,6 +88,7 @@ public class GameManager {
      * @param mode Can either be Singleplayer (Player and CPU) or Multiplayer (Two players).
      */
     public void startGame(String mode) {
+        System.out.format("-- Starting game in mode: %s --\n\n", mode);
         // Starting Singleplayer mode with a Player and a CPUPlayer
         if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
@@ -104,7 +105,7 @@ public class GameManager {
             currentPlayer = playerWhite;
             startTurnTimer();
         } else {
-            System.out.println("Error 404... Spiel konnte nicht gestartet werden");
+            System.out.println("[ERROR] - Invalid mode!");
         }
 
         // Adding the initial state of the game to the history, allowing to undo until the very start of the game.
@@ -120,7 +121,7 @@ public class GameManager {
      * <p>
      * Checks if the game is over and saves the changes in the history if not.
      * @see #getMoveInput(boolean)
-     * @see #getRemoveInput(boolean) 
+     * @see #getRemoveInput(boolean)
      */
     public void runGame() {
         Node[] move;
@@ -141,6 +142,10 @@ public class GameManager {
 
             // Handle removal of stones
             int millCount = ruleManager.countMillsFormed(toNode.getStone());
+            if(millCount > 0) {
+                System.out.println("[" + (currentPlayer.getName().equalsIgnoreCase("white")
+                        ? "WHITE" : "BLACK") + "] - Formed " + millCount + " " + ((millCount == 1) ? "mill" : "mills"));
+            }
             while(millCount > 0) {
                 noMillTurnCounter = 0;
                 guiManager.getGuiBoard().setRemoveMode(true);
@@ -237,6 +242,11 @@ public class GameManager {
      */
     public void switchPlayer() {
         currentPlayer = getOpponent();
+
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+            System.out.println();
+        }
+
         guiManager.updateTimer(timePerTurn);
         timer.resetTimer();
     }
@@ -261,6 +271,7 @@ public class GameManager {
         stopTurnTimer();
         gameStatus = false;
         guiManager.showGameOverMsg(winner, getOpponent());
+        System.out.println("-- Ending Game --");
     }
     //endregion
 

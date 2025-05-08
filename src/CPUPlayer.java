@@ -13,9 +13,7 @@ public class CPUPlayer extends PlayerEntity {
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this, ruleManager);
         ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
         // strategy.buildGameTree(imaginativeSelf, imaginativeOpponent);
-        Node[] move = strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
-        System.out.println("CPU - Wählt node:  " + move[1].getID());
-        return move;
+        return strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
     }
 
     public Node makeRemove() {

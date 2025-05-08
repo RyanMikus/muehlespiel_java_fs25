@@ -419,7 +419,7 @@ public class GUI implements Observer {
                 slider.setEnabled(false);
                 gameManager.startGame(mode);
             } else {
-                System.out.println("Game is already running!");
+                System.out.println("[WARNING] - Game is already running!");
             }
         });
 
@@ -520,7 +520,7 @@ public class GUI implements Observer {
             image.setAlignmentX(Component.CENTER_ALIGNMENT);
             image.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
         } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
+            System.out.println("[ERROR] - Image not found: " + e.getMessage());
         }
         return image;
     } // createHomeImage
@@ -541,7 +541,7 @@ public class GUI implements Observer {
             logo.setAlignmentX(Component.CENTER_ALIGNMENT);
             logo.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
         } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
+            System.out.println("[ERROR] - Image not found: " + e.getMessage());
         }
         return logo;
     } // createHomeLogo

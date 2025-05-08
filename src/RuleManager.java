@@ -27,15 +27,15 @@ public class RuleManager {
 
         if(fromNode != null) {
             if(!fromNode.isOccupied())
-                errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
+                errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
             if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent())
-                errors += "The stone on this node (id=" + fromNode.getID()
+                errors += "The stone on node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
         }
         if(fromNode == toNode)
-            errors += "You can not place a stone on to itself!\n";
+            errors += "You can not place a stone onto itself!\n";
         if(fromNode != toNode && toNode.isOccupied())
-            errors += "You can not place a stone on to another stone!\n";
+            errors += "You can not place a stone onto another stone!\n";
 
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
@@ -44,7 +44,7 @@ public class RuleManager {
             // More errors might come up.
         } else if(currentPhase instanceof MovingPhase && fromNode != null) {
             if(!fromNode.getNeighbors().contains(toNode))
-                errors += "Can only move to neighbors!\nA stone can not be moved from " + fromNode.getID() + " to "
+                errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
         } else if(currentPhase instanceof JumpingPhase) {
             // More errors might come up.
@@ -59,8 +59,10 @@ public class RuleManager {
         if(errors.isEmpty())
             return true;
 
-        if (player instanceof Player)
+        if (player instanceof Player) {
+            System.out.print("[RULE] - ");
             System.out.print(errors);
+        }
         return false;
     }
 
@@ -139,9 +141,6 @@ public class RuleManager {
 
             // Add one formed mill to the counter
             if(allOwned) {
-                //debug
-                System.out.println("Mühle erkannt");
-
                 millCount++;
                 if(millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
@@ -169,20 +168,20 @@ public class RuleManager {
 
         // Player black won
         if(isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
-            System.out.println("Spieler schwarz hat gewonnen!");
+            System.out.println("\n-- BLACK HAS WON! --");
             gameManager.setWinner(playerBlack);
             return true;
         }
         // Player white won
         if(isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
-            System.out.println("Spieler weiss hat gewonnen!");
+            System.out.println("\n-- WHITE HAS WON! --");
             gameManager.setWinner(playerWhite);
             return true;
         }
 
         // Draw
         if(isStalemate()) {
-            System.out.println("Unentschieden!");
+            System.out.println("\n-- DRAW --");
             gameManager.setWinner(null);
             return true;
         }

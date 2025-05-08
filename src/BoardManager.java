@@ -141,6 +141,8 @@ public class BoardManager extends Observable {
         toNode.placeStone(stone);
         notifyObservers();
 
+        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                "] - Placed stone on node " + toNode.getID());
         return true;
     }
 
@@ -161,6 +163,8 @@ public class BoardManager extends Observable {
             opponent.removeStone(targetStone);
             opponent.getPhase().nextPhase();
             stoneRemoved = true;
+            System.out.println("[" + (remover.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                    "] - Removed stone on node " + targetNode.getID());
         }
         return stoneRemoved;
     }
@@ -187,7 +191,10 @@ public class BoardManager extends Observable {
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
+        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
         notifyObservers();
+
 
         return true;
     }
@@ -225,10 +232,12 @@ public class BoardManager extends Observable {
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
     public void printBoard() {
+        System.out.println("-- BOARD -- ");
         for(Node node : nodes.values()) {
             String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
         }
+        System.out.println("-- BOARD --\n");
     }
 }

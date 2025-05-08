@@ -253,7 +253,7 @@ public class GUIBoard extends JPanel{
             repaint();
             moveListener.accept(new Node[] { from, to });
         } else {
-            System.out.println("No moveListener was registered");
+            System.out.println("[ERROR] - No moveListener was registered");
         }
     }
 
