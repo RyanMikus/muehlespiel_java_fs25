@@ -23,7 +23,7 @@ public class ImaginativePlayer extends PlayerEntity {
 
         if (this.getPhase() instanceof SettingPhase) {
             for (int i = 0; i <= 23; i++) {
-                Node node = new Node(i);
+                Node node = BoardManager.getInstance().getNode(i);
                 if (ruleManager.isMoveValid(this, null, node)) {
                     possibleMoves.add(new Node[] { null, node });
                 }
@@ -39,7 +39,7 @@ public class ImaginativePlayer extends PlayerEntity {
         } else if (this.getPhase() instanceof JumpingPhase) {
             for (Stone stone : this.getRemainingStones()) {
                 for (int i = 0; i <= 23; i++) {
-                    Node node = new Node(i);
+                    Node node = BoardManager.getInstance().getNode(i);
                     if (ruleManager.isMoveValid(this, stone.getNode(), node)) {
                         possibleMoves.add(new Node[] { stone.getNode(), node });
                     }

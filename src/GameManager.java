@@ -10,15 +10,10 @@ public class GameManager {
     // Players
     private PlayerEntity playerWhite;
     private PlayerEntity playerBlack;
-    private PlayerEntity CPUPlayer;
     private PlayerEntity currentPlayer;
 
     public enum LossCause {
-        NONE,
-        STONECOUNT,
-        BLOCKED,
-        STALEMATE,
-        TIMEOUT
+        NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
     }
 
     public LossCause lossCause = LossCause.NONE;
@@ -84,17 +79,25 @@ public class GameManager {
     //region Gameflow
 
     /**
+     * Gets called when the startbutton gets pressed and initializes the game in a separate thread.
+     * <p>
+     * Creates players according to chosen mode and sets the gameStatus to true, indicating the game is running.
+     * <p>
+     * Adds an initial move to the history allowing to undo until the very start of the game.
      *
-     * @param mode
+     * @param mode Can either be Singleplayer (Player and CPU) or Multiplayer (Two players).
      */
     public void startGame(String mode) {
+        // Starting Singleplayer mode with a Player and a CPUPlayer
         if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
-            CPUPlayer = new CPUPlayer("black", getOpponent(), ruleManager);
+            playerBlack = new CPUPlayer("black", playerWhite);
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
-        } else if(mode.equalsIgnoreCase("multiplayer")) {
+        }
+        // Starting Multiplayer mode with 2 Players
+        else if(mode.equalsIgnoreCase("multiplayer")) {
             playerWhite = new Player("white");
             playerBlack = new Player("black");
             gameStatus = true;
@@ -111,64 +114,44 @@ public class GameManager {
         new Thread(this::runGame).start();
     }
 
+    /**
+     * Controls the game flow by waiting for the user's input or cpu's calculations and then performing the move
+     * according to it. Similarly waits for a choice and performs it to remove a stone when a mill is formed.
+     * <p>
+     * Checks if the game is over and saves the changes in the history if not.
+     * @see #getMoveInput(boolean)
+     * @see #getRemoveInput(boolean) 
+     */
     public void runGame() {
         Node[] move;
         Node remove;
-        boolean isPlayer = currentPlayer instanceof Player;
 
         while(gameStatus) {
-            // Handling moves of players
-            if(isPlayer) {
-                playerMove = null;
+            boolean isPlayer = currentPlayer instanceof Player;
 
-                synchronized(this) {
-                    while(playerMove == null) {
-                        try {
-                            this.wait();
-                        } catch(InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            return;
-                        }
-                    }
-                }
-                move = playerMove;
-            } else {
-                move = ((CPUPlayer) currentPlayer).makeMove();
-            }
-
-            // Perform move according to choices of players
+            // Handle moves of players
+            move = getMoveInput(isPlayer);
             Node fromNode = move[0];
             Node toNode = move[1];
+
+            // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
+            boardManager.notifyObservers();
             noMillTurnCounter++;
 
-            // Handling removal of stones
+            // Handle removal of stones
             int millCount = ruleManager.countMillsFormed(toNode.getStone());
             while(millCount > 0) {
                 noMillTurnCounter = 0;
-                guiManager.getGuiBoard().activateRemoveMode();
-                if(isPlayer) {
-                    playerRemove = null;
-
-                    synchronized(this) {
-                        while(playerRemove == null) {
-                            try {
-                                this.wait();
-                            } catch(InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                                return;
-                            }
-                        }
-                    }
-                    remove = playerRemove;
-                } else {
-                    remove = ((CPUPlayer)currentPlayer).makeRemove();
-                }
+                guiManager.getGuiBoard().setRemoveMode(true);
+                remove = getRemoveInput(isPlayer);
 
                 // Perform remove according to choices of players
                 if(!boardManager.removeStone(currentPlayer, remove)) {
                     continue;
                 }
+                guiManager.getGuiBoard().setRemoveMode(false);
+                boardManager.notifyObservers();
                 millCount--;
             }
 
@@ -176,9 +159,66 @@ public class GameManager {
                 gameOver();
             }
 
-            // Add performed move to the history and switch player
             saveMove();
             switchPlayer();
+        }
+    }
+
+    /**
+     * Helpermethod for the runGame-Method.
+     * <p>
+     * Waits for a valid player input (via drag & drop) or performs the CPU move.
+     *
+     * @param isPlayer true if the current player is human, false if it's a CPUPlayer.
+     * @return A Node array [fromNode, toNode], or null if interrupted
+     * @see #runGame()
+     */
+    private Node[] getMoveInput(boolean isPlayer) {
+        if(isPlayer) {
+            playerMove = null;
+
+            synchronized(this) {
+                while(playerMove == null) {
+                    try {
+                        this.wait();
+                    } catch(InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+                }
+            }
+            return playerMove;
+        } else {
+            return ((CPUPlayer) currentPlayer).makeMove();
+        }
+    }
+
+    /**
+     * Helpermethod for the runGame-Method.
+     * <p>
+     * Waits for the selection of an opponent's stone to remove, or lets the CPU automatically choose a stone to remove.
+     *
+     * @param isPlayer true if the current player is human
+     * @return The Node selected for removal, or null if interrupted
+     * @see #runGame()
+     */
+    private Node getRemoveInput(boolean isPlayer) {
+        if(isPlayer) {
+            playerRemove = null;
+
+            synchronized(this) {
+                while(playerRemove == null) {
+                    try {
+                        this.wait();
+                    } catch(InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+                }
+            }
+            return playerRemove;
+        } else {
+            return ((CPUPlayer) currentPlayer).makeRemove();
         }
     }
 
@@ -210,11 +250,6 @@ public class GameManager {
      * @param toNode   The target node.
      */
     public void handleMove(PlayerEntity player, Node fromNode, Node toNode) {
-        if(player instanceof CPUPlayer) {
-            Node[] move = ((CPUPlayer) player).makeMove();
-            fromNode = move[0];
-            toNode = move[1];
-        }
         player.getPhase().handleMove(fromNode, toNode);
     }
 
@@ -309,9 +344,9 @@ public class GameManager {
      * When the time runs out, the game is over and the current player loses.
      */
     public void startTurnTimer() {
-        timer = new TurnTimer(timePerTurn,
-                () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
+        timer = new TurnTimer(timePerTurn, () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
                 () -> {                                             // Happens when the time runs out
+                    lossCause = LossCause.TIMEOUT;
                     guiManager.showGameOverMsg(getOpponent(), currentPlayer);
                     gameOver();
                 });
@@ -337,8 +372,7 @@ public class GameManager {
      * and the time left for the move.
      */
     public void saveMove() {
-        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter,
-                timer.getTimeLeft());
+        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter, timer.getTimeLeft());
         history.addMove(move);
     }
 

@@ -54,7 +54,6 @@ public class GUIBoard extends JPanel{
                     if (currentPlayer.getName().equalsIgnoreCase("white")) {
                         for (int i = 0; i < whiteStonesLeft; i++) {
                             if (whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                                System.out.println("Pressed on a white stone.");
                                 draggedColor = Color.WHITE;
                                 dragPosition = e.getPoint();
                                 return;
@@ -66,7 +65,6 @@ public class GUIBoard extends JPanel{
                     if (currentPlayer.getName().equalsIgnoreCase("black")) {
                         for (int i = 0; i < blackStonesLeft; i++) {
                             if (blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
-                                System.out.println("Pressed on a black stone.");
                                 draggedColor = Color.BLACK;
                                 dragPosition = e.getPoint();
                                 return;
@@ -229,7 +227,6 @@ public class GUIBoard extends JPanel{
             whiteStoneSlots.add(new Point(25, 80 + i * 42));
             blackStoneSlots.add(new Point(675, 80 + i * 42));
         }
-        System.out.println("Boardgröße bei initStoneSlots: " + getWidth() + " x " + getHeight());
     }
     // endregion
 
@@ -253,6 +250,7 @@ public class GUIBoard extends JPanel{
      */
     public void signalPlayerMove(Node from, Node to) {
         if (moveListener != null) {
+            repaint();
             moveListener.accept(new Node[] { from, to });
         } else {
             System.out.println("No moveListener was registered");
@@ -269,14 +267,18 @@ public class GUIBoard extends JPanel{
     }
 
     /**
-     * Activates the removeMode that gets used to block all listeners except for the removing listener.
+     * Changes the remove mode to a desired state. Can be used to activate or deactivate the remove mode.
+     * When the remove mode is active, a player can remove a stone by clicking on it.
+     *
+     * @param toState The target state of the removeMode. <p>
+     *                True: Remove mode is on. False: Remove mode is off.
      */
-    public void activateRemoveMode() {
-        removeMode = true;
+    public void setRemoveMode(boolean toState) {
+        removeMode = toState;
     }
 
     /**
-     * When a mill is formed the player choose one stone over the gui
+     * When a mill is formed the player chooses one stone over the gui
      * 
      * @param targetPoint - The Point(Stone) the Player wants to remove
      */

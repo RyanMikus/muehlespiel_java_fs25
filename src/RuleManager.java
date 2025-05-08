@@ -28,7 +28,7 @@ public class RuleManager {
         if(fromNode != null) {
             if(!fromNode.isOccupied())
                 errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
-            if(fromNode.getStone().getOwner() != player)
+            if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent())
                 errors += "The stone on this node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
         }
@@ -65,7 +65,6 @@ public class RuleManager {
     }
 
     public boolean isRemovalValid(PlayerEntity remover, Node targetNode) {
-        System.out.println("Remover: " + remover.getName());
         boolean removalValid = false;
         Stone targetStone;
         PlayerEntity opponent;

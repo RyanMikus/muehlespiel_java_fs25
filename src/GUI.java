@@ -71,6 +71,8 @@ public class GUI implements Observer {
         window.add(cardPanel);
         window.setVisible(true);
 
+        BoardManager.getInstance().addObserver(this);
+
     } // GUI
 
     /**

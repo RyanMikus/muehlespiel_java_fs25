@@ -155,7 +155,6 @@ public class BoardManager extends Observable {
     public boolean removeStone(PlayerEntity remover, Node targetNode) {
         boolean stoneRemoved = false;
         if (RuleManager.getInstance().isRemovalValid(remover, targetNode)) {
-            System.out.println("Stein auf Position " + targetNode.getID() + " wird entfernt");
             Stone targetStone = targetNode.getStone();
             PlayerEntity opponent = targetStone.getOwner();
             targetNode.removeStone();
