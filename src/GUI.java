@@ -12,13 +12,14 @@ public class GUI implements Observer {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private JMenuBar menuBar;
+    private JLabel gamePrompt;
     private JLabel turnTime;
     private JSlider slider;
     private GUIBoard guiBoard;
 
     private static GUI instance;
 
-    // Color-Picker for RGB Values : rgb(0, 255, 4)
+    // Color-Picker for RGB Values : rgb(0, 153, 255)
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38);
     private final Color BUTTON_COLOR = new Color(250, 240, 220);
     private final Color TIMER_COLOR = new Color(250, 240, 220);
@@ -381,11 +382,11 @@ public class GUI implements Observer {
         panel.setBackground(new Color(20, 35, 40));
         panel.setOpaque(false);
 
-        // time Panel
-        JPanel timePanel = new JPanel();
-        timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.Y_AXIS));
-        timePanel.setOpaque(false);
-        timePanel.setBorder(BorderFactory.createEmptyBorder(30, 100, 0, 100));
+        // top Panel
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setOpaque(false);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 0, 100));
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
@@ -394,7 +395,7 @@ public class GUI implements Observer {
         JLabel sliderLabel = new JLabel("Bedenkzeit: 30s");
         sliderLabel.setForeground(TIMER_COLOR);
         sliderLabel.setFont(TIMER_FONT);
-        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
         slider = new JSlider(10, 60, 30);
         slider.setMajorTickSpacing(10);
@@ -427,14 +428,27 @@ public class GUI implements Observer {
         sliderPanel.add(slider);
         sliderPanel.add(startButton);
 
+        JPanel promptTimePanel = new JPanel();
+        promptTimePanel.setLayout(new BoxLayout(promptTimePanel, BoxLayout.X_AXIS));
+        promptTimePanel.setOpaque(false);
+
+        gamePrompt = new JLabel("Bedenkzeit einstellen und Spiel starten");
+        gamePrompt.setForeground(TURN_TIMER_COLOR); 
+        gamePrompt.setFont(TURN_TIMER_FONT);
+        gamePrompt.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 50));
+
         turnTime = new JLabel("Verbleibende Zeit: 30s");
         turnTime.setForeground(TURN_TIMER_COLOR);
         turnTime.setFont(TURN_TIMER_FONT);
         turnTime.setAlignmentX(Component.CENTER_ALIGNMENT);
         turnTime.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        timePanel.add(sliderPanel);
-        timePanel.add(turnTime);
+        promptTimePanel.add(gamePrompt);
+        promptTimePanel.add(Box.createHorizontalGlue());
+        promptTimePanel.add(turnTime);
+
+        topPanel.add(sliderPanel);
+        topPanel.add(promptTimePanel);
 
         // board panel
         JPanel boardPanel = new JPanel();
@@ -495,7 +509,7 @@ public class GUI implements Observer {
         // buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         // ---------------- COMPOSE MAIN PANEL ----------------
-        panel.add(timePanel);
+        panel.add(topPanel);
         panel.add(boardPanel);
         panel.add(buttonPanel);
         return panel;
@@ -669,6 +683,12 @@ public class GUI implements Observer {
     public void updateTimer(int timeLeft) {
         turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
+
+    public void updateStatus(String text, Color color){
+        gamePrompt.setText(text);
+        gamePrompt.setForeground(color);
+    }
+
 
     /**
      * Build the Game Over Pop-Up Window. Depending on the way the game
