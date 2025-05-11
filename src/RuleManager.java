@@ -7,7 +7,7 @@ public class RuleManager {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static RuleManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new RuleManager();
         }
         return instance;
@@ -25,30 +25,30 @@ public class RuleManager {
         // General possible errors
         String errors = "";
 
-        if(fromNode != null) {
-            if(!fromNode.isOccupied())
+        if (fromNode != null) {
+            if (!fromNode.isOccupied())
                 errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
-            if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent())
+            if (fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent())
                 errors += "The stone on node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
         }
-        if(fromNode == toNode)
+        if (fromNode == toNode)
             errors += "You can not place a stone onto itself!\n";
-        if(fromNode != toNode && toNode.isOccupied())
+        if (fromNode != toNode && toNode.isOccupied())
             errors += "You can not place a stone onto another stone!\n";
 
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
 
-        if(currentPhase instanceof SettingPhase) {
+        if (currentPhase instanceof SettingPhase) {
             // More errors might come up.
-        } else if(currentPhase instanceof MovingPhase && fromNode != null) {
-            if(!fromNode.getNeighbors().contains(toNode))
+        } else if (currentPhase instanceof MovingPhase && fromNode != null) {
+            if (!fromNode.getNeighbors().contains(toNode))
                 errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
-        } else if(currentPhase instanceof JumpingPhase) {
+        } else if (currentPhase instanceof JumpingPhase) {
             // More errors might come up.
-        } else if(currentPhase instanceof GameOverPhase) {
+        } else if (currentPhase instanceof GameOverPhase) {
             errors += "Game is already over. You must not make moves!";
         } else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
@@ -56,7 +56,7 @@ public class RuleManager {
         }
 
         // No errors occured
-        if(errors.isEmpty())
+        if (errors.isEmpty())
             return true;
 
         if (player instanceof Player) {
@@ -117,38 +117,46 @@ public class RuleManager {
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
 
-        for(int[] mill : boardManager.potentialMills) {
+        for (int[] mill : boardManager.potentialMills) {
             // Extract potential mills that contain the position of the newly placed stone
             boolean includesPlaced = false;
-            for(int pos : mill) {
-                if(pos == placedPos) {
+            for (int pos : mill) {
+                if (pos == placedPos) {
                     includesPlaced = true;
                     break;
                 }
             }
-            if(!includesPlaced)
+            if (!includesPlaced)
                 continue;
 
-            // Check if all members of the potential mill are possessed by the current player
-            boolean allOwned = true;
-            for(int pos : mill) {
-                Node node = boardManager.getNode(pos);
-                if(!node.isOccupied() || node.getStone().getOwner() != player) {
-                    allOwned = false;
-                    break;
+            // Check if all members of the potential mill are possessed by the current
+            // player
+            int ownershipCounter = 0;
+            for (int pos : mill) {
+                for (Stone stone : player.getRemainingStones()) {
+                    if (stone.getNode().getID() == pos)
+                        ownershipCounter++;
                 }
             }
-
             // Add one formed mill to the counter
-            if(allOwned) {
+            if (ownershipCounter == 3) {
                 millCount++;
-                if(millCount > 2) {
+                if (millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
                 }
             }
         }
 
         return millCount;
+    }
+
+    public int countMillsFormed(Node targetNode, PlayerEntity player) {
+        Stone tmpStone = new Stone(player);
+        tmpStone.setNode(targetNode);
+        player.addStone(tmpStone);
+        int formedMills = countMillsFormed(tmpStone);
+        player.removeStone(tmpStone);
+        return formedMills;
     }
 
     /**
@@ -167,20 +175,20 @@ public class RuleManager {
         GameManager gameManager = GameManager.getInstance();
 
         // Player black won
-        if(isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
+        if (isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
             System.out.println("\n-- BLACK HAS WON! --");
             gameManager.setWinner(playerBlack);
             return true;
         }
         // Player white won
-        if(isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
+        if (isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
             System.out.println("\n-- WHITE HAS WON! --");
             gameManager.setWinner(playerWhite);
             return true;
         }
 
         // Draw
-        if(isStalemate()) {
+        if (isStalemate()) {
             System.out.println("\n-- DRAW --");
             gameManager.setWinner(null);
             return true;
@@ -189,7 +197,7 @@ public class RuleManager {
         return false;
     }
 
-    //region Helpermethods GameOver
+    // region Helpermethods GameOver
     /**
      * Checks if the player is in the game over phase (only 2 stones left).
      * Sets the loss cause to STONECOUNT if so.
@@ -199,7 +207,7 @@ public class RuleManager {
      */
     private boolean isPlayerGameOver(PlayerEntity player) {
         boolean isGameOver = player.getPhase() instanceof GameOverPhase;
-        if(isGameOver) {
+        if (isGameOver) {
             GameManager.getInstance().lossCause = GameManager.LossCause.STONECOUNT;
         }
         return isGameOver;
@@ -214,14 +222,14 @@ public class RuleManager {
      */
     public boolean isPlayerBlocked(PlayerEntity player) {
         // Player can only be blocked in the moving phase
-        if(!(player.getPhase() instanceof MovingPhase)) {
+        if (!(player.getPhase() instanceof MovingPhase)) {
             return false;
         }
 
         // Check for each stone if a neighbor node is occupied
-        for(Stone stone : player.getRemainingStones()) {
-            for(Node neighbor : stone.getNode().getNeighbors()) {
-                if(!(neighbor.isOccupied())) {
+        for (Stone stone : player.getRemainingStones()) {
+            for (Node neighbor : stone.getNode().getNeighbors()) {
+                if (!(neighbor.isOccupied())) {
                     return false;
                 }
             }
@@ -241,7 +249,7 @@ public class RuleManager {
         GameManager gameManager = GameManager.getInstance();
         boolean stalemate = gameManager.getNoMillTurnCounter() >= 20;
 
-        if(stalemate) {
+        if (stalemate) {
             gameManager.lossCause = GameManager.LossCause.STALEMATE;
         }
         return stalemate;

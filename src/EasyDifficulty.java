@@ -3,7 +3,6 @@ import java.util.Random;
 
 public class EasyDifficulty implements DifficultyStrategy {
     public final byte lookAhead = 1;
-    private TreeNode root; // remembers the tree
 
     @Override
     public void buildGameTree(ImaginativePlayer imaginativeCPUPlayer, ImaginativePlayer imaginativeOpponent) {
