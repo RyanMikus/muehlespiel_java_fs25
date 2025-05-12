@@ -35,6 +35,8 @@ public class GUI implements Observer {
     private final String BOARD_IMAGE_PATH = "/resources/muehle_board.png";
     private final String DRAW_GIF_PATH = "/resources/draw.gif";
     private final String WIN_GIF_PATH = "/resources/win.gif";
+
+    private String mode;
     // endregion
 
     // region Initialization
@@ -294,11 +296,13 @@ public class GUI implements Observer {
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
-                        cardPanel.add(createBoardScreen("singleplayer"), "Board");
+                        mode = "singleplayer";
+                        cardPanel.add(createBoardScreen(mode), "Board");
                         cardLayout.show(cardPanel, "Board");
                         break;
                     case 1:
-                        cardPanel.add(createBoardScreen("multiplayer"), "Board");
+                        mode = "multiplayer";
+                        cardPanel.add(createBoardScreen(mode), "Board");
                         cardLayout.show(cardPanel, "Board");
                         break;
                     case 2:
@@ -373,7 +377,6 @@ public class GUI implements Observer {
      */
     private JPanel createBoardScreen(String mode) {
         GameManager gameManager = GameManager.getInstance();
-        BoardManager boardManager = BoardManager.getInstance();
 
         // main Panel Board Screen
         JPanel panel = new JPanel();
@@ -479,7 +482,7 @@ public class GUI implements Observer {
                         break;
                     case 4:
                         cardLayout.show(cardPanel, "Menu");
-                        // TODO implement reset Game
+                        gameManager.resetGame();
                         break;
                 }
             });
@@ -487,6 +490,8 @@ public class GUI implements Observer {
             gbc.gridx = i % 6;
             gbc.gridy = 0;
             buttonPanel.add(button, gbc);
+
+
         }
 
         // for debugging
@@ -498,6 +503,7 @@ public class GUI implements Observer {
         panel.add(timePanel);
         panel.add(boardPanel);
         panel.add(buttonPanel);
+        panel.setName("Board");
         return panel;
 
     } // createBoardScreen
@@ -720,14 +726,9 @@ public class GUI implements Observer {
         styleGameOverMsgButton(newGameButton);
 
         newGameButton.addActionListener(e -> {
-            if (gameManager.getCurrentPlayer() instanceof Player && gameManager.getOpponent() instanceof Player) {
-                gameManager.resetGame("multiplayer");
-                dialog.dispose();
-            } else {
-                gameManager.resetGame("singleplayer");
-                dialog.dispose();
-            }
-
+            dialog.dispose();
+            gameManager.resetGame();
+            cardLayout.show(cardPanel, "Board");
         });
 
         Image winGif = (new ImageIcon(getClass().getResource(WIN_GIF_PATH))).getImage().getScaledInstance(250, 250,
@@ -800,6 +801,44 @@ public class GUI implements Observer {
     @Override
     public void update() {
         guiBoard.repaint();
+    }
+
+    public void reset() {
+        slider.setValue(30);
+        slider.setEnabled(true);
+
+        // Altes BoardPanel (5. Komponente) entfernen
+        Component[] components = cardPanel.getComponents();
+        for (Component comp : components) {
+            if (comp.getName() != null && comp.getName().equals("Board")) {
+                cardPanel.remove(comp);
+                break;
+            }
+        }
+
+        JPanel newBoardPanel = createBoardScreen(mode);
+        newBoardPanel.setName("Board");
+        cardPanel.add(newBoardPanel, "Board");
+
+        // Neu hinzugefügtes GUIBoard referenzieren und Listener setzen
+        GUIBoard newGuiBoard = findGuiBoardIn(newBoardPanel);
+        if (newGuiBoard != null) {
+            newGuiBoard.resetState();
+            GameManager.getInstance().initializeListeners(newGuiBoard);
+        } else {
+            System.err.println("[ERROR] - Konnte GUIBoard im neuen BoardPanel nicht finden!");
+        }
+    }
+
+    private GUIBoard findGuiBoardIn(Container container) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof GUIBoard) return (GUIBoard) c;
+            if (c instanceof Container) {
+                GUIBoard found = findGuiBoardIn((Container) c);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
     // endregion
 

@@ -240,4 +240,10 @@ public class BoardManager extends Observable {
         }
         System.out.println("-- BOARD --\n");
     }
+
+    public void reset() {
+        nodes.clear();
+        initializeBoard();
+        notifyObservers();
+    }
 }

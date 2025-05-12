@@ -1,3 +1,5 @@
+import javax.swing.*;
+
 public class GameManager {
     // region Fields
     // Managers
@@ -5,7 +7,7 @@ public class GameManager {
     private final BoardManager boardManager;
     private final RuleManager ruleManager;
     private final GUI guiManager;
-    private final History history;
+    private History history;
 
     // Players
     private PlayerEntity playerWhite;
@@ -22,6 +24,7 @@ public class GameManager {
     private volatile Node[] playerMove; // Store current move input
     private volatile Node playerRemove; // Store removal move input
 
+    private String mode;
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
     private int timePerTurn = 30;
@@ -89,6 +92,8 @@ public class GameManager {
      */
     public void startGame(String mode) {
         System.out.format("-- Starting game in mode: %s --\n\n", mode);
+        this.mode = mode;
+
         // Starting Singleplayer mode with a Player and a CPUPlayer
         if(mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
@@ -120,6 +125,7 @@ public class GameManager {
      * according to it. Similarly waits for a choice and performs it to remove a stone when a mill is formed.
      * <p>
      * Checks if the game is over and saves the changes in the history if not.
+     *
      * @see #getMoveInput(boolean)
      * @see #getRemoveInput(boolean)
      */
@@ -230,10 +236,18 @@ public class GameManager {
     /**
      *
      */
-    public void resetGame(String mode) {
-        // TODO: this method Silvio
+    public void resetGame() {
+        stopTurnTimer();
         gameStatus = false;
-        startGame(mode);
+        noMillTurnCounter = 0;
+        history = new History();
+
+        playerMove = null;
+        playerRemove = null;
+        lossCause = LossCause.NONE;
+
+        boardManager.reset();
+        guiManager.reset();
     }
 
     /**
@@ -243,7 +257,7 @@ public class GameManager {
     public void switchPlayer() {
         currentPlayer = getOpponent();
 
-        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+        if(currentPlayer.getName().equalsIgnoreCase("white")) {
             System.out.println();
         }
 
@@ -270,7 +284,7 @@ public class GameManager {
     public void gameOver() {
         stopTurnTimer();
         gameStatus = false;
-        guiManager.showGameOverMsg(winner, getOpponent());
+        guiManager.showGameOverMsg(winner, winner == currentPlayer ? getOpponent() : currentPlayer);
         System.out.println("-- Ending Game --");
     }
     //endregion
@@ -358,7 +372,7 @@ public class GameManager {
         timer = new TurnTimer(timePerTurn, () -> guiManager.updateTimer(timer.getTimeLeft()),  // Happens each Tick
                 () -> {                                             // Happens when the time runs out
                     lossCause = LossCause.TIMEOUT;
-                    guiManager.showGameOverMsg(getOpponent(), currentPlayer);
+                    winner = getOpponent();
                     gameOver();
                 });
 
