@@ -24,6 +24,7 @@ public class MediumDifficulty implements DifficultyStrategy {
                 return playerMove;
             }
         }
+
         // Block the opponents mill from forming.
         for (Node[] opponentMove : opponentMoves) {
             if (RuleManager.getInstance().countMillsFormed(opponentMove[1], opponent) >= 1) {
@@ -35,7 +36,37 @@ public class MediumDifficulty implements DifficultyStrategy {
                 }
             }
         }
-        // TODO: Try to place a stone to set up a potential mill
+
+        // Find a Node in playerMoves which has a stone of the same player and another
+        // unoccupied node as a neighbor.
+        for (Node[] playerMove : playerMoves) {
+            Node targetNode = playerMove[1];
+            for (Node nodeNeighbor : targetNode.getNeighbors()) {
+                if (!nodeNeighbor.isOccupied()) {
+                    int unoccupiedNeighborCount = 0;
+                    boolean stoneNeighbor = false;
+                    for (Node nodeNeighborNeighbor : nodeNeighbor.getNeighbors()) {
+                        if (!nodeNeighborNeighbor.isOccupied()) {
+                            unoccupiedNeighborCount++;
+                        } else if (nodeNeighborNeighbor.isOccupied()) {
+                            for (Stone stone : player.getRemainingStones()) {
+                                if (stone.getNode().getID() == nodeNeighborNeighbor.getID()) {
+                                    stoneNeighbor = true;
+                                }
+                            }
+                        }
+                    }
+                    if (stoneNeighbor && unoccupiedNeighborCount >= 3) {
+                        System.out.println("Real magic does exist");
+                        for (Node[] move : playerMoves) {
+                            if (move[1].getID() == nodeNeighbor.getID())
+                                return move;
+                        }
+                    }
+                }
+            }
+        }
+
         Random random = new Random();
         return playerMoves.get(random.nextInt(playerMoves.size()));
     }
