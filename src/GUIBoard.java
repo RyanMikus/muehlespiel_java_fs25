@@ -47,8 +47,6 @@ public class GUIBoard extends JPanel {
                     return;
                 }
 
-                System.out.println("🧪 MousePressed – removeMode = " + removeMode);
-
                 if(!removeMode) {
                     PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
 
@@ -286,10 +284,6 @@ public class GUIBoard extends JPanel {
      */
     public void signalPlayerRemove(Point targetPoint) {
         BoardManager boardManager = BoardManager.getInstance();
-
-        System.out.println("🧪 signalPlayerRemove aufgerufen");
-        System.out.println("🧪 removeMode = " + removeMode);
-        System.out.println("🧪 removeListener gesetzt: " + (removeListener != null));
 
         // debug
         //System.out.println("RSM - currentRemover -> " + currentRemover.getName());

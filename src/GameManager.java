@@ -24,7 +24,7 @@ public class GameManager {
     private volatile Node[] playerMove; // Store current move input
     private volatile Node playerRemove; // Store removal move input
 
-    private String mode;
+    private Thread gameThread;
     private PlayerEntity winner;
     private int noMillTurnCounter = 0;
     private int timePerTurn = 30;
@@ -92,7 +92,6 @@ public class GameManager {
      */
     public void startGame(String mode) {
         System.out.format("-- Starting game in mode: %s --\n\n", mode);
-        this.mode = mode;
 
         // Starting Singleplayer mode with a Player and a CPUPlayer
         if(mode.equalsIgnoreCase("singleplayer")) {
@@ -117,17 +116,30 @@ public class GameManager {
         Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
         history.addMove(initialMove);
 
-        new Thread(this::runGame).start();
+        gameThread = new Thread(this::runGame);
+        gameThread.start();
     }
 
     /**
-     * Controls the game flow by waiting for the user's input or cpu's calculations and then performing the move
-     * according to it. Similarly waits for a choice and performs it to remove a stone when a mill is formed.
+     * Controls the game loop, alternating between players and handling their moves.
      * <p>
-     * Checks if the game is over and saves the changes in the history if not.
+     * Waits for player input (or CPU moves) using {@link #getMoveInput(boolean)} and
+     * processes the selected move. If a mill is formed, it waits for a stone to be removed
+     * via {@link #getRemoveInput(boolean)}.
+     * <p>
+     * After each move (and removal, if applicable), it checks whether the game is over
+     * and saves the current state in the {@code History}.
+     * <p>
+     * <strong>Important:</strong> This method may be run in a separate thread, which can be interrupted
+     * during waiting phases (e.g. when calling {@code wait()} for player input). In such cases,
+     * the input methods may return {@code null}. Callers must explicitly check for {@code null}
+     * values before accessing move arrays (e.g. {@code move[0]} or {@code move[1]}) to avoid
+     * {@link NullPointerException}.
      *
      * @see #getMoveInput(boolean)
      * @see #getRemoveInput(boolean)
+     * @see #saveMove()
+     * @see #resetGame()
      */
     public void runGame() {
         Node[] move;
@@ -138,13 +150,21 @@ public class GameManager {
 
             // Handle moves of players
             move = getMoveInput(isPlayer);
+
+            if(move == null) {
+                System.out.println("[INFO] - Game thread interrupted during move input.");
+                return;
+            }
+
             Node fromNode = move[0];
             Node toNode = move[1];
 
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
             boardManager.notifyObservers();
-            noMillTurnCounter++;
+            if(!(currentPlayer.getPhase() instanceof SettingPhase)){
+                noMillTurnCounter++;
+            }
 
             // Handle removal of stones
             int millCount = ruleManager.countMillsFormed(toNode.getStone());
@@ -157,6 +177,11 @@ public class GameManager {
                 guiManager.getGuiBoard().setRemoveMode(true);
                 remove = getRemoveInput(isPlayer);
 
+                if (remove == null) {
+                    System.out.println("[INFO] - Game thread interrupted during removal.");
+                    return;
+                }
+
                 // Perform remove according to choices of players
                 if(!boardManager.removeStone(currentPlayer, remove)) {
                     continue;
@@ -168,6 +193,7 @@ public class GameManager {
 
             if(ruleManager.isGameOver(playerWhite, playerBlack)) {
                 gameOver();
+                return;
             }
 
             saveMove();
@@ -234,23 +260,6 @@ public class GameManager {
     }
 
     /**
-     *
-     */
-    public void resetGame() {
-        stopTurnTimer();
-        gameStatus = false;
-        noMillTurnCounter = 0;
-        history = new History();
-
-        playerMove = null;
-        playerRemove = null;
-        lossCause = LossCause.NONE;
-
-        boardManager.reset();
-        guiManager.reset();
-    }
-
-    /**
      * Switches the current player, that can perform moves.
      * Resets and starts the timer again for the next player.
      */
@@ -258,7 +267,7 @@ public class GameManager {
         currentPlayer = getOpponent();
 
         if(currentPlayer.getName().equalsIgnoreCase("white")) {
-            System.out.println();
+            System.out.println("[INFO] - Turns without mill: " + noMillTurnCounter + "\n");
         }
 
         guiManager.updateTimer(timePerTurn);
@@ -286,6 +295,37 @@ public class GameManager {
         gameStatus = false;
         guiManager.showGameOverMsg(winner, winner == currentPlayer ? getOpponent() : currentPlayer);
         System.out.println("-- Ending Game --");
+    }
+
+    /**
+     * Resets the game and prepares it to be started again.
+     * <p>
+     * This method interrupts the current game thread to stop ongoing operations.
+     * As a result, methods waiting for player input in {@link #runGame()} (such as {@code getMoveInput}
+     * or {@code getRemoveInput}) may return {@code null}.
+     * <p>
+     * Callers of {@link #runGame()} must therefore explicitly handle {@code null} values
+     * to avoid {@link NullPointerException}, especially when accessing move arrays (e.g. {@code move[0]}).
+     *
+     * @see #runGame()
+     */
+    public void resetGame() {
+        if(!gameStatus) {
+            return;
+        }
+
+        stopTurnTimer();
+        gameStatus = false;
+        noMillTurnCounter = 0;
+        history = new History();
+
+        playerMove = null;
+        playerRemove = null;
+        lossCause = LossCause.NONE;
+
+        boardManager.reset();
+        guiManager.reset();
+        gameThread.interrupt();
     }
     //endregion
 
