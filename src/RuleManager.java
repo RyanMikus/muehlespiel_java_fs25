@@ -22,20 +22,34 @@ public class RuleManager {
      * @return true if move is valid, false otherwise.
      */
     public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
+        GameManager gameManager = GameManager.getInstance();
+        
         // General possible errors
         String errors = "";
 
         if(fromNode != null) {
-            if(!fromNode.isOccupied())
+            if(!fromNode.isOccupied()){
                 errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
-            if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent())
+                gameManager.updateErrorPrompt("Wähle ein Feld mit einem eigenen Stein.");
+            }
+                
+            if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent()){
                 errors += "The stone on node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
+                gameManager.updateErrorPrompt("Du kannst nur deine eigenen Steine bewegen.");
+            }
+                
         }
-        if(fromNode == toNode)
+        if(fromNode == toNode){
             errors += "You can not place a stone onto itself!\n";
-        if(fromNode != toNode && toNode.isOccupied())
+            gameManager.updateErrorPrompt("Du kannst keinen Stein auf dasselbe Feld setzen.");
+        }
+            
+        if(fromNode != toNode && toNode.isOccupied()){
             errors += "You can not place a stone onto another stone!\n";
+            gameManager.updateErrorPrompt("Dieses Feld ist bereits besetzt.");
+        }
+            
 
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
@@ -43,16 +57,22 @@ public class RuleManager {
         if(currentPhase instanceof SettingPhase) {
             // More errors might come up.
         } else if(currentPhase instanceof MovingPhase && fromNode != null) {
-            if(!fromNode.getNeighbors().contains(toNode))
+            if(!fromNode.getNeighbors().contains(toNode)){
                 errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
+                gameManager.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");  
+            }
+                      
+                        
         } else if(currentPhase instanceof JumpingPhase) {
             // More errors might come up.
         } else if(currentPhase instanceof GameOverPhase) {
             errors += "Game is already over. You must not make moves!";
+            gameManager.updateErrorPrompt("Das Spiel ist bereits vorbei.");
         } else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
                     + player.getPhase().getClass().getSimpleName() + "\n";
+            gameManager.updateErrorPrompt("Ungültige Spielphase für " + player.getName() + ".");
         }
 
         // No errors occured
