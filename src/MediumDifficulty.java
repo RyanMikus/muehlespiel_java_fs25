@@ -13,14 +13,18 @@ public class MediumDifficulty implements DifficultyStrategy {
     /**/
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         List<Node[]> playerMoves = player.getAllPossibleMoves();
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
+
         // Try to make a mill
         for (Node[] playerMove : playerMoves) {
             if (RuleManager.getInstance().countMillsFormed(playerMove[1], player) >= 1) {
-                return playerMove;
-            }
-            if (playerMove[1].getNeighbors().contains(playerMove[1])) {
                 return playerMove;
             }
         }
@@ -28,7 +32,6 @@ public class MediumDifficulty implements DifficultyStrategy {
         // Block the opponents mill from forming.
         for (Node[] opponentMove : opponentMoves) {
             if (RuleManager.getInstance().countMillsFormed(opponentMove[1], opponent) >= 1) {
-                System.out.println("saas");
                 int targetNodeID = opponentMove[1].getID();
                 for (Node[] playerMove : playerMoves) {
                     if (playerMove[1].getID() == targetNodeID)
@@ -44,19 +47,18 @@ public class MediumDifficulty implements DifficultyStrategy {
             for (Node nodeNeighbor : targetNode.getNeighbors()) {
                 if (!nodeNeighbor.isOccupied()) {
                     int unoccupiedNeighborCount = 0;
-                    boolean stoneNeighbor = false;
+                    int stoneNeighbor = 0;
                     for (Node nodeNeighborNeighbor : nodeNeighbor.getNeighbors()) {
                         if (!nodeNeighborNeighbor.isOccupied()) {
                             unoccupiedNeighborCount++;
                         } else if (nodeNeighborNeighbor.isOccupied()) {
                             for (Stone stone : player.getRemainingStones()) {
-                                if (stone.getNode().getID() == nodeNeighborNeighbor.getID()) {
-                                    stoneNeighbor = true;
-                                }
+                                if (stone.getNode().getID() == nodeNeighborNeighbor.getID())
+                                    stoneNeighbor++;
                             }
                         }
                     }
-                    if (stoneNeighbor && unoccupiedNeighborCount >= 3) {
+                    if (stoneNeighbor >= 2 && unoccupiedNeighborCount >= 1) {
                         System.out.println("Real magic does exist");
                         for (Node[] move : playerMoves) {
                             if (move[1].getID() == nodeNeighbor.getID())
