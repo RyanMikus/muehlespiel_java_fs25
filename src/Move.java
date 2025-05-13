@@ -113,7 +113,13 @@ public class Move {
      * @return A map representing the board state.
      */
     public Map<Integer, Node> getBoardSnapshot() {
-        return boardSnapshot;
+        Map<Integer, Node> copy = new HashMap<>();
+        for (Map.Entry<Integer, Node> entry : boardSnapshot.entrySet()) {
+            copy.put(entry.getKey(),
+                     entry.getValue().deepCopy(currentPlayer.deepCopy(),
+                                               opponent.deepCopy()));
+        }
+        return copy;
     }
 
     /**
