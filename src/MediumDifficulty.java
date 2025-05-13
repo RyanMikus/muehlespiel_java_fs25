@@ -1,4 +1,6 @@
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class MediumDifficulty implements DifficultyStrategy {
@@ -14,24 +16,24 @@ public class MediumDifficulty implements DifficultyStrategy {
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(800);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         List<Node[]> playerMoves = player.getAllPossibleMoves();
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
 
         // Try to make a mill
         for (Node[] playerMove : playerMoves) {
-            if (RuleManager.getInstance().countMillsFormed(playerMove[1], player) >= 1) {
+            if (RuleManager.getInstance().countMillsFormed(playerMove, player) >= 1) {
                 return playerMove;
             }
         }
 
         // Block the opponents mill from forming.
         for (Node[] opponentMove : opponentMoves) {
-            if (RuleManager.getInstance().countMillsFormed(opponentMove[1], opponent) >= 1) {
+            if (RuleManager.getInstance().countMillsFormed(opponentMove, opponent) >= 1) {
                 int targetNodeID = opponentMove[1].getID();
                 for (Node[] playerMove : playerMoves) {
                     if (playerMove[1].getID() == targetNodeID)
@@ -75,8 +77,20 @@ public class MediumDifficulty implements DifficultyStrategy {
 
     @Override
     public Node calculateRemoval(ImaginativePlayer player, ImaginativePlayer opponent) {
-        // TODO: make it smarter
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         List<Node> removals = player.getAllPossibleRemovals(opponent);
+        List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
+        int[] nodeToPotentialMillCount = new int[removals.size()];
+
+        // Check every possible removal how many mills could be formed with it on that
+        // position. Return the Node with the highest value.
+        // TODO: implement smarter removal.
+
         for (Node node : removals) {
             List<Node> neighbors = node.getNeighbors();
             for (Node neighborNode : neighbors) {
@@ -85,6 +99,7 @@ public class MediumDifficulty implements DifficultyStrategy {
                 }
             }
         }
+
         Random random = new Random();
         return removals.get(random.nextInt(removals.size()));
     }

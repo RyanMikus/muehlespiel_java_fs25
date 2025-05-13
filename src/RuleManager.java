@@ -150,12 +150,25 @@ public class RuleManager {
         return millCount;
     }
 
-    public int countMillsFormed(Node targetNode, PlayerEntity player) {
+    public int countMillsFormed(Node[] move, PlayerEntity player) {
+        Node fromNode = move[0];
+        Stone fromNodeStone = null;
+        if (fromNode != null && fromNode.isOccupied()) {
+            fromNodeStone = fromNode.getStone();
+            player.removeStone(fromNodeStone);
+        }
+
+        Node toNode = move[1];
         Stone tmpStone = new Stone(player);
-        tmpStone.setNode(targetNode);
+        tmpStone.setNode(toNode);
         player.addStone(tmpStone);
+
         int formedMills = countMillsFormed(tmpStone);
+
         player.removeStone(tmpStone);
+        if (fromNodeStone != null) {
+            player.addStone(fromNodeStone);
+        }
         return formedMills;
     }
 
