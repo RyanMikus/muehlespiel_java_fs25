@@ -69,6 +69,7 @@ public class GUI implements Observer {
         cardPanel.add(createNewGameScreen(), "newGame");
         cardPanel.add(createLoadGameScreen(), "loadGame");
 
+        window.setJMenuBar(menuBar);
         window.add(cardPanel);
         window.setVisible(true);
 
@@ -90,11 +91,12 @@ public class GUI implements Observer {
     // endregion
 
     // region Menu creation
+
     /**
-     * Creates the Menu Item Help, click on the Item shows a Dropdown
-     * with the Item Rules, click on that for the gameRules.
+     * Creates the "Help" menu of the application, which contains items providing
+     * information or assistance, such as the game rules.
      *
-     * @return The menu Item rules
+     * @return The "Help" menu populated with relevant menu items.
      */
     private JMenu createHelpMenu() {
         JMenu help = new JMenu("Hilfe");
@@ -147,11 +149,13 @@ public class GUI implements Observer {
         return help;
     }
 
+
     /**
-     * Creates the Menu Item redits, click on the Item shows a Window
-     * with the credits for the programmers.
+     * Creates the "Credits" menu which displays information about the contributors
+     * to the project when clicked. The menu, when interacted with, triggers a
+     * pop-up dialog containing formatted credit text.
      *
-     * @return The menu Item Credits
+     * @return The constructed "Credits" menu as a JMenu instance.
      */
     private JMenu createCreditsMenu() {
         JMenu credits = new JMenu("Credits");
