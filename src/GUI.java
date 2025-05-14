@@ -40,6 +40,7 @@ public class GUI implements Observer {
     // endregion
 
     // region Initialization
+
     /**
      * Initializes the GUI.
      * Creates the window, main panel and all different screens.
@@ -91,6 +92,7 @@ public class GUI implements Observer {
     // endregion
 
     // region Menu creation
+
     /**
      * Creates the Menu Item Help, click on the Item shows a Dropdown
      * with the Item Rules, click on that for the gameRules.
@@ -187,9 +189,10 @@ public class GUI implements Observer {
     // endregion
 
     // region Screen creation
+
     /**
      * Creates the Home Screen JPanel.
-     * 
+     *
      * @return The home screen panel.
      */
     private JPanel createHomeScreen() {
@@ -223,7 +226,7 @@ public class GUI implements Observer {
 
     /**
      * Creates the Menu Screen JPanel
-     * 
+     *
      * @return The menu screen panel.
      */
     private JPanel createMenuScreen() {
@@ -241,8 +244,8 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "neues spiel", "spiel laden", "zurück" };
-        String[] screenNames = { "newGame", "loadGame", "Home" };
+        String[] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
+        String[] screenNames = {"newGame", "loadGame", "Home"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -268,7 +271,7 @@ public class GUI implements Observer {
 
     /**
      * Creates the New Game Screen JPanel.
-     * 
+     *
      * @return The new game screen panel.
      */
     private JPanel createNewGameScreen() {
@@ -286,7 +289,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "einzelspieler", "mehrspieler", "zurück" };
+        String[] buttonTexts = {"einzelspieler", "mehrspieler", "zurück"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -327,7 +330,7 @@ public class GUI implements Observer {
 
     /**
      * Creates the Load Screen JPanel.
-     * 
+     *
      * @return The load screen panel.
      */
     private JPanel createLoadGameScreen() {
@@ -345,8 +348,8 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "auswählen", "zurück" };
-        String[] screenNames = { "", "Menu" };
+        String[] buttonTexts = {"auswählen", "zurück"};
+        String[] screenNames = {"", "Menu"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -372,7 +375,7 @@ public class GUI implements Observer {
 
     /**
      * Creates the Board Screen JPanel.
-     * 
+     *
      * @return The board screen panel.
      */
     private JPanel createBoardScreen(String mode) {
@@ -459,7 +462,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = { "undo", "redo", "speichern", "laden", "beenden" };
+        String[] buttonTexts = {"undo", "redo", "speichern", "laden", "beenden"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -490,8 +493,6 @@ public class GUI implements Observer {
             gbc.gridx = i % 6;
             gbc.gridy = 0;
             buttonPanel.add(button, gbc);
-
-
         }
 
         // for debugging
@@ -507,13 +508,14 @@ public class GUI implements Observer {
         return panel;
 
     } // createBoardScreen
-      // endregion
+    // endregion
 
     // region Design
+
     /**
      * Creates a specific image which is shown on multiple Screens.
      * This method is only used to avoid code duplicates.
-     * 
+     *
      * @return The created image as a label.
      */
     private JLabel createHomeImage() {
@@ -534,7 +536,7 @@ public class GUI implements Observer {
     /**
      * Creates a specific logo which is shown on multiple Screens.
      * This method is only used to avoid code duplicates.
-     * 
+     *
      * @return The created logo as a label.
      */
     private JLabel createHomeLogo() {
@@ -555,7 +557,7 @@ public class GUI implements Observer {
     /**
      * Styles a button by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
-     * 
+     *
      * @param button The button that should get styled.
      */
     public void styleButton(JButton button) {
@@ -591,7 +593,7 @@ public class GUI implements Observer {
     /**
      * Styles a button by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
-     * 
+     *
      * @param button The button that should get styled.
      */
     public void styleBoardButton(JButton button) {
@@ -629,7 +631,7 @@ public class GUI implements Observer {
     /**
      * Styles a button by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
-     * 
+     *
      * @param button The button that should get styled.
      */
     public void styleGameOverMsgButton(JButton button) {
@@ -667,6 +669,7 @@ public class GUI implements Observer {
     // endregion
 
     // region Events
+
     /**
      * Updates the text displaying the remaining time to perform a move.
      *
@@ -679,9 +682,9 @@ public class GUI implements Observer {
     /**
      * Build the Game Over Pop-Up Window. Depending on the way the game
      * ends, the Window will show different Messages.
-     * 
+     *
      * @param winner The player that has won the game.
-     * @param loser The player that has lost the game. The opponent of the winner.
+     * @param loser  The player that has lost the game. The opponent of the winner.
      */
     public void showGameOverMsg(PlayerEntity winner, PlayerEntity loser) {
         GameManager gameManager = GameManager.getInstance();
@@ -738,8 +741,8 @@ public class GUI implements Observer {
 
         String winnerOutput = "";
         String loserOutput = "";
-        if(winner != null) {
-            if(winner.getName().equalsIgnoreCase("white")) {
+        if (winner != null) {
+            if (winner.getName().equalsIgnoreCase("white")) {
                 winnerOutput = "Weiss";
                 loserOutput = "Schwarz";
             } else {
@@ -807,7 +810,6 @@ public class GUI implements Observer {
         slider.setValue(30);
         slider.setEnabled(true);
 
-        // Altes BoardPanel (5. Komponente) entfernen
         Component[] components = cardPanel.getComponents();
         for (Component comp : components) {
             if (comp.getName() != null && comp.getName().equals("Board")) {
@@ -820,7 +822,6 @@ public class GUI implements Observer {
         newBoardPanel.setName("Board");
         cardPanel.add(newBoardPanel, "Board");
 
-        // Neu hinzugefügtes GUIBoard referenzieren und Listener setzen
         GUIBoard newGuiBoard = findGuiBoardIn(newBoardPanel);
         if (newGuiBoard != null) {
             newGuiBoard.resetState();

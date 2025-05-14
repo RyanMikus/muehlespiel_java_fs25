@@ -310,9 +310,10 @@ public class GameManager {
      * @see #runGame()
      */
     public void resetGame() {
+        /*
         if(!gameStatus) {
             return;
-        }
+        }*/
 
         stopTurnTimer();
         gameStatus = false;
@@ -325,7 +326,9 @@ public class GameManager {
 
         boardManager.reset();
         guiManager.reset();
+        System.out.println("Everything reset");
         gameThread.interrupt();
+
     }
     //endregion
 
