@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class RuleManager {
     private static RuleManager instance;
 
@@ -131,15 +134,19 @@ public class RuleManager {
 
             // Check if all members of the potential mill are possessed by the current
             // player
+            List<Integer> millStones = new ArrayList<>();
             int ownershipCounter = 0;
             for (int pos : mill) {
                 for (Stone stone : player.getRemainingStones()) {
-                    if (stone.getNode().getID() == pos)
+                    if (stone.getNode().getID() == pos && !millStones.contains(pos)) {
                         ownershipCounter++;
+                        millStones.add((Integer) stone.getNode().getID());
+                    }
                 }
             }
             // Add one formed mill to the counter
             if (ownershipCounter == 3) {
+                System.out.println("[DEBUG] Mill formed on nodes: " + millStones);
                 millCount++;
                 if (millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
@@ -148,27 +155,32 @@ public class RuleManager {
         }
 
         return millCount;
+
     }
 
     public int countMillsFormed(Node[] move, PlayerEntity player) {
         Node fromNode = move[0];
         Stone fromNodeStone = null;
-        if (fromNode != null && fromNode.isOccupied()) {
+        if (fromNode != null) {
             fromNodeStone = fromNode.getStone();
+            fromNode.removeStone();
             player.removeStone(fromNodeStone);
         }
 
         Node toNode = move[1];
         Stone tmpStone = new Stone(player);
-        tmpStone.setNode(toNode);
+        toNode.placeStone(tmpStone);
         player.addStone(tmpStone);
 
         int formedMills = countMillsFormed(tmpStone);
 
         player.removeStone(tmpStone);
+        toNode.removeStone();
         if (fromNodeStone != null) {
             player.addStone(fromNodeStone);
+            fromNode.placeStone(fromNodeStone);
         }
+
         return formedMills;
     }
 

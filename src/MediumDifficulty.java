@@ -27,6 +27,8 @@ public class MediumDifficulty implements DifficultyStrategy {
         // Try to make a mill
         for (Node[] playerMove : playerMoves) {
             if (RuleManager.getInstance().countMillsFormed(playerMove, player) >= 1) {
+                System.out.println("[CPU] I think a mill can be formed. mill count: "
+                        + RuleManager.getInstance().countMillsFormed(playerMove, player));
                 return playerMove;
             }
         }
