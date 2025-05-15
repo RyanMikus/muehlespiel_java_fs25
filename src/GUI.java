@@ -12,13 +12,14 @@ public class GUI implements Observer {
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private JMenuBar menuBar;
+    private JLabel gamePrompt;
     private JLabel turnTime;
     private JSlider slider;
     private GUIBoard guiBoard;
 
     private static GUI instance;
 
-    // Color-Picker for RGB Values : rgb(0, 255, 4)
+    // Color-Picker for RGB Values : rgb(0, 153, 255)
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38);
     private final Color BUTTON_COLOR = new Color(250, 240, 220);
     private final Color TIMER_COLOR = new Color(250, 240, 220);
@@ -68,6 +69,7 @@ public class GUI implements Observer {
         cardPanel.add(createNewGameScreen(), "newGame");
         cardPanel.add(createLoadGameScreen(), "loadGame");
 
+        window.setJMenuBar(menuBar);
         window.add(cardPanel);
         window.setVisible(true);
 
@@ -89,11 +91,12 @@ public class GUI implements Observer {
     // endregion
 
     // region Menu creation
+
     /**
-     * Creates the Menu Item Help, click on the Item shows a Dropdown
-     * with the Item Rules, click on that for the gameRules.
+     * Creates the "Help" menu of the application, which contains items providing
+     * information or assistance, such as the game rules.
      *
-     * @return The menu Item rules
+     * @return The "Help" menu populated with relevant menu items.
      */
     private JMenu createHelpMenu() {
         JMenu help = new JMenu("Hilfe");
@@ -146,11 +149,13 @@ public class GUI implements Observer {
         return help;
     }
 
+
     /**
-     * Creates the Menu Item redits, click on the Item shows a Window
-     * with the credits for the programmers.
+     * Creates the "Credits" menu which displays information about the contributors
+     * to the project when clicked. The menu, when interacted with, triggers a
+     * pop-up dialog containing formatted credit text.
      *
-     * @return The menu Item Credits
+     * @return The constructed "Credits" menu as a JMenu instance.
      */
     private JMenu createCreditsMenu() {
         JMenu credits = new JMenu("Credits");
@@ -381,11 +386,11 @@ public class GUI implements Observer {
         panel.setBackground(new Color(20, 35, 40));
         panel.setOpaque(false);
 
-        // time Panel
-        JPanel timePanel = new JPanel();
-        timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.Y_AXIS));
-        timePanel.setOpaque(false);
-        timePanel.setBorder(BorderFactory.createEmptyBorder(30, 100, 0, 100));
+        // top Panel
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setOpaque(false);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 0, 100));
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
@@ -394,7 +399,7 @@ public class GUI implements Observer {
         JLabel sliderLabel = new JLabel("Bedenkzeit: 30s");
         sliderLabel.setForeground(TIMER_COLOR);
         sliderLabel.setFont(TIMER_FONT);
-        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
         slider = new JSlider(10, 60, 30);
         slider.setMajorTickSpacing(10);
@@ -427,14 +432,27 @@ public class GUI implements Observer {
         sliderPanel.add(slider);
         sliderPanel.add(startButton);
 
+        JPanel promptTimePanel = new JPanel();
+        promptTimePanel.setLayout(new BoxLayout(promptTimePanel, BoxLayout.X_AXIS));
+        promptTimePanel.setOpaque(false);
+
+        gamePrompt = new JLabel("Bedenkzeit einstellen und Spiel starten");
+        gamePrompt.setForeground(TURN_TIMER_COLOR); 
+        gamePrompt.setFont(TURN_TIMER_FONT);
+        gamePrompt.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 50));
+
         turnTime = new JLabel("Verbleibende Zeit: 30s");
         turnTime.setForeground(TURN_TIMER_COLOR);
         turnTime.setFont(TURN_TIMER_FONT);
         turnTime.setAlignmentX(Component.CENTER_ALIGNMENT);
         turnTime.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        timePanel.add(sliderPanel);
-        timePanel.add(turnTime);
+        promptTimePanel.add(gamePrompt);
+        promptTimePanel.add(Box.createHorizontalGlue());
+        promptTimePanel.add(turnTime);
+
+        topPanel.add(sliderPanel);
+        topPanel.add(promptTimePanel);
 
         // board panel
         JPanel boardPanel = new JPanel();
@@ -495,7 +513,7 @@ public class GUI implements Observer {
         // buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         // ---------------- COMPOSE MAIN PANEL ----------------
-        panel.add(timePanel);
+        panel.add(topPanel);
         panel.add(boardPanel);
         panel.add(buttonPanel);
         return panel;
@@ -669,6 +687,12 @@ public class GUI implements Observer {
     public void updateTimer(int timeLeft) {
         turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
+
+    public void updateStatus(String text, Color color){
+        gamePrompt.setText(text);
+        gamePrompt.setForeground(color);
+    }
+
 
     /**
      * Build the Game Over Pop-Up Window. Depending on the way the game

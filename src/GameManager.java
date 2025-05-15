@@ -1,3 +1,6 @@
+import java.awt.Color;
+import java.security.PKCS12Attribute;
+
 public class GameManager {
     // region Fields
     // Managers
@@ -138,6 +141,9 @@ public class GameManager {
         while (gameStatus) {
             boolean isPlayer = currentPlayer instanceof Player;
 
+            // update game prompt
+            updateGamePrompt();
+
             // Handle moves of players
             move = getMoveInput(isPlayer);
             Node fromNode = move[0];
@@ -156,6 +162,7 @@ public class GameManager {
                         : "BLACK") + "] - Formed " + millCount + " " + ((millCount == 1) ? "mill" : "mills"));
             }
             while (millCount > 0) {
+                updateRemovePrompt();
                 noMillTurnCounter = 0;
                 guiManager.getGuiBoard().setRemoveMode(true);
                 remove = getRemoveInput(isPlayer);
@@ -462,4 +469,62 @@ public class GameManager {
     }
 
     // endregion
+
+    // region GUI Update
+    public void updateGamePrompt() {
+        String text = "";
+
+        // player text
+        if (currentPlayer instanceof Player) {
+            if (currentPlayer.getName().equalsIgnoreCase("white")) {
+                text += "Weiss: ";
+            } else {
+                text += "Schwarz: ";
+            }
+        }
+
+        switch (currentPlayer.getPhase().getClass().getSimpleName()) {
+            case "SettingPhase":
+                text += "Stein setzen";
+                break;
+
+            case "MovingPhase":
+                text += "Stein ziehen";
+                break;
+
+            case "JumpingPhase":
+                text += "Stein bewegen (Sprung erlaubt)";
+                break;
+
+            case "GameOverPhase":
+
+                break;
+
+            default:
+                break;
+        }
+        guiManager.updateStatus(text, new Color(255, 230, 0));
+    }
+
+
+    public void updateErrorPrompt(String text){
+        guiManager.updateStatus(text, new Color(255, 0, 0));
+    }
+
+    public void updateRemovePrompt(){
+        String text = "";
+
+        // player text
+        if (currentPlayer instanceof Player) {
+            if (currentPlayer.getName().equalsIgnoreCase("white")) {
+                text = "Mühle Weiss : Stein entfernen";
+            } else {
+                text = "Mühle Schwarz : Stein entfernen";
+            }
+        }
+
+        guiManager.updateStatus(text, new Color(0, 153, 255));
+    }
+
+    // enregion
 }
