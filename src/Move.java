@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,7 +25,7 @@ public class Move {
      * @param timeLeft          The remaining time for the move in seconds.
      */
     public Move(PlayerEntity currentPlayer, PlayerEntity opponent, Map<Integer, Node> boardSnapshot,
-            int noMillTurnCounter, int timeLeft) {
+                int noMillTurnCounter, int timeLeft) {
         this.currentPlayer = currentPlayer;
         this.opponent = opponent;
         this.boardSnapshot = boardSnapshot;
@@ -35,7 +36,7 @@ public class Move {
     @Override
     public boolean equals(Object obj) {
         System.out.println("[DEBUG] equals() aufgerufen");
-        
+
         if (this == obj)
             return true;
         if (obj == null || getClass() != obj.getClass())
@@ -116,8 +117,8 @@ public class Move {
         Map<Integer, Node> copy = new HashMap<>();
         for (Map.Entry<Integer, Node> entry : boardSnapshot.entrySet()) {
             copy.put(entry.getKey(),
-                     entry.getValue().deepCopy(currentPlayer.deepCopy(),
-                                               opponent.deepCopy()));
+                    entry.getValue().deepCopy(currentPlayer.deepCopy(),
+                            opponent.deepCopy()));
         }
         return copy;
     }
