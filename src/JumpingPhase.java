@@ -29,9 +29,9 @@ public class JumpingPhase extends GamePhase {
     public void nextPhase() {
         if (playerEntity.getRemainingStones().size() <= 2) {
             playerEntity.setPhase(new GameOverPhase(playerEntity));
-            // debug
-            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : "
-                    + playerEntity.getPhase().getClass().getSimpleName());
+
+            System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")
+                            ? "WHITE" : "BLACK") + "] - Changed to GAMEOVERPHASE");
         }
     }
 

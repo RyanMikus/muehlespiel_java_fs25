@@ -22,9 +22,9 @@ public class MovingPhase extends GamePhase {
     public void nextPhase() {
         if (playerEntity.getRemainingStones().size() == 3) {
             playerEntity.setPhase(new JumpingPhase(playerEntity));
-            // debug
-            System.out.println("Spieler : " + playerEntity.getName() + " wechselt Phase zu : "
-                    + playerEntity.getPhase().getClass().getSimpleName());
+
+            System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")
+                    ? "WHITE" : "BLACK") + "] - Changed to JUMPINGPHASE");
         }
     }
 

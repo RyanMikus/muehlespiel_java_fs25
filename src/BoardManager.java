@@ -6,8 +6,6 @@ import java.util.Map;
 public class BoardManager extends Observable {
     // region Fields
     private static BoardManager instance;
-    private RuleManager ruleManager;
-    private GUI guiManager;
     private Map<Integer, Node> nodes;
     private final int[][] neighbors = { { 1, 9 }, { 0, 2, 4 }, { 1, 14 }, { 4, 10 }, { 1, 3, 5, 7 }, { 4, 13 },
             { 7, 11 }, { 4, 6, 8 }, { 7, 12 },
@@ -122,24 +120,6 @@ public class BoardManager extends Observable {
     }
 
     /**
-     * Setter for the ruleManager to avoid recursive constructor calls.
-     *
-     * @param ruleManager The instance of the rule manager.
-     */
-    public void setRuleManager(RuleManager ruleManager) {
-        this.ruleManager = ruleManager;
-    }
-
-    /**
-     * Setter for the guiManager to avoid recursive constructor calls.
-     *
-     * @param guiManager The instance of the GUI.
-     */
-    public void setGuiManager(GUI guiManager) {
-        this.guiManager = guiManager;
-    }
-
-    /**
      * Checks if the performed move is valid and places the stone on the target node
      * if so.
      * Checks if the placed stone forms a new mill.
@@ -150,70 +130,22 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean placeStone(PlayerEntity player, Stone stone, Node toNode) {
-        //System.out.println("[DEBUG] placeStone(): Prüfe Node " + toNode.getID() + " | isOccupied: " + toNode.isOccupied());
-        
+        RuleManager ruleManager = RuleManager.getInstance();
+
         // Check if the stone can be placed correctly
         if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             //System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
             return false;
         }
 
-        GameManager.getInstance().incNoMillTurnCounter();
-
         // Place stone and update GUI
         toNode.placeStone(stone);
         //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
         notifyObservers();
 
-        // Remove stones according to amount of newly mills formed
-        int millCount = ruleManager.countMillsFormed(stone);
-        startRemoveLoop(millCount);
-        // Reset the noMillTurnCounter when a mill was formed
-        if (millCount > 0) {
-            GameManager.getInstance().resetNoMillTurnCounter();
-        }
-
-        /**
-         * while (millCount > 0) {
-         * System.out.println("Remove an opponents stone.");
-         * guiManager.removeStone();
-         * notifyObservers(); // Has to be a blocking function
-         * millCount--;
-         * }
-         */
-
+        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                "] - Placed stone on node " + toNode.getID());
         return true;
-    }
-
-    /**
-     * Starts a loop to remove a given number of opponent stones from the board.
-     * This is typically triggered when a player forms a mill and is allowed to
-     * remove
-     * one or more of the opponent's stones.
-     * The method is recursive and will call itself until the specified number of
-     * stones have been successfully removed. It uses the GUI to allow the player
-     * to select which stone to remove. After each successful removal, observers are
-     * notified.
-     *
-     * @param remaining The number of stones that still need to be removed.
-     */
-    public void startRemoveLoop(int remaining) {
-        if (remaining <= 0)
-            return;
-        // System.out.println("BM - Remaining removes: " + remaining);
-
-        guiManager.removeStone(success -> {
-            if (success) {
-                notifyObservers();
-
-                // debug
-                // System.out.println("BM - Stein entfernt");
-
-                startRemoveLoop(remaining - 1);
-            } else {
-                System.out.println("Remove failed.");
-            }
-        });
     }
 
     /**
@@ -226,14 +158,15 @@ public class BoardManager extends Observable {
      */
     public boolean removeStone(PlayerEntity remover, Node targetNode) {
         boolean stoneRemoved = false;
-        if (ruleManager.isRemovalValid(remover, targetNode)) {
-            System.out.println("Stein auf Position " + targetNode.getID() + " wird entfernt");
+        if (RuleManager.getInstance().isRemovalValid(remover, targetNode)) {
             Stone targetStone = targetNode.getStone();
             PlayerEntity opponent = targetStone.getOwner();
             targetNode.removeStone();
             opponent.removeStone(targetStone);
             opponent.getPhase().nextPhase();
             stoneRemoved = true;
+            System.out.println("[" + (remover.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                    "] - Removed stone on node " + targetNode.getID());
         }
         return stoneRemoved;
     }
@@ -249,34 +182,21 @@ public class BoardManager extends Observable {
      * @return true if the performed move is valid, false otherwise.
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
+        RuleManager ruleManager = RuleManager.getInstance();
+        
         // Check if the stone can be moved correctly
         if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 
-        GameManager.getInstance().incNoMillTurnCounter();
-
         // Move the stone and update GUI
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
+        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
         notifyObservers();
 
-        // Remove stones according to amount of newly mills formed
-        int millCount = ruleManager.countMillsFormed(stone);
-        startRemoveLoop(millCount);
-        // Reset the noMillTurnCounter when a mill was formed
-        if (millCount > 0) {
-            GameManager.getInstance().resetNoMillTurnCounter();
-        }
-
-        /*
-         * while (millCount > 0) {
-         * // TODO: Select stone to remove
-         * notifyObservers();
-         * millCount--;
-         * }
-         */
 
         return true;
     }
@@ -315,14 +235,15 @@ public class BoardManager extends Observable {
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
     public void printBoard() {
-        for (Node node : nodes.values()) {
-            if(node.isOccupied()){
-                String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
+        System.out.println("-- BOARD -- ");
+        for(Node node : nodes.values()) {
+            String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
             }
             
         }
+        System.out.println("-- BOARD --\n");
     }
 
     /**

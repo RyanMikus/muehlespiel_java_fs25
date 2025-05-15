@@ -1,7 +1,5 @@
 public class RuleManager {
     private static RuleManager instance;
-    private BoardManager boardManager;
-    private GameManager gameManager;
 
     /**
      * Creates a new Instance of this Manager, if there is none already.
@@ -16,24 +14,6 @@ public class RuleManager {
     }
 
     /**
-     * Setter for the boardManager to avoid recursive constructor calls.
-     *
-     * @param boardManager The instance of the board manager.
-     */
-    public void setBoardManager(BoardManager boardManager) {
-        this.boardManager = boardManager;
-    }
-
-    /**
-     * Setter for the gameManager to avoid recursive constructor calls.
-     *
-     * @param gameManager The instance of the game manager.
-     */
-    public void setGameManager(GameManager gameManager) {
-        this.gameManager = gameManager;
-    }
-
-    /**
      * Checks if the intended move is valid for the current game phase.
      *
      * @param player   The player that intends to perform a move.
@@ -42,20 +22,34 @@ public class RuleManager {
      * @return true if move is valid, false otherwise.
      */
     public boolean isMoveValid(PlayerEntity player, Node fromNode, Node toNode) {
+        GameManager gameManager = GameManager.getInstance();
+        
         // General possible errors
         String errors = "";
 
         if(fromNode != null) {
-            if(!fromNode.isOccupied())
-                errors += "No stone is placed on that node (id=" + fromNode.getID() + ")!\n";
-            if(fromNode.getStone().getOwner() != player)
-                errors += "The stone on this node (id=" + fromNode.getID()
+            if(!fromNode.isOccupied()){
+                errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
+                gameManager.updateErrorPrompt("Wähle ein Feld mit einem eigenen Stein.");
+            }
+                
+            if(fromNode.getStone().getOwner() == GameManager.getInstance().getOpponent()){
+                errors += "The stone on node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
+                gameManager.updateErrorPrompt("Du kannst nur deine eigenen Steine bewegen.");
+            }
+                
         }
-        if(fromNode == toNode)
-            errors += "You can not place a stone on to itself!\n";
-        if(fromNode != toNode && toNode.isOccupied())
-            errors += "You can not place a stone on to another stone!\n";
+        if(fromNode == toNode){
+            errors += "You can not place a stone onto itself!\n";
+            gameManager.updateErrorPrompt("Du kannst keinen Stein auf dasselbe Feld setzen.");
+        }
+            
+        if(fromNode != toNode && toNode.isOccupied()){
+            errors += "You can not place a stone onto another stone!\n";
+            gameManager.updateErrorPrompt("Dieses Feld ist bereits besetzt.");
+        }
+            
 
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
@@ -63,24 +57,32 @@ public class RuleManager {
         if(currentPhase instanceof SettingPhase) {
             // More errors might come up.
         } else if(currentPhase instanceof MovingPhase && fromNode != null) {
-            if(!fromNode.getNeighbors().contains(toNode))
-                errors += "Can only move to neighbors!\nA stone can not be moved from " + fromNode.getID() + " to "
+            if(!fromNode.getNeighbors().contains(toNode)){
+                errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
+                gameManager.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");  
+            }
+                      
+                        
         } else if(currentPhase instanceof JumpingPhase) {
             // More errors might come up.
         } else if(currentPhase instanceof GameOverPhase) {
             errors += "Game is already over. You must not make moves!";
+            gameManager.updateErrorPrompt("Das Spiel ist bereits vorbei.");
         } else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
                     + player.getPhase().getClass().getSimpleName() + "\n";
+            gameManager.updateErrorPrompt("Ungültige Spielphase für " + player.getName() + ".");
         }
 
         // No errors occured
         if(errors.isEmpty())
             return true;
 
-        if (player instanceof Player)
+        if (player instanceof Player) {
+            System.out.print("[RULE] - ");
             System.out.print(errors);
+        }
         return false;
     }
 
@@ -130,6 +132,7 @@ public class RuleManager {
      *                               than 2.
      */
     public int countMillsFormed(Stone lastPlacedStone) {
+        BoardManager boardManager = BoardManager.getInstance();
         PlayerEntity player = lastPlacedStone.getOwner();
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
@@ -158,9 +161,6 @@ public class RuleManager {
 
             // Add one formed mill to the counter
             if(allOwned) {
-                //debug
-                //System.out.println("Mühle erkannt");
-
                 millCount++;
                 if(millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");
@@ -184,19 +184,24 @@ public class RuleManager {
      * @return true if the game is over, false otherwise.
      */
     public boolean isGameOver(PlayerEntity playerWhite, PlayerEntity playerBlack) {
+        GameManager gameManager = GameManager.getInstance();
+
         // Player black won
         if(isPlayerGameOver(playerWhite) || isPlayerBlocked(playerWhite)) {
+            System.out.println("\n-- BLACK HAS WON! --");
             gameManager.setWinner(playerBlack);
             return true;
         }
         // Player white won
         if(isPlayerGameOver(playerBlack) || isPlayerBlocked(playerBlack)) {
+            System.out.println("\n-- WHITE HAS WON! --");
             gameManager.setWinner(playerWhite);
             return true;
         }
 
         // Draw
         if(isStalemate()) {
+            System.out.println("\n-- DRAW --");
             gameManager.setWinner(null);
             return true;
         }
@@ -215,7 +220,7 @@ public class RuleManager {
     private boolean isPlayerGameOver(PlayerEntity player) {
         boolean isGameOver = player.getPhase() instanceof GameOverPhase;
         if(isGameOver) {
-            gameManager.lossCause = GameManager.LossCause.STONECOUNT;
+            GameManager.getInstance().lossCause = GameManager.LossCause.STONECOUNT;
         }
         return isGameOver;
     }
@@ -242,7 +247,7 @@ public class RuleManager {
             }
         }
 
-        gameManager.lossCause = GameManager.LossCause.BLOCKED;
+        GameManager.getInstance().lossCause = GameManager.LossCause.BLOCKED;
         return true;
     }
 
@@ -253,7 +258,9 @@ public class RuleManager {
      * @return true if there was no mill for 20 turns, false otherwise.
      */
     public boolean isStalemate() {
+        GameManager gameManager = GameManager.getInstance();
         boolean stalemate = gameManager.getNoMillTurnCounter() >= 20;
+
         if(stalemate) {
             gameManager.lossCause = GameManager.LossCause.STALEMATE;
         }

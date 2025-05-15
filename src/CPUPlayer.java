@@ -1,20 +1,26 @@
 public class CPUPlayer extends PlayerEntity {
     private DifficultyStrategy strategy;
     private PlayerEntity opponent;
-    private RuleManager ruleManager;
 
-    public CPUPlayer(String name, PlayerEntity opponent, RuleManager ruleManager) {
+    public CPUPlayer(String name, PlayerEntity opponent) {
         super(name);
         this.opponent = opponent;
-        this.ruleManager = ruleManager;
+        this.strategy = new EasyDifficulty();
     }
 
     public Node[] makeMove() {
+        RuleManager ruleManager = RuleManager.getInstance();
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this, ruleManager);
         ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
         // strategy.buildGameTree(imaginativeSelf, imaginativeOpponent);
-        Node[] move = strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
-        return move;
+        return strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
+    }
+
+    public Node makeRemove() {
+        RuleManager ruleManager = RuleManager.getInstance();
+        ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this, ruleManager);
+        ImaginativePlayer  imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
+        return strategy.calculateRemoval(imaginativeSelf, imaginativeOpponent);
     }
 
     public void setDifficulty(DifficultyStrategy strategy) {

@@ -1,7 +1,8 @@
 import javax.swing.*;
 
 import java.awt.*;
-import java.io.File;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class GUI implements Observer {
@@ -10,15 +11,15 @@ public class GUI implements Observer {
     private JFrame window;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private JMenuBar menuBar;
+    private JLabel gamePrompt;
     private JLabel turnTime;
     private JSlider slider;
     private GUIBoard guiBoard;
 
     private static GUI instance;
-    private GameManager gameManager;
-    private BoardManager boardManager;
 
-    // Color-Picker for RGB Values : rgb(0, 255, 4)
+    // Color-Picker for RGB Values : rgb(0, 153, 255)
     private final Color BACKGROUND_COLOR = new Color(17, 35, 38);
     private final Color BUTTON_COLOR = new Color(250, 240, 220);
     private final Color TIMER_COLOR = new Color(250, 240, 220);
@@ -52,6 +53,11 @@ public class GUI implements Observer {
         // window.setLocation(2100, 350);;
         window.setBackground(BACKGROUND_COLOR);
 
+        // menu Bar
+        menuBar = new JMenuBar();
+        menuBar.add(createHelpMenu());
+        menuBar.add(createCreditsMenu());
+
         // main panel GUI
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout); // Cardlayout for multiple screens
@@ -63,8 +69,11 @@ public class GUI implements Observer {
         cardPanel.add(createNewGameScreen(), "newGame");
         cardPanel.add(createLoadGameScreen(), "loadGame");
 
+        window.setJMenuBar(menuBar);
         window.add(cardPanel);
         window.setVisible(true);
+
+        BoardManager.getInstance().addObserver(this);
 
     } // GUI
 
@@ -79,19 +88,104 @@ public class GUI implements Observer {
         }
         return instance;
     }
+    // endregion
+
+    // region Menu creation
 
     /**
-     * Setter for the managers to avoid recursive constructor calls.
+     * Creates the "Help" menu of the application, which contains items providing
+     * information or assistance, such as the game rules.
      *
-     * @param gameManager  The instance of the game manager.
-     * @param boardManager The instance of the board manager.
+     * @return The "Help" menu populated with relevant menu items.
      */
-    public void initializeManagers(GameManager gameManager, BoardManager boardManager) {
-        this.gameManager = gameManager;
-        this.boardManager = boardManager;
+    private JMenu createHelpMenu() {
+        JMenu help = new JMenu("Hilfe");
+        JMenuItem rules = new JMenuItem("Regeln");
 
-        // Register to the observable
-        boardManager.addObserver(this);
+        String rulesText =
+
+                "<html><div style='text-align: center;'>" +
+                        "<h3>1. Spielziel:</h3>" +
+                        "Ziel ist es, alle gegnerischen Steine zu entfernen oder ihn zu blockieren,<br>" +
+                        "sodass er keinen gültigen Zug mehr machen kann.<br><br>" +
+
+                        "<h3>2. Spielphasen:</h3>" +
+                        "<u>a) Setzphase:</u><br>" +
+                        "Jeder Spieler setzt abwechselnd einen Stein auf ein freies Feld.<br>" +
+                        "Wenn eine Mühle (3 Steine in einer Linie) entsteht, darf ein gegnerischer Stein entfernt werden.<br><br>"
+                        +
+
+                        "<u>b) Zugphase:</u><br>" +
+                        "Nachdem alle Steine gesetzt wurden, bewegen die Spieler abwechselnd einen Stein<br>" +
+                        "auf ein benachbartes Feld. Wieder gilt: bei einer Mühle darf ein gegnerischer Stein entfernt werden.<br><br>"
+                        +
+
+                        "<u>c) Springphase:</u><br>" +
+                        "Wenn ein Spieler nur noch 3 Steine hat, darf er mit diesen auf ein beliebiges freies Feld springen.<br><br>"
+                        +
+
+                        "<h3>3. Mühle-Regel:</h3>" +
+                        "Eine Mühle entsteht, wenn 3 eigene Steine in einer geraden Linie stehen.<br>" +
+                        "Eine Mühle darf beliebig oft geöffnet und neu gebildet werden, um Steine zu entfernen.<br><br>"
+                        +
+
+                        "<h3>4. Steine entfernen:</h3>" +
+                        "Es dürfen keine Steine aus bestehenden Mühlen entfernt werden –<br>" +
+                        "es sei denn, alle gegnerischen Steine sind in Mühlen.<br><br>" +
+
+                        "<h3>5. Spielende:</h3>" +
+                        "Das Spiel endet, wenn ein Spieler:<br>" +
+                        "- nur noch 2 Steine hat (verliert)<br>" +
+                        "- keinen gültigen Zug mehr machen kann (verliert)<br>" +
+                        "- die Bedenkzeit abgelaufen ist (verliert).<br><br>" +
+                        "Oder wenn beide Spieler innrhalb von 20 Zügen keine Mühle formen" +
+                        "</div></html>";
+
+        rules.addActionListener(
+                e -> JOptionPane.showMessageDialog(window, rulesText, "Regeln", JOptionPane.PLAIN_MESSAGE));
+
+        help.add(rules);
+
+        return help;
+    }
+
+
+    /**
+     * Creates the "Credits" menu which displays information about the contributors
+     * to the project when clicked. The menu, when interacted with, triggers a
+     * pop-up dialog containing formatted credit text.
+     *
+     * @return The constructed "Credits" menu as a JMenu instance.
+     */
+    private JMenu createCreditsMenu() {
+        JMenu credits = new JMenu("Credits");
+
+        String creditsText = "<html><div style='text-align: center;'>" +
+                "<h2>Silvan Balloni - SCRUM Master</h2>" +
+                "Hat die Regeln so verdrahtet, dass selbst Aristoteles beim Spielen nicken würde.<br>Ohne ihn gäbe es entweder 47 Züge auf einmal - oder gar keine.<br><br>"
+                +
+                "Dank ihm gibt es endlich einen Spielablauf, der mit jeder Aktion neue Fragen aufwirft.<br> Seine Game-Logik hat die Grenzen der Realität überschritten - leider auch die der Spielbarkeit.<br><br>"
+                +
+                "<h2>Rino Diskuss - Product Owner</h2>" +
+                "Seine KI ist so schlau, dass sie beim Spielen gegen sich selbst verloren hat - freiwillig, aus Höflichkeit.<br><br>"
+                +
+                "Ihre KI trifft Entscheidungen auf Basis von über 7 Millionen Parametern - keiner davon sinnvoll.<br>Sie spielt zwar nicht gut, aber sie spielt überzeugt. Manchmal sogar gegen sich selbst. Und verliert trotzdem.<br><br>"
+                +
+                "<h2>Christian Sutter - Praktikant</h2>" +
+                "Designte die Oberfläche so edel, dass der Louvre sie für die Dauerausstellung angefragt hat.<br> Die Buttons sind ergonomisch, empathisch und geben einem das Gefühl, geliebt zu werden.<br><br>"
+                +
+                "Investierte 95 % der Entwicklungszeit in die perfekten Schattenverläufe und Button-Rundungen.<br> Die GUI glänzt, funkelt und tanzt - nur leider weiß niemand, wie man das Spiel startet. Oder beendet. Oder spielt."
+                +
+                "</div></html>";
+
+        credits.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(window, creditsText, "Credits", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+
+        return credits;
     }
     // endregion
 
@@ -283,6 +377,8 @@ public class GUI implements Observer {
      * @return The board screen panel.
      */
     private JPanel createBoardScreen(String mode) {
+        GameManager gameManager = GameManager.getInstance();
+        BoardManager boardManager = BoardManager.getInstance();
 
         // main Panel Board Screen
         JPanel panel = new JPanel();
@@ -290,11 +386,11 @@ public class GUI implements Observer {
         panel.setBackground(new Color(20, 35, 40));
         panel.setOpaque(false);
 
-        // time Panel
-        JPanel timePanel = new JPanel();
-        timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.Y_AXIS));
-        timePanel.setOpaque(false);
-        timePanel.setBorder(BorderFactory.createEmptyBorder(30, 100, 0, 100));
+        // top Panel
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setOpaque(false);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 0, 100));
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
@@ -303,7 +399,7 @@ public class GUI implements Observer {
         JLabel sliderLabel = new JLabel("Bedenkzeit: 30s");
         sliderLabel.setForeground(TIMER_COLOR);
         sliderLabel.setFont(TIMER_FONT);
-        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 50));
+        sliderLabel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
         slider = new JSlider(10, 60, 30);
         slider.setMajorTickSpacing(10);
@@ -324,10 +420,11 @@ public class GUI implements Observer {
 
         startButton.addActionListener(e -> {
             if (!gameManager.getGameStatus()) {
+                gameManager.setTimePerTurn(slider.getValue());
                 slider.setEnabled(false);
                 gameManager.startGame(mode);
             } else {
-                System.out.println("Game is already running!");
+                System.out.println("[WARNING] - Game is already running!");
             }
         });
 
@@ -335,14 +432,27 @@ public class GUI implements Observer {
         sliderPanel.add(slider);
         sliderPanel.add(startButton);
 
+        JPanel promptTimePanel = new JPanel();
+        promptTimePanel.setLayout(new BoxLayout(promptTimePanel, BoxLayout.X_AXIS));
+        promptTimePanel.setOpaque(false);
+
+        gamePrompt = new JLabel("Bedenkzeit einstellen und Spiel starten");
+        gamePrompt.setForeground(TURN_TIMER_COLOR); 
+        gamePrompt.setFont(TURN_TIMER_FONT);
+        gamePrompt.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 50));
+
         turnTime = new JLabel("Verbleibende Zeit: 30s");
         turnTime.setForeground(TURN_TIMER_COLOR);
         turnTime.setFont(TURN_TIMER_FONT);
         turnTime.setAlignmentX(Component.CENTER_ALIGNMENT);
         turnTime.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        timePanel.add(sliderPanel);
-        timePanel.add(turnTime);
+        promptTimePanel.add(gamePrompt);
+        promptTimePanel.add(Box.createHorizontalGlue());
+        promptTimePanel.add(turnTime);
+
+        topPanel.add(sliderPanel);
+        topPanel.add(promptTimePanel);
 
         // board panel
         JPanel boardPanel = new JPanel();
@@ -351,8 +461,9 @@ public class GUI implements Observer {
         boardPanel.setMaximumSize(new Dimension(900, 475));
         boardPanel.setOpaque(false);
 
-        guiBoard = new GUIBoard(gameManager, boardManager);
+        guiBoard = new GUIBoard();
         boardPanel.add(guiBoard, BorderLayout.CENTER);
+        gameManager.initializeListeners(guiBoard);
 
         // button panel
         JPanel buttonPanel = new JPanel(new GridBagLayout());
@@ -363,7 +474,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = { "undo", "redo", "save", "load", "rules", "quit" };
+        String[] buttonTexts = { "undo", "redo", "speichern", "laden", "beenden" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -385,9 +496,6 @@ public class GUI implements Observer {
                         gameManager.loadGame();
                         break;
                     case 4:
-                        // TODO implement rules (optional)
-                        break;
-                    case 5:
                         cardLayout.show(cardPanel, "Menu");
                         // TODO implement reset Game
                         break;
@@ -405,7 +513,7 @@ public class GUI implements Observer {
         // buttonPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         // ---------------- COMPOSE MAIN PANEL ----------------
-        panel.add(timePanel);
+        panel.add(topPanel);
         panel.add(boardPanel);
         panel.add(buttonPanel);
         return panel;
@@ -430,7 +538,7 @@ public class GUI implements Observer {
             image.setAlignmentX(Component.CENTER_ALIGNMENT);
             image.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
         } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
+            System.out.println("[ERROR] - Image not found: " + e.getMessage());
         }
         return image;
     } // createHomeImage
@@ -451,7 +559,7 @@ public class GUI implements Observer {
             logo.setAlignmentX(Component.CENTER_ALIGNMENT);
             logo.setBorder(BorderFactory.createEmptyBorder(50, 0, 0, 0));
         } catch (Exception e) {
-            System.out.println("Bild nicht gefunden: " + e.getMessage());
+            System.out.println("[ERROR] - Image not found: " + e.getMessage());
         }
         return logo;
     } // createHomeLogo
@@ -580,13 +688,21 @@ public class GUI implements Observer {
         turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
 
+    public void updateStatus(String text, Color color){
+        gamePrompt.setText(text);
+        gamePrompt.setForeground(color);
+    }
+
+
     /**
      * Build the Game Over Pop-Up Window. Depending on the way the game
      * ends, the Window will show different Messages.
      * 
-     * @param currentPlayer
+     * @param winner The player that has won the game.
+     * @param loser The player that has lost the game. The opponent of the winner.
      */
-    public void showGameOverMsg(PlayerEntity currentPlayer, String lossCause) {
+    public void showGameOverMsg(PlayerEntity winner, PlayerEntity loser) {
+        GameManager gameManager = GameManager.getInstance();
 
         JDialog dialog = new JDialog();
         dialog.setTitle("Game Over");
@@ -638,41 +754,43 @@ public class GUI implements Observer {
 
         });
 
-        String winner;
-        String looser;
         Image winGif = (new ImageIcon(getClass().getResource(WIN_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
         Image drawGif = (new ImageIcon(getClass().getResource(DRAW_GIF_PATH))).getImage().getScaledInstance(250, 250,
                 Image.SCALE_DEFAULT);
 
-        if (gameManager.getWinner().getName().equalsIgnoreCase("white")) {
-            winner = "Weiss";
-            looser = "Schwarz";
-        } else {
-            winner = "Schwarz";
-            looser = "Weiss";
+        String winnerOutput = "";
+        String loserOutput = "";
+        if(winner != null) {
+            if(winner.getName().equalsIgnoreCase("white")) {
+                winnerOutput = "Weiss";
+                loserOutput = "Schwarz";
+            } else {
+                winnerOutput = "Schwarz";
+                loserOutput = "Weiss";
+            }
         }
 
-        switch (lossCause) {
-            case "STONECOUNT":
+        switch (gameManager.lossCause) {
+            case STONECOUNT:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: " + looser + " hat weniger als 3 Steine");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: " + loserOutput + " hat weniger als 3 Steine");
                 break;
-            case "BLOCKED":
+            case BLOCKED:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: " + looser + " wurde blockiert. Keine Züge mehr möglich");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: " + loserOutput + " wurde blockiert. Keine Züge mehr möglich");
                 break;
-            case "STALEMATE":
+            case STALEMATE:
                 gifLabel.setIcon(new ImageIcon(drawGif));
                 winnerText.setText("Unentschieden");
                 infoText.setText("Während 20 Zügen wurde keine Mühle gebildet");
                 break;
-            case "TIMEOUT":
+            case TIMEOUT:
                 gifLabel.setIcon(new ImageIcon(winGif));
-                winnerText.setText("Sieger: " + winner);
-                infoText.setText("Siegursache: Spielzeit von " + looser + " abgelaufen");
+                winnerText.setText("Sieger: " + winnerOutput);
+                infoText.setText("Siegursache: Spielzeit von " + loserOutput + " abgelaufen");
                 break;
         }
 
@@ -691,27 +809,12 @@ public class GUI implements Observer {
     }
 
     /**
-     * Getter for initial Time per Turn.
+     * Getter for the initialized guiBoard.
      *
-     * @return The maximum time each player should have to perform a move, set by a
-     *         slider.
+     * @return The guiBoard that creates the board and repaints on change.
      */
-    public int getTimePerTurn() {
-        return slider.getValue();
-    }
-
-    /**
-     * Initiates the remove stone process by enabling remove mode in the GUI board.
-     * This allows the player to select an opponent's stone for removal.
-     * The provided callback will be triggered once the removal attempt is
-     * completed.
-     *
-     * @param callback A Consumer<Boolean> that receives true if a stone was
-     *                 successfully removed,
-     *                 or false if the removal was aborted or invalid.
-     */
-    public void removeStone(Consumer<Boolean> callback) {
-        guiBoard.removeStone(callback);
+    public GUIBoard getGuiBoard() {
+        return guiBoard;
     }
 
     /**
