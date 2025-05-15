@@ -257,11 +257,12 @@ public class RuleManager {
      * @return true if the player is in game over phase, false otherwise.
      */
     private boolean isPlayerGameOver(PlayerEntity player) {
-        boolean isGameOver = player.getPhase() instanceof GameOverPhase;
-        if (isGameOver) {
+        if(player.getRemainingStones().size() <= 2 && GameManager.getInstance().getOpponent().allStonesPlaced()) {
             GameManager.getInstance().lossCause = GameManager.LossCause.STONECOUNT;
+            player.setPhase(new GameOverPhase(player));
+            return true;
         }
-        return isGameOver;
+        return false;
     }
 
     /**
