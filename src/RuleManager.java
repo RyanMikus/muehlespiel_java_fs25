@@ -164,6 +164,12 @@ public class RuleManager {
         if (fromNode != null) {
             fromNodeStone = fromNode.getStone();
             fromNode.removeStone();
+            // List<Stone> stones = player.getRemainingStones();
+            // for (Stone stone : stones) {
+            // if (stone.getNode().getID() == fromNodeStone.getNode().getID()) {
+            // player.removeStone(stone);
+            // }
+            // }
             player.removeStone(fromNodeStone);
         }
 

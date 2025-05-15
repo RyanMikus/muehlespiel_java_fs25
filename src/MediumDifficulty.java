@@ -91,13 +91,13 @@ public class MediumDifficulty implements DifficultyStrategy {
 
         // Check every possible removal how many mills could be formed with it on that
         // position. Return the Node with the highest value.
-        // TODO: implement smarter removal.
-
-        for (Node node : removals) {
-            List<Node> neighbors = node.getNeighbors();
-            for (Node neighborNode : neighbors) {
-                if (neighborNode.isOccupied() && neighborNode.getStone().getOwner() == opponent) {
-                    return node;
+        for (Node[] move : opponentMoves) {
+            int potMillCount = RuleManager.getInstance().countMillsFormed(move, opponent);
+            if (potMillCount >= 1) {
+                for (Node node : removals) {
+                    if (move[0] != null && move[0].getID() == node.getID()) {
+                        return move[0];
+                    }
                 }
             }
         }
