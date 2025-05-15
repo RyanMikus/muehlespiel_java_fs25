@@ -5,7 +5,7 @@ public class CPUPlayer extends PlayerEntity {
     public CPUPlayer(String name, PlayerEntity opponent) {
         super(name);
         this.opponent = opponent;
-        this.strategy = new EasyDifficulty();
+        this.strategy = new MediumDifficulty();
     }
 
     public Node[] makeMove() {
@@ -19,7 +19,7 @@ public class CPUPlayer extends PlayerEntity {
     public Node makeRemove() {
         RuleManager ruleManager = RuleManager.getInstance();
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this, ruleManager);
-        ImaginativePlayer  imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
+        ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent, ruleManager);
         return strategy.calculateRemoval(imaginativeSelf, imaginativeOpponent);
     }
 

@@ -183,7 +183,7 @@ public class BoardManager extends Observable {
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
         RuleManager ruleManager = RuleManager.getInstance();
-        
+
         // Check if the stone can be moved correctly
         if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
@@ -196,7 +196,6 @@ public class BoardManager extends Observable {
         System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
                 "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
         notifyObservers();
-
 
         return true;
     }
@@ -236,7 +235,7 @@ public class BoardManager extends Observable {
      */
     public void printBoard() {
         System.out.println("-- BOARD -- ");
-        for(Node node : nodes.values()) {
+        for (Node node : nodes.values()) {
             String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
@@ -277,4 +276,9 @@ public class BoardManager extends Observable {
         return copiedBoard;
     }
 
+    public void reset() {
+        nodes.clear();
+        initializeBoard();
+        notifyObservers();
+    }
 }
