@@ -48,7 +48,7 @@ public class BoardManager extends Observable {
      * @return Instance if one already existed, creates a new one otherwise.
      */
     public static BoardManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new BoardManager();
         }
         return instance;
@@ -60,15 +60,15 @@ public class BoardManager extends Observable {
      */
     public void initializeBoard() {
         // Adding all nodes to the dictionary
-        for(int i = 0; i < 24; i++) {
+        for (int i = 0; i < 24; i++) {
             nodes.put(i, new Node(i));
         }
 
         // Connecting all nodes
-        for(int node = 0; node < neighbors.length; node++) {
-            for(int neighbor : neighbors[node]) {
+        for (int node = 0; node < neighbors.length; node++) {
+            for (int neighbor : neighbors[node]) {
                 // Prevent duplicates
-                if(node < neighbor) {
+                if (node < neighbor) {
                     connectNodes(node, neighbor);
                 }
             }
@@ -81,24 +81,24 @@ public class BoardManager extends Observable {
      */
     private void initializeMills() {
         // Horizontal mills
-        potentialMills.add(new int[]{0, 1, 2});
-        potentialMills.add(new int[]{3, 4, 5});
-        potentialMills.add(new int[]{6, 7, 8});
-        potentialMills.add(new int[]{9, 10, 11});
-        potentialMills.add(new int[]{12, 13, 14});
-        potentialMills.add(new int[]{15, 16, 17});
-        potentialMills.add(new int[]{18, 19, 20});
-        potentialMills.add(new int[]{21, 22, 23});
+        potentialMills.add(new int[] { 0, 1, 2 });
+        potentialMills.add(new int[] { 3, 4, 5 });
+        potentialMills.add(new int[] { 6, 7, 8 });
+        potentialMills.add(new int[] { 9, 10, 11 });
+        potentialMills.add(new int[] { 12, 13, 14 });
+        potentialMills.add(new int[] { 15, 16, 17 });
+        potentialMills.add(new int[] { 18, 19, 20 });
+        potentialMills.add(new int[] { 21, 22, 23 });
 
         // Vertical mills
-        potentialMills.add(new int[]{0, 9, 21});
-        potentialMills.add(new int[]{3, 10, 18});
-        potentialMills.add(new int[]{6, 11, 15});
-        potentialMills.add(new int[]{1, 4, 7});
-        potentialMills.add(new int[]{16, 19, 22});
-        potentialMills.add(new int[]{8, 12, 17});
-        potentialMills.add(new int[]{5, 13, 20});
-        potentialMills.add(new int[]{2, 14, 23});
+        potentialMills.add(new int[] { 0, 9, 21 });
+        potentialMills.add(new int[] { 3, 10, 18 });
+        potentialMills.add(new int[] { 6, 11, 15 });
+        potentialMills.add(new int[] { 1, 4, 7 });
+        potentialMills.add(new int[] { 16, 19, 22 });
+        potentialMills.add(new int[] { 8, 12, 17 });
+        potentialMills.add(new int[] { 5, 13, 20 });
+        potentialMills.add(new int[] { 2, 14, 23 });
     }
 
     /**
@@ -113,7 +113,7 @@ public class BoardManager extends Observable {
         Node node2 = nodes.get(id2);
 
         // Adding each other to their neighbors
-        if(node1 != null && node2 != null) {
+        if (node1 != null && node2 != null) {
             node1.addNeighbor(node2);
             node2.addNeighbor(node1);
         }
@@ -133,7 +133,7 @@ public class BoardManager extends Observable {
         RuleManager ruleManager = RuleManager.getInstance();
 
         // Check if the stone can be placed correctly
-        if(!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
+        if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
             return false;
         }
 
@@ -181,9 +181,9 @@ public class BoardManager extends Observable {
      */
     public boolean moveStone(PlayerEntity player, Node fromNode, Node toNode) {
         RuleManager ruleManager = RuleManager.getInstance();
-        
+
         // Check if the stone can be moved correctly
-        if(!ruleManager.isMoveValid(player, fromNode, toNode)) {
+        if (!ruleManager.isMoveValid(player, fromNode, toNode)) {
             return false;
         }
 
@@ -194,7 +194,6 @@ public class BoardManager extends Observable {
         System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
                 "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
         notifyObservers();
-
 
         return true;
     }
@@ -233,7 +232,7 @@ public class BoardManager extends Observable {
      */
     public void printBoard() {
         System.out.println("-- BOARD -- ");
-        for(Node node : nodes.values()) {
+        for (Node node : nodes.values()) {
             String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
