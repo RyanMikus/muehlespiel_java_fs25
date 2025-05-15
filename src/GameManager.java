@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.Map;
 
 public class GameManager {
     // region Fields
@@ -212,6 +213,7 @@ public class GameManager {
                 return;
             }
 
+            System.out.println("Save Move called!");
             saveMove();
             switchPlayer();
         }
@@ -275,17 +277,6 @@ public class GameManager {
         } else {
             return ((CPUPlayer) currentPlayer).makeRemove();
         }
-
-        // Adding the initial state of the game to the history, allowing to undo until
-        // the very start of the game.
-        Move initialMove = new Move(
-                playerWhite.deepCopy(),
-                playerBlack.deepCopy(),
-                boardManager.copyBoard(playerWhite.deepCopy(), playerBlack.deepCopy()),
-                0,
-                guiManager.getTimePerTurn());
-        history.addMove(initialMove);
-
     }
 
     /**
@@ -471,7 +462,9 @@ public class GameManager {
      */
     public void saveMove() {
         currentPlayerCopy = currentPlayer.deepCopy();
+        System.out.println("PlayerCopy: " + currentPlayerCopy + ", Current player: " + currentPlayer);
         opponentCopy = getOpponent().deepCopy();
+        System.out.println("OpponentCopy: " + opponentCopy + ", Current opponent: " + getOpponent());
         boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
 
         Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());

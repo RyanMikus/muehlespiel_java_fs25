@@ -15,12 +15,6 @@ public class MediumDifficulty implements DifficultyStrategy {
     /**/
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
-        try {
-            Thread.sleep(800);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         List<Node[]> playerMoves = player.getAllPossibleMoves();
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
 
@@ -79,12 +73,6 @@ public class MediumDifficulty implements DifficultyStrategy {
 
     @Override
     public Node calculateRemoval(ImaginativePlayer player, ImaginativePlayer opponent) {
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         List<Node> removals = player.getAllPossibleRemovals(opponent);
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
         int[] nodeToPotentialMillCount = new int[removals.size()];

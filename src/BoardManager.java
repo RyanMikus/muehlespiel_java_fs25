@@ -240,8 +240,7 @@ public class BoardManager extends Observable {
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
             }
-            
-        }
+
         System.out.println("-- BOARD --\n");
     }
 
