@@ -28,4 +28,15 @@ public class MovingPhase extends GamePhase {
         }
     }
 
+    /**
+     * Creates a deep copy of this MovingPhase with a new player context.
+     *
+     * @param newOwner The copied player to whom this phase should belong.
+     * @return A new instance of MovingPhase assigned to the specified player.
+     */
+    @Override
+    public GamePhase deepCopy(PlayerEntity newOwner) {
+        return new MovingPhase(newOwner);
+    }
+
 }

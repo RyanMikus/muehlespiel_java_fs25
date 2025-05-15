@@ -26,4 +26,9 @@ public class CPUPlayer extends PlayerEntity {
     public void setDifficulty(DifficultyStrategy strategy) {
         this.strategy = strategy;
     }
+
+    @Override
+    public PlayerEntity deepCopy() {
+        return null;
+    }
 }

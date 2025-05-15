@@ -134,11 +134,13 @@ public class BoardManager extends Observable {
 
         // Check if the stone can be placed correctly
         if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
+            //System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
             return false;
         }
 
         // Place stone and update GUI
         toNode.placeStone(stone);
+        //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
         notifyObservers();
 
         System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
@@ -214,6 +216,7 @@ public class BoardManager extends Observable {
      */
     public void setBoard(Map<Integer, Node> newBoard) {
         nodes = newBoard;
+        notifyObservers();
     }
 
     /**
@@ -236,8 +239,41 @@ public class BoardManager extends Observable {
             String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
+            }
+            
         }
         System.out.println("-- BOARD --\n");
+    }
+
+    /**
+     * Creates a deep copy of the current board, including all nodes, stones,
+     * and their neighbor relationships.
+     *
+     * @param currentPlayerCopy The copied current player.
+     * @param opponentCopy      The copied opponent player.
+     * @return A fully deep-copied board as a map of node IDs to Node instances.
+     */
+    public Map<Integer, Node> copyBoard(PlayerEntity currentPlayerCopy, PlayerEntity opponentCopy) {
+        Map<Integer, Node> copiedBoard = new HashMap<>();
+
+        // Step 1: Copy nodes (without neighbors)
+        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copiedNode = originalNode.deepCopy(currentPlayerCopy, opponentCopy);
+            copiedBoard.put(entry.getKey(), copiedNode);
+        }
+
+        // Step 2: Reconnect neighbors
+        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copiedNode = copiedBoard.get(entry.getKey());
+
+            for (Node neighbor : originalNode.getNeighbors()) {
+                copiedNode.addNeighbor(copiedBoard.get(neighbor.getID()));
+            }
+        }
+
+        return copiedBoard;
     }
 
     public void reset() {

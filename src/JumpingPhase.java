@@ -34,4 +34,16 @@ public class JumpingPhase extends GamePhase {
                             ? "WHITE" : "BLACK") + "] - Changed to GAMEOVERPHASE");
         }
     }
+
+    /**
+     * Creates a deep copy of this JumpingPhase with a new player context.
+     *
+     * @param newOwner The copied player to whom this phase should belong.
+     * @return A new instance of JumpingPhase assigned to the specified player.
+     */
+    @Override
+    public GamePhase deepCopy(PlayerEntity newOwner) {
+        return new JumpingPhase(newOwner);
+    }
+
 }

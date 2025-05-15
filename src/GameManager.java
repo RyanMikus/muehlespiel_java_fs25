@@ -13,6 +13,12 @@ public class GameManager {
     private PlayerEntity playerWhite;
     private PlayerEntity playerBlack;
     private PlayerEntity currentPlayer;
+    private PlayerEntity opponent;
+
+    // Copys
+    private PlayerEntity currentPlayerCopy;
+    private PlayerEntity opponentCopy;
+    private Map<Integer, Node> boardCopy;
 
     public enum LossCause {
         NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
@@ -269,6 +275,17 @@ public class GameManager {
         } else {
             return ((CPUPlayer) currentPlayer).makeRemove();
         }
+
+        // Adding the initial state of the game to the history, allowing to undo until
+        // the very start of the game.
+        Move initialMove = new Move(
+                playerWhite.deepCopy(),
+                playerBlack.deepCopy(),
+                boardManager.copyBoard(playerWhite.deepCopy(), playerBlack.deepCopy()),
+                0,
+                guiManager.getTimePerTurn());
+        history.addMove(initialMove);
+
     }
 
     /**
@@ -453,9 +470,19 @@ public class GameManager {
      * and the time left for the move.
      */
     public void saveMove() {
-        Move move = new Move(currentPlayer, getOpponent(), boardManager.getBoard(), noMillTurnCounter,
-                timer.getTimeLeft());
+        currentPlayerCopy = currentPlayer.deepCopy();
+        opponentCopy = getOpponent().deepCopy();
+        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+
+        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+        
+        Move lastMove = history.peekUndo();
+    if (lastMove == null || !move.equals(lastMove)) {
         history.addMove(move);
+        System.out.println("[DEBUG] Neuer Move gespeichert → Spieler: " + currentPlayerCopy.getName());
+    } else {
+        System.out.println("[DEBUG] Neuer Move identisch → nicht gespeichert");
+    }
     }
 
     /**
@@ -480,7 +507,10 @@ public class GameManager {
     public void redoMove() {
         Move nextMove = history.redoMove();
         if (nextMove != null) {
+            System.out.println("[DEBUG] RedoMove ausgeführt → Spieler: " + nextMove.getCurrentPlayer().getName());
             loadMove(nextMove);
+        } else {
+            System.out.println("[INFO] Redo nicht möglich – Stack leer");
         }
     }
 
@@ -492,7 +522,14 @@ public class GameManager {
      * @see #undoMove()
      * @see #redoMove()
      */
-    private void loadMove(Move move) {
+    public void loadMove(Move move) {
+
+        if (move == null) {
+            System.out.println("[FATAL] loadMove wurde mit null aufgerufen – verbotener Pfad!");
+            new Exception().printStackTrace(); // <-- zeigt dir die Stelle
+            return;
+        }
+
         // Restore players and set the current player
         currentPlayer = move.getCurrentPlayer();
         if (currentPlayer.getName().equalsIgnoreCase("white")) {
@@ -507,6 +544,10 @@ public class GameManager {
         boardManager.setBoard(move.getBoardSnapshot());
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
+
+        boardManager.notifyObservers();
+
+        System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
     }
 
     /**/
@@ -517,6 +558,19 @@ public class GameManager {
     /**/
     public void loadGame() {
 
+    }
+
+    // for UndoRedotest
+    public void setCurrentPlayer(PlayerEntity player) {
+        currentPlayer = player;
+    }
+
+    public void setOpponent(PlayerEntity player) {
+        opponent = player;
+    }
+
+    public void setTurnTimer(TurnTimer timer2) {
+        timer = timer2;
     }
 
     // endregion

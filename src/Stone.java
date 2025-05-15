@@ -37,4 +37,21 @@ public class Stone {
     public PlayerEntity getOwner() {
         return owner;
     }
+
+    /**
+     * Creates a deep copy of this stone, assigning a new owner reference.
+     *
+     * @param newOwner The copied player to whom the new stone will belong.
+     * @return A deep copy of this stone.
+     */
+    public Stone deepCopy(PlayerEntity newOwner) {
+        Stone copy = new Stone(newOwner);
+
+        if (this.currentNode != null) {
+            copy.setNode(this.currentNode);
+        } 
+        
+        return copy;
+    }
+
 }
