@@ -58,7 +58,16 @@ public class History {
     /**
      * Clears the redo stack by removing every element.
      */
-    private void clearRedo() {
+    public void clearUndo() {
+        if (!undoMoves.isEmpty()) {
+            undoMoves.clear();
+        }
+    }
+
+    /**
+     * Clears the redo stack by removing every element.
+     */
+    public void clearRedo() {
         System.out.println("[HISTORY] clearRedo() aufgerufen – RedoStack Größe: " + redoMoves.size());
         if (!redoMoves.isEmpty()) {
             System.out.println("[HISTORY] RedoStack wird geleert (" + redoMoves.size() + " Einträge)");
@@ -66,11 +75,18 @@ public class History {
         }
     }
 
-
     public Move peekUndo() {
         if (!undoMoves.isEmpty()) {
             return undoMoves.peek();
         }
         return null;
+    }
+
+    public Stack<Move> getUndoMoves() {
+        return undoMoves;
+    }
+
+    public Stack<Move> getRedoMoves() {
+        return redoMoves;
     }
 }

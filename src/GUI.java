@@ -3,7 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
+import java.io.File;
 
 public class GUI implements Observer {
 
@@ -495,10 +495,32 @@ public class GUI implements Observer {
                         gameManager.redoMove();
                         break;
                     case 2:
-                        gameManager.saveGame();
+                        JFileChooser chooser = new JFileChooser();
+                        chooser.setDialogTitle("Spiel speichern");
+                        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
+                        int toSave = chooser.showSaveDialog(null);
+
+                        if(toSave == JFileChooser.APPROVE_OPTION) {
+                            File selectedFile = chooser.getSelectedFile();
+                            if(!selectedFile.getName().endsWith(".json")) {
+                                selectedFile = new File(selectedFile.getAbsolutePath() + ".json");
+                            }
+
+                            gameManager.saveGame(selectedFile);
+                        }
+
                         break;
                     case 3:
-                        gameManager.loadGame();
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setDialogTitle("Spielstand laden");
+                        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
+
+                        int toLoad = fileChooser.showOpenDialog(null);
+                        if (toLoad == JFileChooser.APPROVE_OPTION) {
+                            File selectedFile = fileChooser.getSelectedFile();
+                            gameManager.loadGame(selectedFile);
+                        }
+
                         break;
                     case 4:
                         cardLayout.show(cardPanel, "Menu");
