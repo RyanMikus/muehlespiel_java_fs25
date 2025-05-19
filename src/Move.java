@@ -33,60 +33,60 @@ public class Move {
         this.timeLeft = timeLeft;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        System.out.println("[DEBUG] equals() aufgerufen");
-
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-
-        Move other = (Move) obj;
-
-        // Nur auf Boardzustand vergleichen (alternativ: auch Spieler/Phase mit
-        // vergleichen)
-        return boardEquals(this.boardSnapshot, other.boardSnapshot)
-                && currentPlayer.getName().equals(other.currentPlayer.getName())
-                && opponent.getName().equals(other.opponent.getName())
-                && noMillTurnCounter == other.noMillTurnCounter;
-    }
-
-    private boolean boardEquals(Map<Integer, Node> boardA, Map<Integer, Node> boardB) {
-        if (boardA.size() != boardB.size())
-            return false;
-
-        for (Integer id : boardA.keySet()) {
-            Node nodeA = boardA.get(id);
-            Node nodeB = boardB.get(id);
-
-            if (nodeA == null || nodeB == null)
-                return false;
-
-            Stone stoneA = nodeA.getStone();
-            Stone stoneB = nodeB.getStone();
-
-            // Wenn beide leer → passt
-            if (stoneA == null && stoneB == null)
-                continue;
-
-            // Wenn nur einer belegt → unterschiedlich
-            if (stoneA == null || stoneB == null) {
-                System.out.println("[DEBUG] Unterschied bei Node " + id + ": einer leer");
-                return false;
-            }
-
-            // Wenn unterschiedliche Owner → unterschiedlich
-            String ownerA = stoneA.getOwner() != null ? stoneA.getOwner().getName() : "";
-            String ownerB = stoneB.getOwner() != null ? stoneB.getOwner().getName() : "";
-            if (!ownerA.equals(ownerB)) {
-                System.out.println("[DEBUG] Unterschied bei Node " + id + ": owner " + ownerA + " vs " + ownerB);
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        System.out.println("[DEBUG] equals() aufgerufen");
+//
+//        if (this == obj)
+//            return true;
+//        if (obj == null || getClass() != obj.getClass())
+//            return false;
+//
+//        Move other = (Move) obj;
+//
+//        // Nur auf Boardzustand vergleichen (alternativ: auch Spieler/Phase mit
+//        // vergleichen)
+//        return boardEquals(this.boardSnapshot, other.boardSnapshot)
+//                && currentPlayer.getName().equals(other.currentPlayer.getName())
+//                && opponent.getName().equals(other.opponent.getName())
+//                && noMillTurnCounter == other.noMillTurnCounter;
+//    }
+//
+//    private boolean boardEquals(Map<Integer, Node> boardA, Map<Integer, Node> boardB) {
+//        if (boardA.size() != boardB.size())
+//            return false;
+//
+//        for (Integer id : boardA.keySet()) {
+//            Node nodeA = boardA.get(id);
+//            Node nodeB = boardB.get(id);
+//
+//            if (nodeA == null || nodeB == null)
+//                return false;
+//
+//            Stone stoneA = nodeA.getStone();
+//            Stone stoneB = nodeB.getStone();
+//
+//            // Wenn beide leer → passt
+//            if (stoneA == null && stoneB == null)
+//                continue;
+//
+//            // Wenn nur einer belegt → unterschiedlich
+//            if (stoneA == null || stoneB == null) {
+//                System.out.println("[DEBUG] Unterschied bei Node " + id + ": einer leer");
+//                return false;
+//            }
+//
+//            // Wenn unterschiedliche Owner → unterschiedlich
+//            String ownerA = stoneA.getOwner() != null ? stoneA.getOwner().getName() : "";
+//            String ownerB = stoneB.getOwner() != null ? stoneB.getOwner().getName() : "";
+//            if (!ownerA.equals(ownerB)) {
+//                System.out.println("[DEBUG] Unterschied bei Node " + id + ": owner " + ownerA + " vs " + ownerB);
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     // region Getters
 
@@ -114,13 +114,15 @@ public class Move {
      * @return A map representing the board state.
      */
     public Map<Integer, Node> getBoardSnapshot() {
-        Map<Integer, Node> copy = new HashMap<>();
-        for (Map.Entry<Integer, Node> entry : boardSnapshot.entrySet()) {
-            copy.put(entry.getKey(),
-                    entry.getValue().deepCopy(currentPlayer.deepCopy(),
-                            opponent.deepCopy()));
-        }
-        return copy;
+//        Map<Integer, Node> copy = new HashMap<>();
+//        for (Map.Entry<Integer, Node> entry : boardSnapshot.entrySet()) {
+//            copy.put(entry.getKey(),
+//                    entry.getValue().deepCopy(currentPlayer.deepCopy(),
+//                            opponent.deepCopy()));
+//        }
+//        return copy;
+
+        return boardSnapshot;
     }
 
     /**

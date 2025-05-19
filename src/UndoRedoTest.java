@@ -45,7 +45,7 @@ public class UndoRedoTest {
         history.addMove(move1);
 
         System.out.println("\n--- Aktuelles Spielfeld nach zug 1 ---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
 
         // === Zug 2: Schwarz setzt einen Stein ===
         gameManager.setCurrentPlayer(playerBlack);
@@ -66,7 +66,7 @@ public class UndoRedoTest {
         history.addMove(move2);
 
         System.out.println("\n--- Aktuelles Spielfeld nach Spielzug 2 ---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
 
         // === UNDO ===
         System.out.println("\n--- UNDO 1---");
@@ -79,7 +79,7 @@ public class UndoRedoTest {
         }
 
         System.out.println("\n--- Aktuelles Spielfeld  nach Undo 1---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
 
         // === UNDO ===
         System.out.println("\n--- UNDO 2---");
@@ -92,7 +92,7 @@ public class UndoRedoTest {
         }
 
         System.out.println("\n--- Aktuelles Spielfeld  nach Undo 2---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
 
         // === REDO ===
         System.out.println("\n--- REDO 1---");
@@ -106,7 +106,7 @@ public class UndoRedoTest {
 
         // === Aktuellen Zustand anzeigen ===
         System.out.println("\n--- Aktuelles Spielfeld nach Redo 1---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
 
         // === REDO ===
         System.out.println("\n--- REDO 2---");
@@ -120,6 +120,6 @@ public class UndoRedoTest {
 
         // === Aktuellen Zustand anzeigen ===
         System.out.println("\n--- Aktuelles Spielfeld nach Redo 2---");
-        boardManager.printBoard();
+        //boardManager.printBoard();
     }
 }

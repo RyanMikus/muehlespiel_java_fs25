@@ -85,4 +85,15 @@ public class CPUPlayer extends PlayerEntity {
 
         return copy;
     }
+
+    @Override
+    public void setPlayer(PlayerEntity player) {
+        this.name = player.getName();
+        this.stones.clear();
+        for (Stone stone : player.getRemainingStones()){
+            this.stones.add(stone.deepCopy(this));
+        }
+        this.currentPhase = player.getPhase().deepCopy(this);
+        this.placedStones = player.placedStones;
+    }
 }

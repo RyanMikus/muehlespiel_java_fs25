@@ -28,8 +28,7 @@ public class GUIBoard extends JPanel {
     // Steine links/rechts
     private final List<Point> whiteStoneSlots = new ArrayList<>();
     private final List<Point> blackStoneSlots = new ArrayList<>();
-    private int whiteStonesLeft = 9;
-    private int blackStonesLeft = 9;
+    private final int MAX_STONES = 9;
     // endregion
 
     public GUIBoard() {
@@ -49,11 +48,12 @@ public class GUIBoard extends JPanel {
 
                 if(!removeMode) {
                     PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
+                    int stonesLeft = MAX_STONES - currentPlayer.getPlacedStones();
 
                     // Checks if the white player wants to move his own stone
                     if(currentPlayer.getName().equalsIgnoreCase("white")) {
-                        for(int i = 0; i < whiteStonesLeft; i++) {
-                            if(whiteStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                        for(int i = 0; i < stonesLeft; i++) {
+                            if(whiteStoneSlots.get(i).distance(e.getPoint()) < stoneRadius) {
                                 draggedColor = Color.WHITE;
                                 dragPosition = e.getPoint();
                                 return;
@@ -63,8 +63,8 @@ public class GUIBoard extends JPanel {
 
                     // Checks if the black player wants to move his own stone
                     if(currentPlayer.getName().equalsIgnoreCase("black")) {
-                        for(int i = 0; i < blackStonesLeft; i++) {
-                            if(blackStoneSlots.get(i).distance(e.getPoint()) < 15) {
+                        for(int i = 0; i < stonesLeft; i++) {
+                            if(blackStoneSlots.get(i).distance(e.getPoint()) < stoneRadius) {
                                 draggedColor = Color.BLACK;
                                 dragPosition = e.getPoint();
                                 return;
@@ -77,7 +77,7 @@ public class GUIBoard extends JPanel {
                         int guiNodeId = entry.getKey();
                         Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
 
-                        if(p.distance(e.getPoint()) < 15 && !(currentPlayer.getPhase() instanceof SettingPhase)) {
+                        if(p.distance(e.getPoint()) < stoneRadius && !(currentPlayer.getPhase() instanceof SettingPhase)) {
                             Node node = boardManager.getNode(guiNodeId);
 
                             // debug
@@ -112,7 +112,7 @@ public class GUIBoard extends JPanel {
                     int guiNodeId = entry.getKey();
                     Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
 
-                    if(p.distance(e.getPoint()) < 15) {
+                    if(p.distance(e.getPoint()) < stoneRadius) {
                         Node toNode = boardManager.getNode(guiNodeId);
 
                         // debug
@@ -138,23 +138,6 @@ public class GUIBoard extends JPanel {
                             //System.out.println("    MR - Handle Move.. Player Phase -> " + currentPlayer.getPhase().getClass().getSimpleName());
 
                             signalPlayerMove(fromNode, toNode);
-
-                            // debug
-                            //System.out.println("     MR - Move handled correct.. new Player: " + gameManager.getCurrentPlayer().getName());
-
-                            // Update amount of stones on edge of the game board
-                            if(draggedColor == Color.WHITE && whiteStonesLeft > 0) {
-                                whiteStonesLeft--;
-
-                                // debug
-                                //System.out.println("      MR - White Stones left -> " + whiteStonesLeft);
-                            } else if(draggedColor == Color.BLACK && blackStonesLeft > 0) {
-                                blackStonesLeft--;
-
-                                // debug
-                                //System.out.println("      MR - Black Stones left -> " + blackStonesLeft);
-                            }
-
                             fromNode = null;
                             toNode = null;
                             break;
@@ -351,17 +334,40 @@ public class GUIBoard extends JPanel {
             }
         }
 
+        int placeholderRadius = 5;
+        g2.setColor(Color.GRAY);
+        for (Point p : whiteStoneSlots) {
+            g2.fillOval(p.x - placeholderRadius,p.y - placeholderRadius, placeholderRadius * 2, placeholderRadius * 2
+            );
+        }
+        for (Point p : blackStoneSlots) {
+            g2.fillOval(p.x - placeholderRadius,p.y - placeholderRadius, placeholderRadius * 2, placeholderRadius * 2
+            );
+        }
+
+        GameManager gameManager = GameManager.getInstance();
+        PlayerEntity playerWhite = gameManager.getPlayerWhite();
+        PlayerEntity playerBlack = gameManager.getPlayerBlack();
+
+        if (playerWhite == null || playerBlack == null) {
+            return;
+        }
+
+        int whiteLeft = 9 - playerWhite.getPlacedStones();
+        int blackLeft = 9 - playerBlack.getPlacedStones();
+
         g2.setColor(Color.WHITE);
-        for(int i = 0; i < whiteStonesLeft; i++) {
+        for(int i = 0; i < whiteLeft; i++) {
             Point p = whiteStoneSlots.get(i);
-            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
+            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius*2, stoneRadius*2);
         }
 
         g2.setColor(Color.BLACK);
-        for(int i = 0; i < blackStonesLeft; i++) {
+        for(int i = 0; i < blackLeft; i++) {
             Point p = blackStoneSlots.get(i);
-            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
+            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius*2, stoneRadius*2);
         }
+
 
         if(draggedColor != null && dragPosition != null) {
             g2.setColor(draggedColor);
@@ -375,8 +381,6 @@ public class GUIBoard extends JPanel {
         removeMode = false;
         dragPosition = null;
         draggedColor = null;
-        whiteStonesLeft = 9;
-        blackStonesLeft = 9;
     }
 
     // endregion

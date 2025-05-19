@@ -82,6 +82,10 @@ public abstract class PlayerEntity {
         return currentPhase;
     }
 
+    public int getPlacedStones() {
+        return placedStones;
+    }
+
     /**
      * Changes the current phase to a new one.
      *
@@ -98,5 +102,15 @@ public abstract class PlayerEntity {
      * @return Deep Copy of a new Player
      */
     public abstract PlayerEntity deepCopy();
+
+    public abstract void setPlayer(PlayerEntity player);
+
+    public void printCopy(){
+        System.out.printf(" Player %s | %s | %d\n", this.name, this.currentPhase.getClass().getSimpleName(), this.placedStones);
+        for(Stone stone : this.stones){
+            System.out.printf("Stone ID : %d | Node : %d |Owner : %s\n", stone.getNode().getID(),stone.getNode().getID(), stone.getOwner().getName());
+        }
+    }
+
 
 }

@@ -15,6 +15,7 @@ public class BoardManager extends Observable {
     public final List<int[]> potentialMills;
     // endregion
 
+    // region Initialization
     /**
      * Initializes the board
      *
@@ -118,7 +119,9 @@ public class BoardManager extends Observable {
             node2.addNeighbor(node1);
         }
     }
+    // endregion
 
+    // region Events
     /**
      * Checks if the performed move is valid and places the stone on the target node
      * if so.
@@ -199,7 +202,9 @@ public class BoardManager extends Observable {
 
         return true;
     }
+    // endregion
 
+    // region Setters / Getters
     /**
      * Getter for the current board.
      *
@@ -207,16 +212,6 @@ public class BoardManager extends Observable {
      */
     public Map<Integer, Node> getBoard() {
         return nodes;
-    }
-
-    /**
-     * Sets the board to a new one, updating all nodes and their parameters.
-     *
-     * @param newBoard The new Hashmap, containing all nodes of a board.
-     */
-    public void setBoard(Map<Integer, Node> newBoard) {
-        nodes = newBoard;
-        notifyObservers();
     }
 
     /**
@@ -230,18 +225,48 @@ public class BoardManager extends Observable {
     }
 
     /**
+     * Sets the board to a new one, updating all nodes and their parameters.
+     *
+     * @param newBoard The new Hashmap, containing all nodes of a board.
+     */
+    public void setBoard(Map<Integer, Node> newBoard, PlayerEntity currentPlayer, PlayerEntity opponent) {
+        nodes.clear();
+
+        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue Map legen
+        for (Map.Entry<Integer, Node> entry : newBoard.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copyNode = originalNode.deepCopy(currentPlayer, opponent);
+            nodes.put(entry.getKey(), copyNode);
+        }
+        // Nach dieser Schleife haben wir eine neue Map mit 24 kopierten Knoten. Die Kopien
+        // besitzen ebenso kopierte Steine wenn welche vorhanden waren. Der kopierte Knoten
+        // wurde auf den kopierten Stein gesetzt und umgekehrt.
+        // Die LinkedList mit den Nachbarn ist bei allen Kopien aktuell noch LEER!
+
+        // 2. Knoten wieder verbinden
+        for (int node = 0; node < neighbors.length; node++) {
+            for (int neighbor : neighbors[node]) {
+                // Prevent duplicates
+                if (node < neighbor) {
+                    connectNodes(nodes, node, neighbor);
+                }
+            }
+        }
+    }
+    // endregion
+
+    /**
      * Printing each Node and the stone it is currently holding.
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
-    public void printBoard() {
+    public void printBoard(Map<Integer, Node> board) {
         System.out.println("-- BOARD -- ");
-        for (Node node : nodes.values()) {
+        for (Node node : board.values()) {
             String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
             String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
             System.out.println(line);
             }
 
-        System.out.println("-- BOARD --\n");
     }
 
     /**
@@ -255,11 +280,18 @@ public class BoardManager extends Observable {
     public Map<Integer, Node> copyBoard(PlayerEntity currentPlayerCopy, PlayerEntity opponentCopy) {
         Map<Integer, Node> copiedBoard = new HashMap<>();
 
-        for(Node originalNode : nodes.values()) {
-            copiedBoard.put(originalNode.getID(), originalNode.deepCopy(currentPlayerCopy, opponentCopy));
+        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue Map legen
+        for (Map.Entry<Integer, Node> entry : nodes.entrySet()) {
+            Node originalNode = entry.getValue();
+            Node copyNode = originalNode.deepCopy(currentPlayerCopy, opponentCopy);
+            copiedBoard.put(entry.getKey(), copyNode);
         }
+        // Nach dieser Schleife haben wir eine neue Map mit 24 kopierten Knoten. Die Kopien
+        // besitzen ebenso kopierte Steine wenn welche vorhanden waren. Der kopierte Knoten
+        // wurde auf den kopierten Stein gesetzt und umgekehrt.
+        // Die LinkedList mit den Nachbarn ist bei allen Kopien aktuell noch LEER!
 
-        // Connecting all nodes
+        // 2. Knoten wieder verbinden
         for (int node = 0; node < neighbors.length; node++) {
             for (int neighbor : neighbors[node]) {
                 // Prevent duplicates
@@ -268,25 +300,6 @@ public class BoardManager extends Observable {
                 }
             }
         }
-
-        /*
-        // Step 1: Copy nodes (without neighbors)
-        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
-            Node originalNode = entry.getValue();
-            Node copiedNode = originalNode.deepCopy(currentPlayerCopy, opponentCopy);
-            copiedBoard.put(entry.getKey(), copiedNode);
-        }
-
-        // Step 2: Reconnect neighbors
-        for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
-            Node originalNode = entry.getValue();
-            Node copiedNode = copiedBoard.get(entry.getKey());
-
-            for (Node neighbor : originalNode.getNeighbors()) {
-                copiedNode.addNeighbor(copiedBoard.get(neighbor.getID()));
-            }
-        }*/
-
         return copiedBoard;
     }
 
