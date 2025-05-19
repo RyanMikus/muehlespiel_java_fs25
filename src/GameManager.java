@@ -127,7 +127,6 @@ public class GameManager {
         // the very start of the game.
         Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
         history.addMove(initialMove);
-        loadMove(initialMove);
 
         gameThread = new Thread(this::runGame);
         gameThread.start();
@@ -221,7 +220,6 @@ public class GameManager {
                 return;
             }
 
-            System.out.println("Save Move called!");
             saveMove();
             switchPlayer();
         }

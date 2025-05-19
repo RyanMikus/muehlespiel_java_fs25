@@ -69,7 +69,7 @@ public class BoardManager extends Observable {
             for (int neighbor : neighbors[node]) {
                 // Prevent duplicates
                 if (node < neighbor) {
-                    connectNodes(node, neighbor);
+                    connectNodes(nodes, node, neighbor);
                 }
             }
         }
@@ -107,10 +107,10 @@ public class BoardManager extends Observable {
      * @param id1 Unique ID of the first node that shall be connected.
      * @param id2 Unique ID of the second node that shall be connected.
      */
-    private void connectNodes(int id1, int id2) {
+    private void connectNodes(Map<Integer, Node> board, int id1, int id2) {
         // Getting the nodes by their ID
-        Node node1 = nodes.get(id1);
-        Node node2 = nodes.get(id2);
+        Node node1 = board.get(id1);
+        Node node2 = board.get(id2);
 
         // Adding each other to their neighbors
         if (node1 != null && node2 != null) {
@@ -255,6 +255,21 @@ public class BoardManager extends Observable {
     public Map<Integer, Node> copyBoard(PlayerEntity currentPlayerCopy, PlayerEntity opponentCopy) {
         Map<Integer, Node> copiedBoard = new HashMap<>();
 
+        for(Node originalNode : nodes.values()) {
+            copiedBoard.put(originalNode.getID(), originalNode.deepCopy(currentPlayerCopy, opponentCopy));
+        }
+
+        // Connecting all nodes
+        for (int node = 0; node < neighbors.length; node++) {
+            for (int neighbor : neighbors[node]) {
+                // Prevent duplicates
+                if (node < neighbor) {
+                    connectNodes(copiedBoard, node, neighbor);
+                }
+            }
+        }
+
+        /*
         // Step 1: Copy nodes (without neighbors)
         for (Map.Entry<Integer, Node> entry : this.nodes.entrySet()) {
             Node originalNode = entry.getValue();
@@ -270,7 +285,7 @@ public class BoardManager extends Observable {
             for (Node neighbor : originalNode.getNeighbors()) {
                 copiedNode.addNeighbor(copiedBoard.get(neighbor.getID()));
             }
-        }
+        }*/
 
         return copiedBoard;
     }

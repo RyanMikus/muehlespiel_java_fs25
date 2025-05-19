@@ -63,7 +63,7 @@ public class RuleManager {
             if(!fromNode.getNeighbors().contains(toNode)){
                 errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
-                gameManager.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");  
+                gameManager.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");
             }
                       
                         
