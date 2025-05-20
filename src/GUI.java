@@ -38,6 +38,7 @@ public class GUI implements Observer {
     private final String WIN_GIF_PATH = "/resources/win.gif";
 
     private String mode;
+    private DifficultyStrategy difficulty;
     // endregion
 
     // region Initialization
@@ -70,6 +71,7 @@ public class GUI implements Observer {
         cardPanel.add(createHomeScreen(), "Home");
         cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
+        cardPanel.add(createDifficultyScreen(), "Difficulty");
         cardPanel.add(createLoadGameScreen(), "loadGame");
 
         window.setJMenuBar(menuBar);
@@ -303,13 +305,12 @@ public class GUI implements Observer {
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
-                        mode = "singleplayer";
-                        cardPanel.add(createBoardScreen(mode), "Board");
-                        cardLayout.show(cardPanel, "Board");
+                        cardLayout.show(cardPanel, "Difficulty");
                         break;
                     case 1:
                         mode = "multiplayer";
-                        cardPanel.add(createBoardScreen(mode), "Board");
+                        difficulty = null;
+                        cardPanel.add(createBoardScreen(mode, difficulty), "Board");
                         cardLayout.show(cardPanel, "Board");
                         break;
                     case 2:
@@ -331,6 +332,73 @@ public class GUI implements Observer {
 
         return panel;
     } // createNewGameScreen
+
+    /**
+     * Creates the Difficulty Screen JPanel.
+     *
+     * @return The difficulty screen panel.
+     */
+    private JPanel createDifficultyScreen() {
+
+        // main panel Dfficulty Screen
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+
+        // buttons
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setOpaque(false);
+
+        // necessary positions settings
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0; // same row
+
+        String[] buttonTexts = {"leicht", "mittel", "schwer", "zurück"};
+
+        for (int i = 0; i < buttonTexts.length; i++) {
+            JButton button = new JButton(buttonTexts[i]);
+            styleButton(button);
+
+            int buttonIndex = i;
+            button.addActionListener(e -> {
+                switch (buttonIndex) {
+                    case 0:
+                        mode = "singleplayer";
+                        difficulty = new EasyDifficulty();
+                        cardPanel.add(createBoardScreen(mode, difficulty), "Board");
+                        cardLayout.show(cardPanel, "Board");
+                        break;
+                    case 1:
+                        mode = "singleplayer";
+                        difficulty = new MediumDifficulty();
+                        cardPanel.add(createBoardScreen(mode, difficulty), "Board");
+                        cardLayout.show(cardPanel, "Board");
+                        break;
+                    case 2:
+                        mode = "singleplayer";
+                        difficulty = new HardDifficulty();
+                        cardPanel.add(createBoardScreen(mode, difficulty), "Board");
+                        cardLayout.show(cardPanel, "Board");
+                        break;
+                    case 3:
+                        cardLayout.show(cardPanel, "newGame");
+                        break;
+                }
+            });
+
+            gbc.gridx = i;
+            gbc.insets = new Insets(0, 0, 0, (i < buttonTexts.length - 1) ? 20 : 0);
+            buttonPanel.add(button, gbc);
+        }
+
+        // adding all components
+        panel.add(createHomeLogo());
+        panel.add(createHomeImage());
+        panel.add(buttonPanel);
+
+        return panel;
+    } // createNewGameScreen
+
 
     /**
      * Creates the Load Screen JPanel.
@@ -382,7 +450,7 @@ public class GUI implements Observer {
      *
      * @return The board screen panel.
      */
-    private JPanel createBoardScreen(String mode) {
+    private JPanel createBoardScreen(String mode, DifficultyStrategy difficulty) {
         GameManager gameManager = GameManager.getInstance();
 
         // main Panel Board Screen
@@ -427,7 +495,7 @@ public class GUI implements Observer {
             if (!gameManager.getGameStatus()) {
                 gameManager.setTimePerTurn(slider.getValue());
                 slider.setEnabled(false);
-                gameManager.startGame(mode);
+                gameManager.startGame(mode, difficulty);
             } else {
                 System.out.println("[WARNING] - Game is already running!");
             }
@@ -841,7 +909,7 @@ public class GUI implements Observer {
             }
         }
 
-        JPanel newBoardPanel = createBoardScreen(mode);
+        JPanel newBoardPanel = createBoardScreen(mode, difficulty);
         newBoardPanel.setName("Board");
         cardPanel.add(newBoardPanel, "Board");
 

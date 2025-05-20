@@ -98,16 +98,18 @@ public class GameManager {
      * Adds an initial move to the history allowing to undo until the very start of
      * the game.
      *
-     * @param mode Can either be Singleplayer (Player and CPU) or Multiplayer (Two
-     *             players).
+     * @param mode       Can either be Singleplayer (Player and CPU) or Multiplayer (Two
+     *                   players).
+     * @param difficulty
      */
-    public void startGame(String mode) {
+    public void startGame(String mode, DifficultyStrategy difficulty) {
         System.out.format("-- Starting game in mode: %s --\n\n", mode);
 
         // Starting Singleplayer mode with a Player and a CPUPlayer
         if (mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
             playerBlack = new CPUPlayer("black", playerWhite);
+            ((CPUPlayer) playerBlack).setDifficulty(difficulty);
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
@@ -132,9 +134,9 @@ public class GameManager {
         Move initialMove = new Move(currentPlayerCopy, opponentCopy, boardCopy, 0, timer.getTimeLeft());
         history.addMove(initialMove);
 
-        currentPlayerCopy.printCopy();
-        opponentCopy.printCopy();
-        boardManager.printBoard(boardCopy);
+        //currentPlayerCopy.printCopy();
+        //opponentCopy.printCopy();
+        //boardManager.printBoard(boardCopy);
         guiManager.update();
 
         gameThread = new Thread(this::runGame);
@@ -518,26 +520,17 @@ public class GameManager {
      */
     public void saveMove() {
         currentPlayerCopy = currentPlayer.deepCopy();
-        //System.out.println("PlayerCopy: " + currentPlayerCopy + ", Current player: " + currentPlayer);
         opponentCopy = getOpponent().deepCopy();
-        //System.out.println("OpponentCopy: " + opponentCopy + ", Current opponent: " + getOpponent());
         boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
 
         Move move = new Move(currentPlayerCopy, opponentCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
 
-        currentPlayerCopy.printCopy();
-        opponentCopy.printCopy();
-        boardManager.printBoard(boardCopy);
+        //currentPlayerCopy.printCopy();
+        //opponentCopy.printCopy();
+        //boardManager.printBoard(boardCopy);
 
         history.addMove(move);
 
-//        Move lastMove = history.peekUndo();
-//        if (lastMove == null || !move.equals(lastMove)) {
-//            history.addMove(move);
-//            System.out.println("[DEBUG] Neuer Move gespeichert → Spieler: " + currentPlayerCopy.getName());
-//        } else {
-//            System.out.println("[DEBUG] Neuer Move identisch → nicht gespeichert");
-//        }
     }
 
 
@@ -588,7 +581,7 @@ public class GameManager {
         timer.setTimeLeft(move.getTimeLeft());
 
         boardManager.notifyObservers();
-
+        updateGamePrompt();
         //System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
     }
 
