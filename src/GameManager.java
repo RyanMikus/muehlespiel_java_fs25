@@ -589,13 +589,14 @@ public class GameManager {
         List<MoveData> undo = history.getUndoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
         List<MoveData> redo = history.getRedoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
 
-        GameStateData gameState = new GameStateData(currentData, opponentData, undo, redo, noMillTurnCounter,
+        GameStateData gameState = new GameStateData(currentData, opponentData, undo, redo, noMillTurnCounter, timePerTurn,
                 timer.getTimeLeft(), mode);
 
         // Write data to JSON-File
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(targetFile)) {
             gson.toJson(gameState, writer);
+            startTurnTimer();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -675,14 +676,11 @@ public class GameManager {
      * Loads a saved game state from a JSON-File and restores it.
      *
      * @param file The JSON file containing the saved game state.
-     * @see #fromPlayerData(PlayerData, PlayerEntity)
-     * @see #fromMoveData(MoveData) 
-     * @see #restoreBoardFromMoves(List)
+     * @see #fromPlayerData(PlayerData, PlayerEntity, boolean) 
+     * @see #fromMoveData(MoveData)
      */
     public void loadGame(File file) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            resetGame();
-
             // Read data from File
             Gson gson = new Gson();
             GameStateData state = gson.fromJson(reader, GameStateData.class);
@@ -695,10 +693,7 @@ public class GameManager {
             this.currentPlayer = loadedCurrent;
 
             this.noMillTurnCounter = state.noMillTurnCounter;
-            this.timer.setTimeLeft(state.timeLeft);
-
-            // Set board
-            //restoreBoardFromMoves(state.undoMoves);
+            this.timePerTurn = state.timePerTurn;
 
             // Reconstruct history
             this.history.clearUndo();
@@ -709,6 +704,11 @@ public class GameManager {
             for (MoveData moveData : state.redoMoves) {
                 this.history.getRedoMoves().add(fromMoveData(moveData));
             }
+
+            gameStatus = true;
+            startTurnTimer();
+            gameThread = new Thread(this::runGame);
+            gameThread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -787,32 +787,6 @@ public class GameManager {
         }
 
         return new Move(current, opponent, board, data.noMillTurnCounter, data.timeLeft);
-    }
-
-    /**
-     * Helpermethod for the loadGame-Method.
-     * <p>
-     * Applies the board snapshot from the last undo move to the current board.
-     *
-     * @param undoMoves   List of previous moves from which the board should be restored.
-     * @see #loadGame(File) 
-     */
-    private void restoreBoardFromMoves(List<MoveData> undoMoves) {
-        if (undoMoves == null || undoMoves.isEmpty()) return;
-        MoveData last = undoMoves.get(undoMoves.size() - 1);
-
-        for (Map.Entry<Integer, Integer> entry : last.boardSnapshot.entrySet()) {
-            Node node = BoardManager.getInstance().getNode(entry.getKey());
-            node.removeStone();
-
-            int ownerCode = entry.getValue();
-            if (ownerCode == 1 || ownerCode == 2) {
-                PlayerEntity owner = (ownerCode == 1) ? playerWhite : playerBlack;
-                Stone stone = new Stone(owner);
-                node.placeStone(stone);
-                owner.addStone(stone);
-            }
-        }
     }
 
     // endregion

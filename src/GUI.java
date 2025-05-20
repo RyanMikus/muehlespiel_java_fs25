@@ -70,7 +70,7 @@ public class GUI implements Observer {
         cardPanel.add(createHomeScreen(), "Home");
         cardPanel.add(createMenuScreen(), "Menu");
         cardPanel.add(createNewGameScreen(), "newGame");
-        cardPanel.add(createLoadGameScreen(), "loadGame");
+        //cardPanel.add(createLoadGameScreen(), "loadGame");
 
         window.setJMenuBar(menuBar);
         window.add(cardPanel);
@@ -249,15 +249,35 @@ public class GUI implements Observer {
         gbc.gridy = 0; // same row
 
         String[] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
-        String[] screenNames = {"newGame", "loadGame", "Home"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
             styleButton(button);
 
-            String screenName = screenNames[i];
+            int buttonIndex = i;
             button.addActionListener(e -> {
-                cardLayout.show(cardPanel, screenName);
+                switch(buttonIndex) {
+                    case 0:
+                        cardLayout.show(cardPanel, "newGame");
+                        break;
+                    case 1:
+                        createBoardScreen("singleplayer");
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setDialogTitle("Spielstand laden");
+                        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
+
+                        int toLoad = fileChooser.showOpenDialog(null);
+                        if (toLoad == JFileChooser.APPROVE_OPTION) {
+                            File selectedFile = fileChooser.getSelectedFile();
+                            cardLayout.show(cardPanel, "Board");
+                            slider.setEnabled(false);
+                            GameManager.getInstance().loadGame(selectedFile);
+                        }
+                        break;
+                    case 2:
+                        cardLayout.show(cardPanel, "Home");
+                        break;
+                }
             });
 
             gbc.gridx = i;
@@ -479,7 +499,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = {"undo", "redo", "speichern", "laden", "beenden"};
+        String[] buttonTexts = {"undo", "redo", "speichern", "beenden"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -495,6 +515,7 @@ public class GUI implements Observer {
                         gameManager.redoMove();
                         break;
                     case 2:
+                        gameManager.stopTurnTimer();
                         JFileChooser chooser = new JFileChooser();
                         chooser.setDialogTitle("Spiel speichern");
                         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
@@ -511,18 +532,6 @@ public class GUI implements Observer {
 
                         break;
                     case 3:
-                        JFileChooser fileChooser = new JFileChooser();
-                        fileChooser.setDialogTitle("Spielstand laden");
-                        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
-
-                        int toLoad = fileChooser.showOpenDialog(null);
-                        if (toLoad == JFileChooser.APPROVE_OPTION) {
-                            File selectedFile = fileChooser.getSelectedFile();
-                            gameManager.loadGame(selectedFile);
-                        }
-
-                        break;
-                    case 4:
                         cardLayout.show(cardPanel, "Menu");
                         gameManager.resetGame();
                         break;
