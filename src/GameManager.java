@@ -134,9 +134,6 @@ public class GameManager {
         Move initialMove = new Move(currentPlayerCopy, opponentCopy, boardCopy, 0, timer.getTimeLeft());
         history.addMove(initialMove);
 
-        //currentPlayerCopy.printCopy();
-        //opponentCopy.printCopy();
-        //boardManager.printBoard(boardCopy);
         guiManager.update();
 
         gameThread = new Thread(this::runGame);
@@ -175,7 +172,15 @@ public class GameManager {
         Node[] move;
         Node remove;
 
+        int round = 1;
+
         while (gameStatus) {
+            //System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
+
+            //System.out.println("[GAMEMANAGER] Aktuelles Board: ");
+            boardManager.printBoard(boardManager.getBoard());
+
+
             boolean isPlayer = currentPlayer instanceof Player;
 
             // update game prompt
@@ -221,9 +226,12 @@ public class GameManager {
                 if (!boardManager.removeStone(currentPlayer, remove)) {
                     continue;
                 }
+
                 guiManager.getGuiBoard().setRemoveMode(false);
                 boardManager.notifyObservers();
                 millCount--;
+
+
             }
 
             if (ruleManager.isGameOver(playerWhite, playerBlack)) {
@@ -233,6 +241,7 @@ public class GameManager {
 
             saveMove();
             switchPlayer();
+            round++;
         }
     }
 
@@ -523,7 +532,7 @@ public class GameManager {
         opponentCopy = getOpponent().deepCopy();
         boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
 
-        Move move = new Move(currentPlayerCopy, opponentCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
 
         //currentPlayerCopy.printCopy();
         //opponentCopy.printCopy();
@@ -550,6 +559,7 @@ public class GameManager {
             return;
         }
 
+
         // Restore players and set the current player
         PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
         if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
@@ -562,6 +572,9 @@ public class GameManager {
             currentPlayer = playerBlack;
             playerWhite.setPlayer(move.getOpponent());
         }
+
+
+
 
 //        // old
 //        currentPlayer = move.getCurrentPlayer();
@@ -582,6 +595,10 @@ public class GameManager {
 
         boardManager.notifyObservers();
         updateGamePrompt();
+
+        //System.out.println("[GAMEMANAGER] Board nach dem Laden:");
+        //boardManager.printBoard(boardManager.getBoard());
+
         //System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
     }
 

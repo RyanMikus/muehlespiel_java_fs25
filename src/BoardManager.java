@@ -146,8 +146,8 @@ public class BoardManager extends Observable {
         //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
         notifyObservers();
 
-        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
-                "] - Placed stone on node " + toNode.getID());
+//        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
+//                "] - Placed stone on node " + toNode.getID());
         return true;
     }
 
@@ -260,12 +260,15 @@ public class BoardManager extends Observable {
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
     public void printBoard(Map<Integer, Node> board) {
-        System.out.println("-- BOARD -- ");
+        //System.out.println("-- BOARD -- ");
         for (Node node : board.values()) {
-            String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
-            String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
-            System.out.println(line);
+            if (node.getStone() != null){
+                String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
+                String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
+                System.out.println(line);
             }
+
+        }
 
     }
 

@@ -1,3 +1,4 @@
+import java.util.Map;
 import java.util.Stack;
 
 public class History {
@@ -15,7 +16,19 @@ public class History {
     public void addMove(Move move) {
         undoMoves.push(move);
         clearRedo();
-        System.out.println("[HISTORY] Neuer Move gespeichert → UndoStack Größe: " + undoMoves.size());
+
+
+//        System.out.println("[HISTORY] Neuer Move gespeichert → UndoStack Größe: " + undoMoves.size());
+//        System.out.println("[HISTORY] Gespeichertes Board mit Knotenreferenzen: ");
+//        Map<Integer, Node> snapshot = move.getBoardSnapshot();
+//        for (Node node : snapshot.values()) {
+//            if (node.getStone() != null) {
+//                String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
+//                String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
+//                System.out.println(line);
+//            }
+//        }
+
     }
 
     /**
@@ -30,6 +43,7 @@ public class History {
         if(undoMoves.size() > 1) {
             Move undoMove = undoMoves.pop();
             redoMoves.push(undoMove);
+            //System.out.println("[HISTORY] - Undo aufgerufen");
             return undoMoves.peek();
         }
         return null;
@@ -47,7 +61,7 @@ public class History {
         if (!redoMoves.empty()) {
             Move redoMove = redoMoves.pop();
             undoMoves.push(redoMove);
-            System.out.println("[HISTORY] RedoMove aufgerufen → RedoStack Größe danach: " + redoMoves.size());
+            //System.out.println("[HISTORY] RedoMove aufgerufen → RedoStack Größe danach: " + redoMoves.size());
             return redoMove;
         }
     
@@ -59,7 +73,7 @@ public class History {
      * Clears the redo stack by removing every element.
      */
     private void clearRedo() {
-        System.out.println("[HISTORY] clearRedo() aufgerufen – RedoStack Größe: " + redoMoves.size());
+        //System.out.println("[HISTORY] clearRedo() aufgerufen – RedoStack Größe: " + redoMoves.size());
         if (!redoMoves.isEmpty()) {
             System.out.println("[HISTORY] RedoStack wird geleert (" + redoMoves.size() + " Einträge)");
             redoMoves.clear();

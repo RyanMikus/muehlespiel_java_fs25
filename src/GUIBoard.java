@@ -260,6 +260,11 @@ public class GUIBoard extends JPanel {
         removeMode = toState;
     }
 
+    public boolean getRemoveMode() {
+        return removeMode;
+    }
+
+
     /**
      * When a mill is formed the player chooses one stone over the gui
      *

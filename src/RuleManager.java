@@ -158,6 +158,10 @@ public class RuleManager {
     public int countMillsFormed(Stone lastPlacedStone) {
         BoardManager boardManager = BoardManager.getInstance();
         PlayerEntity player = lastPlacedStone.getOwner();
+
+        player.printCopy();
+
+
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
 
@@ -178,12 +182,21 @@ public class RuleManager {
             List<Integer> millStones = new ArrayList<>();
             int ownershipCounter = 0;
             for (int pos : mill) {
-                for (Stone stone : player.getRemainingStones()) {
-                    if (stone.getNode().getID() == pos && !millStones.contains(pos)) {
-                        ownershipCounter++;
-                        millStones.add((Integer) stone.getNode().getID());
-                    }
+                
+                Stone stone = boardManager.getNode(pos).getStone();
+                if (stone != null && stone.getOwner() == player) {
+                    ownershipCounter++;
+                    millStones.add(pos);
                 }
+
+
+
+//                for (Stone stone : player.getRemainingStones()) {
+//                    if (stone.getNode().getID() == pos && !millStones.contains(pos)) {
+//                        ownershipCounter++;
+//                        millStones.add((Integer) stone.getNode().getID());
+//                    }
+//                }
             }
             // Add one formed mill to the counter
             if (ownershipCounter == 3) {
