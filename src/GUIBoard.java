@@ -332,9 +332,15 @@ public class GUIBoard extends JPanel {
                 Stone stone = node.getStone();
                 PlayerEntity owner = stone.getOwner();
 
-                Color color = owner.getName().equalsIgnoreCase("white") ? Color.WHITE : Color.BLACK;
+                boolean isWhite = owner.getName().equalsIgnoreCase("white");
+                Color fillColor = isWhite ? Color.WHITE : Color.BLACK;
+                Color borderColor = isWhite ? Color.RED : Color.RED;
 
-                g2.setColor(color);
+                // Rand
+                g2.setColor(borderColor);
+                g2.fillOval(p.x - stoneRadius - 2, p.y - stoneRadius - 2, (stoneRadius + 2) * 2, (stoneRadius + 2) * 2);
+                // Stein
+                g2.setColor(fillColor);
                 g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
             }
         }
@@ -361,20 +367,31 @@ public class GUIBoard extends JPanel {
         int whiteLeft = 9 - playerWhite.getPlacedStones();
         int blackLeft = 9 - playerBlack.getPlacedStones();
 
-        g2.setColor(Color.WHITE);
         for(int i = 0; i < whiteLeft; i++) {
             Point p = whiteStoneSlots.get(i);
+            // Schwarzer Rand
+            g2.setColor(Color.RED);
+            g2.fillOval(p.x - stoneRadius - 2, p.y - stoneRadius - 2, (stoneRadius + 2) * 2, (stoneRadius + 2) * 2);
+            // Weißer Stein
+            g2.setColor(Color.WHITE);
             g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius*2, stoneRadius*2);
         }
 
-        g2.setColor(Color.BLACK);
         for(int i = 0; i < blackLeft; i++) {
             Point p = blackStoneSlots.get(i);
+            // Weisser Rand
+            g2.setColor(Color.RED);
+            g2.fillOval(p.x - stoneRadius - 2, p.y - stoneRadius - 2, (stoneRadius + 2) * 2, (stoneRadius + 2) * 2);
+            // Schwarzer Stein
+            g2.setColor(Color.BLACK);
             g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius*2, stoneRadius*2);
         }
 
 
         if(draggedColor != null && dragPosition != null) {
+            g2.setColor(Color.RED);
+            g2.fillOval(dragPosition.x - stoneRadius - 2, dragPosition.y - stoneRadius - 2, (stoneRadius + 2) * 2, (stoneRadius + 2) * 2);
+
             g2.setColor(draggedColor);
             g2.fillOval(dragPosition.x - stoneRadius, dragPosition.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
         }

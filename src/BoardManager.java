@@ -144,6 +144,7 @@ public class BoardManager extends Observable {
         // Place stone and update GUI
         toNode.placeStone(stone);
         //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
+        System.out.println("placeStone ---- updateGUI");
         notifyObservers();
 
 //        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
@@ -196,8 +197,9 @@ public class BoardManager extends Observable {
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
-        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
-                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
+        //System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
+
+        System.out.println("moveStone ---- updateGUI");
         notifyObservers();
 
         return true;
@@ -305,6 +307,7 @@ public class BoardManager extends Observable {
     public void reset() {
         nodes.clear();
         initializeBoard();
+        System.out.println("reset ---- updateGUI");
         notifyObservers();
     }
 }

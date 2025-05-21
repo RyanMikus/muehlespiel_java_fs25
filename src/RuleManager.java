@@ -80,7 +80,6 @@ public class RuleManager {
                 }
 
             }
-                      
                         
         } else if(currentPhase instanceof JumpingPhase) {
             // More errors might come up.

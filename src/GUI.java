@@ -557,10 +557,14 @@ public class GUI implements Observer {
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
-                        gameManager.undoMove();
+                        if (!getGuiBoard().getRemoveMode()){
+                            gameManager.undoMove();
+                        }
                         break;
                     case 1:
-                        gameManager.redoMove();
+                        if (!getGuiBoard().getRemoveMode()){
+                            gameManager.redoMove();
+                        }
                         break;
                     case 2:
                         gameManager.saveGame();

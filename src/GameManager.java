@@ -196,6 +196,8 @@ public class GameManager {
 
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
+
+            System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -225,6 +227,8 @@ public class GameManager {
                 }
 
                 guiManager.getGuiBoard().setRemoveMode(false);
+
+                System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
 
@@ -496,10 +500,22 @@ public class GameManager {
      * @see #loadMove(Move)
      */
     public void undoMove() {
-        Move lastMove = history.undoMove();
-        if (lastMove != null) {
-            loadMove(lastMove);
+        Move lastMove;
+        if(playerBlack instanceof CPUPlayer){
+            for (int i = 0; i < 2; i++) {
+                lastMove = history.undoMove();
+                if (lastMove != null) {
+                    loadMove(lastMove);
+                }
+            }
+        } else{
+            lastMove = history.undoMove();
+            if (lastMove != null) {
+                loadMove(lastMove);
+            }
         }
+
+
     }
 
     /**
@@ -509,10 +525,22 @@ public class GameManager {
      * @see #loadMove(Move)
      */
     public void redoMove() {
-        Move nextMove = history.redoMove();
-        if (nextMove != null) {
-            loadMove(nextMove);
+        Move nextMove;
+        if(playerBlack instanceof CPUPlayer){
+            for (int i = 0; i < 2; i++) {
+                nextMove = history.redoMove();
+                if (nextMove != null) {
+                    loadMove(nextMove);
+                }
+            }
+        } else{
+            nextMove = history.redoMove();
+            if (nextMove != null) {
+                loadMove(nextMove);
+            }
         }
+
+
     }
 
     /**
@@ -617,6 +645,7 @@ public class GameManager {
         currentPlayer = opponent;
         opponent = getOpponent();
 
+        System.out.println("loadMove ---- updateGUI");
         boardManager.notifyObservers();
         updateGamePrompt();
 
@@ -652,12 +681,10 @@ public class GameManager {
         String text = "";
 
         // player text
-        if (currentPlayer instanceof Player) {
-            if (currentPlayer.getName().equalsIgnoreCase("white")) {
-                text += "Weiss: ";
-            } else {
-                text += "Schwarz: ";
-            }
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+            text += "Weiss: ";
+        } else {
+            text += "Schwarz: ";
         }
 
         switch (currentPlayer.getPhase().getClass().getSimpleName()) {
@@ -691,12 +718,10 @@ public class GameManager {
         String text = "";
 
         // player text
-        if (currentPlayer instanceof Player) {
-            if (currentPlayer.getName().equalsIgnoreCase("white")) {
-                text = "Mühle Weiss : Stein entfernen";
-            } else {
-                text = "Mühle Schwarz : Stein entfernen";
-            }
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+            text = "Mühle Weiss : Stein entfernen";
+        } else {
+            text = "Mühle Schwarz : Stein entfernen";
         }
 
         guiManager.updateStatus(text, new Color(0, 153, 255));
