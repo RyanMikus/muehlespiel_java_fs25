@@ -7,9 +7,7 @@ import java.util.Map;
  */
 public class Move {
     // region Fields
-    private final PlayerEntity currentPlayer;
-    private final PlayerEntity opponent;
-    private final Map<Integer, Node> boardSnapshot;
+        private final Map<Integer, Node> boardSnapshot;
     private final int noMillTurnCounter;
     private final int timeLeft;
     // endregion
@@ -17,17 +15,13 @@ public class Move {
     /**
      * Creates a new Move capturing the current game state.
      *
-     * @param currentPlayer     The player who performed the move.
-     * @param opponent          The opposing player.
      * @param boardSnapshot     The snapshot of the board at the time of the move.
      * @param noMillTurnCounter The number of consecutive turns without a formed
      *                          mill.
      * @param timeLeft          The remaining time for the move in seconds.
      */
-    public Move(PlayerEntity currentPlayer, PlayerEntity opponent, Map<Integer, Node> boardSnapshot,
+    public Move(Map<Integer, Node> boardSnapshot,
                 int noMillTurnCounter, int timeLeft) {
-        this.currentPlayer = currentPlayer;
-        this.opponent = opponent;
         this.boardSnapshot = boardSnapshot;
         this.noMillTurnCounter = noMillTurnCounter;
         this.timeLeft = timeLeft;
@@ -36,37 +30,11 @@ public class Move {
     // region Getters
 
     /**
-     * Returns The player who performed this move.
-     *
-     * @return The current player.
-     */
-    public PlayerEntity getCurrentPlayer() {
-        return currentPlayer;
-    }
-
-    /**
-     * Returns the opponent at the time this move was performed.
-     *
-     * @return The opponent.
-     */
-    public PlayerEntity getOpponent() {
-        return opponent;
-    }
-
-    /**
      * Returns the snapshot of the board when this move was made.
      *
      * @return A map representing the board state.
      */
     public Map<Integer, Node> getBoardSnapshot() {
-//        Map<Integer, Node> copy = new HashMap<>();
-//        for (Map.Entry<Integer, Node> entry : boardSnapshot.entrySet()) {
-//            copy.put(entry.getKey(),
-//                    entry.getValue().deepCopy(currentPlayer.deepCopy(),
-//                            opponent.deepCopy()));
-//        }
-//        return copy;
-
         return boardSnapshot;
     }
 

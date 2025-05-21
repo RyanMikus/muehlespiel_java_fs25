@@ -280,19 +280,15 @@ public class BoardManager extends Observable {
      * @param opponentCopy      The copied opponent player.
      * @return A fully deep-copied board as a map of node IDs to Node instances.
      */
-    public Map<Integer, Node> copyBoard(PlayerEntity currentPlayerCopy, PlayerEntity opponentCopy) {
+    public Map<Integer, Node> copyBoard(PlayerEntity currentPlayer, PlayerEntity opponent) {
         Map<Integer, Node> copiedBoard = new HashMap<>();
 
         // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue Map legen
         for (Map.Entry<Integer, Node> entry : nodes.entrySet()) {
             Node originalNode = entry.getValue();
-            Node copyNode = originalNode.deepCopy(currentPlayerCopy, opponentCopy);
+            Node copyNode = originalNode.deepCopy(currentPlayer, opponent);
             copiedBoard.put(entry.getKey(), copyNode);
         }
-        // Nach dieser Schleife haben wir eine neue Map mit 24 kopierten Knoten. Die Kopien
-        // besitzen ebenso kopierte Steine wenn welche vorhanden waren. Der kopierte Knoten
-        // wurde auf den kopierten Stein gesetzt und umgekehrt.
-        // Die LinkedList mit den Nachbarn ist bei allen Kopien aktuell noch LEER!
 
         // 2. Knoten wieder verbinden
         for (int node = 0; node < neighbors.length; node++) {

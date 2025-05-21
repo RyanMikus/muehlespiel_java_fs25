@@ -126,12 +126,9 @@ public class GameManager {
         }
 
         // Adding the initial state of the game to the history, allowing to undo until
-        // the very start of the game.
-        currentPlayerCopy = currentPlayer.deepCopy();
-        opponentCopy = getOpponent().deepCopy();
-        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+        boardCopy = boardManager.copyBoard(currentPlayer, getOpponent());
 
-        Move initialMove = new Move(currentPlayerCopy, opponentCopy, boardCopy, 0, timer.getTimeLeft());
+        Move initialMove = new Move(boardCopy, 0, timer.getTimeLeft());
         history.addMove(initialMove);
 
         guiManager.update();
@@ -178,7 +175,7 @@ public class GameManager {
             //System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
 
             //System.out.println("[GAMEMANAGER] Aktuelles Board: ");
-            boardManager.printBoard(boardManager.getBoard());
+            //boardManager.printBoard(boardManager.getBoard());
 
 
             boolean isPlayer = currentPlayer instanceof Player;
@@ -514,10 +511,7 @@ public class GameManager {
     public void redoMove() {
         Move nextMove = history.redoMove();
         if (nextMove != null) {
-            //System.out.println("[DEBUG] RedoMove ausgeführt → Spieler: " + nextMove.getCurrentPlayer().getName());
             loadMove(nextMove);
-        } else {
-            //System.out.println("[INFO] Redo nicht möglich – Stack leer");
         }
     }
 
@@ -528,17 +522,20 @@ public class GameManager {
      * and the time left for the move.
      */
     public void saveMove() {
-        currentPlayerCopy = currentPlayer.deepCopy();
-        opponentCopy = getOpponent().deepCopy();
-        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+        boardCopy = boardManager.copyBoard(getCurrentPlayer(), getOpponent());
 
-        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
-
-        //currentPlayerCopy.printCopy();
-        //opponentCopy.printCopy();
-        //boardManager.printBoard(boardCopy);
+        Move move = new Move(boardCopy, noMillTurnCounter, timer.getTimeLeft());
 
         history.addMove(move);
+
+        //old
+//        currentPlayerCopy = currentPlayer.deepCopy();
+//        opponentCopy = getOpponent().deepCopy();
+//        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+//
+//        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+//
+//        history.addMove(move);
 
     }
 
@@ -559,22 +556,19 @@ public class GameManager {
             return;
         }
 
-
+        // old
         // Restore players and set the current player
-        PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
-        if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
-            playerWhite.setPlayer(currentPlayerFromMove);
-            currentPlayer = playerWhite;
-            playerBlack.setPlayer(move.getOpponent());
-        }
-        else{
-            playerBlack.setPlayer(currentPlayerFromMove);
-            currentPlayer = playerBlack;
-            playerWhite.setPlayer(move.getOpponent());
-        }
-
-
-
+//        PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
+//        if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
+//            playerWhite.setPlayer(currentPlayerFromMove);
+//            currentPlayer = playerWhite;
+//            playerBlack.setPlayer(move.getOpponent());
+//        }
+//        else{
+//            playerBlack.setPlayer(currentPlayerFromMove);
+//            currentPlayer = playerBlack;
+//            playerWhite.setPlayer(move.getOpponent());
+//        }
 
 //        // old
 //        currentPlayer = move.getCurrentPlayer();
@@ -586,20 +580,46 @@ public class GameManager {
 //            playerWhite = move.getOpponent();
 //        }
 
-        // Restore the single parameters that get updated each move.
-        Map<Integer, Node> boardFromMove = move.getBoardSnapshot();
+        currentPlayer = getCurrentPlayer();
+        opponent = getOpponent();
 
-        boardManager.setBoard(boardFromMove, currentPlayer, getOpponent());
+        // 1. Restore the Board
+        Map<Integer, Node> boardFromMove = move.getBoardSnapshot();
+        boardManager.setBoard(boardFromMove, currentPlayer, opponent);
+
+        // 2. Restore the player fields from the actual board
+        // clear stone list
+        currentPlayer.getRemainingStones().clear();
+        opponent.getRemainingStones().clear();
+
+        // build stone list
+        for (Node node : boardManager.getBoard().values()) {
+            Stone stone = node.getStone();
+            if (stone != null) {
+                PlayerEntity owner = stone.getOwner();
+                (owner.getName().equalsIgnoreCase(currentPlayer.getName()) ? currentPlayer : opponent).addStone(stone);
+            }
+        }
+
+        // 3. Set the placedStones based on stone list size
+        currentPlayer.placedStones = currentPlayer.getRemainingStones().size();
+        opponent.placedStones = opponent.getRemainingStones().size();
+
+        // 3. Checks if the Players was in another Phase before saveMove
+        currentPlayer.getPhase().nextPhase();
+        opponent.getPhase().nextPhase();
+
+        // 4. Restore the primitive Fields
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
+
+        // 5. switch the Players...why?
+        currentPlayer = opponent;
+        opponent = getOpponent();
 
         boardManager.notifyObservers();
         updateGamePrompt();
 
-        //System.out.println("[GAMEMANAGER] Board nach dem Laden:");
-        //boardManager.printBoard(boardManager.getBoard());
-
-        //System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
     }
 
     /**/
