@@ -105,7 +105,7 @@ public class Node {
 
         if (this.stone != null) {
             PlayerEntity owner = this.stone.getOwner();
-            PlayerEntity newOwner = owner.getName().equals(currentPlayer.getName()) ? currentPlayer : opponent;
+            PlayerEntity newOwner = owner.getName().equalsIgnoreCase(currentPlayer.getName()) ? currentPlayer : opponent;
             Stone copiedStone = this.stone.deepCopy(newOwner);
             copy.placeStone(copiedStone);
         }

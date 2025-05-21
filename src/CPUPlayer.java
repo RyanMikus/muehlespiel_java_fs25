@@ -5,7 +5,7 @@ public class CPUPlayer extends PlayerEntity {
     public CPUPlayer(String name, PlayerEntity opponent) {
         super(name);
         this.opponent = opponent;
-        this.strategy = new MediumDifficulty();
+        this.strategy = null;
     }
 
     public Node[] makeMove() {
@@ -39,6 +39,7 @@ public class CPUPlayer extends PlayerEntity {
 
     public void setDifficulty(DifficultyStrategy strategy) {
         this.strategy = strategy;
+        System.out.println("set Strategy : " + strategy.getClass().getSimpleName());
     }
 
     @Override
@@ -84,5 +85,16 @@ public class CPUPlayer extends PlayerEntity {
         //System.out.println("[DEBUG] Kopiervorgang für Spieler '" + this.name + "' abgeschlossen.\n");
 
         return copy;
+    }
+
+    @Override
+    public void setPlayer(PlayerEntity player) {
+        this.name = player.getName();
+        this.stones.clear();
+        for (Stone stone : player.getRemainingStones()){
+            this.stones.add(stone.deepCopy(this));
+        }
+        this.currentPhase = player.getPhase().deepCopy(this);
+        this.placedStones = player.placedStones;
     }
 }

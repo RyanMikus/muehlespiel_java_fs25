@@ -41,8 +41,7 @@ public class SettingPhase extends GamePhase {
         if (playerEntity.allStonesPlaced()) {
             playerEntity.setPhase(new MovingPhase(playerEntity));
 
-            System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")
-                    ? "WHITE" : "BLACK") + "] - Changed to MOVINGPHASE");
+            //System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")                    ? "WHITE" : "BLACK") + "] - Changed to MOVINGPHASE");
         }
     }
 

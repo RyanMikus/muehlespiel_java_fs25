@@ -106,10 +106,11 @@ public class GameManager {
      * Adds an initial move to the history allowing to undo until the very start of
      * the game.
      *
-     * @param mode Can either be Singleplayer (Player and CPU) or Multiplayer (Two
-     *             players).
+     * @param mode       Can either be Singleplayer (Player and CPU) or Multiplayer (Two
+     *                   players).
+     * @param difficulty
      */
-    public void startGame(String mode) {
+    public void startGame(String mode, DifficultyStrategy difficulty) {
         System.out.format("-- Starting game in mode: %s --\n\n", mode);
         this.mode = mode;
 
@@ -117,6 +118,7 @@ public class GameManager {
         if (mode.equalsIgnoreCase("singleplayer")) {
             playerWhite = new Player("white");
             playerBlack = new CPUPlayer("black", playerWhite);
+            ((CPUPlayer) playerBlack).setDifficulty(difficulty);
             gameStatus = true;
             currentPlayer = playerWhite;
             startTurnTimer();
@@ -133,9 +135,12 @@ public class GameManager {
         }
 
         // Adding the initial state of the game to the history, allowing to undo until
-        // the very start of the game.
-        Move initialMove = new Move(playerWhite, playerBlack, boardManager.getBoard(), 0, timePerTurn);
+        boardCopy = boardManager.copyBoard(currentPlayer, getOpponent());
+
+        Move initialMove = new Move(boardCopy, 0, timer.getTimeLeft());
         history.addMove(initialMove);
+
+        guiManager.update();
 
         gameThread = new Thread(this::runGame);
         gameThread.start();
@@ -173,7 +178,15 @@ public class GameManager {
         Node[] move;
         Node remove;
 
+        int round = 1;
+
         while (gameStatus) {
+            //System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
+
+            //System.out.println("[GAMEMANAGER] Aktuelles Board: ");
+            //boardManager.printBoard(boardManager.getBoard());
+
+
             boolean isPlayer = currentPlayer instanceof Player;
 
             // update game prompt
@@ -192,6 +205,8 @@ public class GameManager {
 
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
+
+            System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -219,9 +234,14 @@ public class GameManager {
                 if (!boardManager.removeStone(currentPlayer, remove)) {
                     continue;
                 }
+
                 guiManager.getGuiBoard().setRemoveMode(false);
+
+                System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
+
+
             }
 
             if (ruleManager.isGameOver(playerWhite, playerBlack)) {
@@ -231,6 +251,7 @@ public class GameManager {
 
             saveMove();
             switchPlayer();
+            round++;
         }
     }
 
@@ -445,6 +466,13 @@ public class GameManager {
         return gameStatus;
     }
 
+    public PlayerEntity getPlayerWhite() {
+        return playerWhite;
+    }
+
+    public PlayerEntity getPlayerBlack() {
+        return playerBlack;
+    }
     // endregion
 
     // region Timer
@@ -477,29 +505,6 @@ public class GameManager {
 
     // region Save / Restore Moves
 
-    /**
-     * Adds the current state of the game to the History (Memento).
-     * This includes both players, the current state of the board, the number of
-     * moves no mill was formed
-     * and the time left for the move.
-     */
-    public void saveMove() {
-        currentPlayerCopy = currentPlayer.deepCopy();
-        System.out.println("PlayerCopy: " + currentPlayerCopy + ", Current player: " + currentPlayer);
-        opponentCopy = getOpponent().deepCopy();
-        System.out.println("OpponentCopy: " + opponentCopy + ", Current opponent: " + getOpponent());
-        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
-
-        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
-
-        Move lastMove = history.peekUndo();
-        if (lastMove == null || !move.equals(lastMove)) {
-            history.addMove(move);
-            System.out.println("[DEBUG] Neuer Move gespeichert → Spieler: " + currentPlayerCopy.getName());
-        } else {
-            System.out.println("[DEBUG] Neuer Move identisch → nicht gespeichert");
-        }
-    }
 
     /**
      * Undoes a move, restoring the state before the last performed move, if there
@@ -508,10 +513,22 @@ public class GameManager {
      * @see #loadMove(Move)
      */
     public void undoMove() {
-        Move lastMove = history.undoMove();
-        if (lastMove != null) {
-            loadMove(lastMove);
+        Move lastMove;
+        if(playerBlack instanceof CPUPlayer){
+            for (int i = 0; i < 2; i++) {
+                lastMove = history.undoMove();
+                if (lastMove != null) {
+                    loadMove(lastMove);
+                }
+            }
+        } else{
+            lastMove = history.undoMove();
+            if (lastMove != null) {
+                loadMove(lastMove);
+            }
         }
+
+
     }
 
     /**
@@ -521,14 +538,48 @@ public class GameManager {
      * @see #loadMove(Move)
      */
     public void redoMove() {
-        Move nextMove = history.redoMove();
-        if (nextMove != null) {
-            System.out.println("[DEBUG] RedoMove ausgeführt → Spieler: " + nextMove.getCurrentPlayer().getName());
-            loadMove(nextMove);
-        } else {
-            System.out.println("[INFO] Redo nicht möglich – Stack leer");
+        Move nextMove;
+        if(playerBlack instanceof CPUPlayer){
+            for (int i = 0; i < 2; i++) {
+                nextMove = history.redoMove();
+                if (nextMove != null) {
+                    loadMove(nextMove);
+                }
+            }
+        } else{
+            nextMove = history.redoMove();
+            if (nextMove != null) {
+                loadMove(nextMove);
+            }
         }
+
+
     }
+
+    /**
+     * Adds the current state of the game to the History (Memento).
+     * This includes both players, the current state of the board, the number of
+     * moves no mill was formed
+     * and the time left for the move.
+     */
+    public void saveMove() {
+        boardCopy = boardManager.copyBoard(getCurrentPlayer(), getOpponent());
+
+        Move move = new Move(boardCopy, noMillTurnCounter, timer.getTimeLeft());
+
+        history.addMove(move);
+
+        //old
+//        currentPlayerCopy = currentPlayer.deepCopy();
+//        opponentCopy = getOpponent().deepCopy();
+//        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+//
+//        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+//
+//        history.addMove(move);
+
+    }
+
 
     /**
      * Helper-Method for undoing or redoing a move.
@@ -546,24 +597,71 @@ public class GameManager {
             return;
         }
 
+        // old
         // Restore players and set the current player
-        currentPlayer = move.getCurrentPlayer();
-        if (currentPlayer.getName().equalsIgnoreCase("white")) {
-            playerWhite = currentPlayer;
-            playerBlack = move.getOpponent();
-        } else {
-            playerBlack = currentPlayer;
-            playerWhite = move.getOpponent();
+//        PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
+//        if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
+//            playerWhite.setPlayer(currentPlayerFromMove);
+//            currentPlayer = playerWhite;
+//            playerBlack.setPlayer(move.getOpponent());
+//        }
+//        else{
+//            playerBlack.setPlayer(currentPlayerFromMove);
+//            currentPlayer = playerBlack;
+//            playerWhite.setPlayer(move.getOpponent());
+//        }
+
+//        // old
+//        currentPlayer = move.getCurrentPlayer();
+//        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+//            playerWhite = currentPlayer;
+//            playerBlack = move.getOpponent();
+//        } else {
+//            playerBlack = currentPlayer;
+//            playerWhite = move.getOpponent();
+//        }
+
+        currentPlayer = getCurrentPlayer();
+        opponent = getOpponent();
+
+        // 1. Restore the Board
+        Map<Integer, Node> boardFromMove = move.getBoardSnapshot();
+        boardManager.setBoard(boardFromMove, currentPlayer, opponent);
+
+        // 2. Restore the player fields from the actual board
+        // clear stone list
+        currentPlayer.getRemainingStones().clear();
+        opponent.getRemainingStones().clear();
+
+        // build stone list
+        for (Node node : boardManager.getBoard().values()) {
+            Stone stone = node.getStone();
+            if (stone != null) {
+                PlayerEntity owner = stone.getOwner();
+                (owner.getName().equalsIgnoreCase(currentPlayer.getName()) ? currentPlayer : opponent).addStone(stone);
+            }
         }
 
-        // Restore the single parameters that get updated each move.
-        boardManager.setBoard(move.getBoardSnapshot());
+        // 3. Set the placedStones based on stone list size
+        currentPlayer.placedStones = currentPlayer.getRemainingStones().size();
+        opponent.placedStones = opponent.getRemainingStones().size();
+
+        // 3. Checks if the Players was in another Phase before saveMove
+        currentPlayer.getPhase().nextPhase();
+        opponent.getPhase().nextPhase();
+
+        // 4. Restore the primitive Fields
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
 
-        boardManager.notifyObservers();
+        // 5. switch the Players...why?
+        currentPlayer = opponent;
+        opponent = getOpponent();
 
-        System.out.println("[DEBUG] loadMove → Spieler: " + currentPlayer.getName());
+        System.out.println("loadMove ---- updateGUI");
+        boardManager.notifyObservers();
+        updateGamePrompt();
+
     }
 
     // endregion
@@ -810,12 +908,10 @@ public class GameManager {
         String text = "";
 
         // player text
-        if (currentPlayer instanceof Player) {
-            if (currentPlayer.getName().equalsIgnoreCase("white")) {
-                text += "Weiss: ";
-            } else {
-                text += "Schwarz: ";
-            }
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+            text += "Weiss: ";
+        } else {
+            text += "Schwarz: ";
         }
 
         switch (currentPlayer.getPhase().getClass().getSimpleName()) {
@@ -849,12 +945,10 @@ public class GameManager {
         String text = "";
 
         // player text
-        if (currentPlayer instanceof Player) {
-            if (currentPlayer.getName().equalsIgnoreCase("white")) {
-                text = "Mühle Weiss : Stein entfernen";
-            } else {
-                text = "Mühle Schwarz : Stein entfernen";
-            }
+        if (currentPlayer.getName().equalsIgnoreCase("white")) {
+            text = "Mühle Weiss : Stein entfernen";
+        } else {
+            text = "Mühle Schwarz : Stein entfernen";
         }
 
         guiManager.updateStatus(text, new Color(0, 153, 255));
