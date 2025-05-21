@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -261,10 +262,13 @@ public class GUI implements Observer {
                         cardLayout.show(cardPanel, "newGame");
                         break;
                     case 1:
-                        createBoardScreen("singleplayer");
+                        JPanel newBoardPanel = createBoardScreen("singleplayer");
+                        newBoardPanel.setName("Board");
+                        cardPanel.add(newBoardPanel, "Board");
+
                         JFileChooser fileChooser = new JFileChooser();
                         fileChooser.setDialogTitle("Spielstand laden");
-                        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
+                        fileChooser.setFileFilter(new FileNameExtensionFilter("JSON-Dateien", "json"));
 
                         int toLoad = fileChooser.showOpenDialog(null);
                         if (toLoad == JFileChooser.APPROVE_OPTION) {
