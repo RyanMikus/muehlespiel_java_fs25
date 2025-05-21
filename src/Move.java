@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class Move {
     // region Fields
-        private final Map<Integer, Node> boardSnapshot;
+    private final Map<Integer, Node> boardSnapshot;
     private final int noMillTurnCounter;
     private final int timeLeft;
     // endregion
@@ -16,12 +16,10 @@ public class Move {
      * Creates a new Move capturing the current game state.
      *
      * @param boardSnapshot     The snapshot of the board at the time of the move.
-     * @param noMillTurnCounter The number of consecutive turns without a formed
-     *                          mill.
+     * @param noMillTurnCounter The number of consecutive turns without a formed mill.
      * @param timeLeft          The remaining time for the move in seconds.
      */
-    public Move(Map<Integer, Node> boardSnapshot,
-                int noMillTurnCounter, int timeLeft) {
+    public Move(Map<Integer, Node> boardSnapshot, int noMillTurnCounter, int timeLeft) {
         this.boardSnapshot = boardSnapshot;
         this.noMillTurnCounter = noMillTurnCounter;
         this.timeLeft = timeLeft;

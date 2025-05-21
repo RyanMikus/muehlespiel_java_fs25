@@ -278,8 +278,8 @@ public class BoardManager extends Observable {
      * Creates a deep copy of the current board, including all nodes, stones,
      * and their neighbor relationships.
      *
-     * @param currentPlayerCopy The copied current player.
-     * @param opponentCopy      The copied opponent player.
+     * @param currentPlayer The copied current player.
+     * @param opponent      The copied opponent player.
      * @return A fully deep-copied board as a map of node IDs to Node instances.
      */
     public Map<Integer, Node> copyBoard(PlayerEntity currentPlayer, PlayerEntity opponent) {

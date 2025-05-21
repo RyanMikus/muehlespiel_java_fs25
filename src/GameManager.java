@@ -387,8 +387,8 @@ public class GameManager {
         boardManager.reset();
         guiManager.reset();
         System.out.println("Everything reset");
-        if(!(gameThread == null)) {
-            if(gameThread.isAlive()) {
+        if (!(gameThread == null)) {
+            if (gameThread.isAlive()) {
                 gameThread.interrupt();
             }
         }
@@ -514,14 +514,14 @@ public class GameManager {
      */
     public void undoMove() {
         Move lastMove;
-        if(playerBlack instanceof CPUPlayer){
+        if (playerBlack instanceof CPUPlayer) {
             for (int i = 0; i < 2; i++) {
                 lastMove = history.undoMove();
                 if (lastMove != null) {
                     loadMove(lastMove);
                 }
             }
-        } else{
+        } else {
             lastMove = history.undoMove();
             if (lastMove != null) {
                 loadMove(lastMove);
@@ -539,14 +539,14 @@ public class GameManager {
      */
     public void redoMove() {
         Move nextMove;
-        if(playerBlack instanceof CPUPlayer){
+        if (playerBlack instanceof CPUPlayer) {
             for (int i = 0; i < 2; i++) {
                 nextMove = history.redoMove();
                 if (nextMove != null) {
                     loadMove(nextMove);
                 }
             }
-        } else{
+        } else {
             nextMove = history.redoMove();
             if (nextMove != null) {
                 loadMove(nextMove);
@@ -673,7 +673,7 @@ public class GameManager {
      *
      * @param targetFile The target file to which the game state should be saved.
      * @see #toPlayerData(PlayerEntity)
-     * @see #toMoveData(Move) 
+     * @see #toMoveData(Move)
      * @see #createBoardSnapshot(Map)
      */
     public void saveGame(File targetFile) {
@@ -726,11 +726,9 @@ public class GameManager {
      * @see #saveGame(File)
      */
     private MoveData toMoveData(Move move) {
-        PlayerData current = toPlayerData(move.getCurrentPlayer());
-        PlayerData opponent = toPlayerData(move.getOpponent());
         Map<Integer, Integer> board = createBoardSnapshot(move.getBoardSnapshot());
 
-        return new MoveData(current, opponent, board, move.getNoMillTurnCounter(), move.getTimeLeft());
+        return new MoveData(board, move.getNoMillTurnCounter(), move.getTimeLeft());
     }
 
     /**
@@ -742,7 +740,6 @@ public class GameManager {
      *     <li> 1 = white</li>
      *     <li> 2 = black</li>
      * </ul>
-     *
      *
      * @param board The full board state as a map of nodes.
      * @return A simplified map of node IDs to owner codes.
@@ -774,8 +771,8 @@ public class GameManager {
      * Loads a saved game state from a JSON-File and restores it.
      *
      * @param file The JSON file containing the saved game state.
-     * @see #fromPlayerData(PlayerData, PlayerEntity, boolean) 
-     * @see #fromMoveData(MoveData)
+     * @see #fromPlayerData(PlayerData, PlayerEntity, boolean)
+     * @see #fromMoveData(MoveData, PlayerEntity, PlayerEntity)
      */
     public void loadGame(File file) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -797,10 +794,10 @@ public class GameManager {
             this.history.clearUndo();
             this.history.clearRedo();
             for (MoveData moveData : state.undoMoves) {
-                this.history.getUndoMoves().add(fromMoveData(moveData));
+                this.history.getUndoMoves().add(fromMoveData(moveData, loadedCurrent, loadedOpponent));
             }
             for (MoveData moveData : state.redoMoves) {
-                this.history.getRedoMoves().add(fromMoveData(moveData));
+                this.history.getRedoMoves().add(fromMoveData(moveData, loadedCurrent, loadedOpponent));
             }
 
             gameStatus = true;
@@ -817,7 +814,7 @@ public class GameManager {
      * <p>
      * Reconstructs a PlayerEntity from a PlayerData object.
      *
-     * @param data The PlayerData containing saved state.
+     * @param data          The PlayerData containing saved state.
      * @param opponentIfCPU The opponent of the {@code CPUPlayer}. Can be null for {@code Player}.
      * @return A PlayerEntity with restored name, phase, and stones.
      * @see #loadGame(File)
@@ -825,7 +822,7 @@ public class GameManager {
     private PlayerEntity fromPlayerData(PlayerData data, PlayerEntity opponentIfCPU, boolean placeStones) {
         PlayerEntity player;
 
-        if("Player".equalsIgnoreCase(data.type)) {
+        if ("Player".equalsIgnoreCase(data.type)) {
             player = new Player(data.name);
         } else {
             player = new CPUPlayer(data.name, opponentIfCPU);
@@ -843,7 +840,7 @@ public class GameManager {
         }
 
         // Assign stones
-        if(placeStones) {
+        if (placeStones) {
             for (Integer nodeId : data.stonePositions) {
                 Stone stone = new Stone(player);
                 Node node = BoardManager.getInstance().getNode(nodeId);
@@ -864,10 +861,7 @@ public class GameManager {
      * @return A reconstructed Move object.
      * @see #loadGame(File)
      */
-    private Move fromMoveData(MoveData data) {
-        PlayerEntity current = fromPlayerData(data.currentPlayer, null, false);
-        PlayerEntity opponent = fromPlayerData(data.opponentPlayer, current, false);
-
+    private Move fromMoveData(MoveData data, PlayerEntity loadedCurrent, PlayerEntity loadedOpponent) {
         Map<Integer, Node> board = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : data.boardSnapshot.entrySet()) {
             int id = entry.getKey();
@@ -875,7 +869,7 @@ public class GameManager {
             Node node = new Node(id);
 
             if (ownerCode == 1 || ownerCode == 2) {
-                PlayerEntity owner = (ownerCode == 1) ? current : opponent;
+                PlayerEntity owner = (ownerCode == 1) ? loadedCurrent : loadedOpponent;
                 Stone stone = new Stone(owner);
                 node.placeStone(stone);
                 owner.addStone(stone);
@@ -884,7 +878,7 @@ public class GameManager {
             board.put(id, node);
         }
 
-        return new Move(current, opponent, board, data.noMillTurnCounter, data.timeLeft);
+        return new Move(board, data.noMillTurnCounter, data.timeLeft);
     }
 
     // endregion
