@@ -62,7 +62,6 @@ public class RuleManager {
 
         }
 
-
         // Errors specific to phases
         GamePhase currentPhase = player.getPhase();
 
@@ -157,7 +156,6 @@ public class RuleManager {
 
         player.printCopy();
 
-
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
 
@@ -185,13 +183,12 @@ public class RuleManager {
                     millStones.add(pos);
                 }
 
-
-//                for (Stone stone : player.getRemainingStones()) {
-//                    if (stone.getNode().getID() == pos && !millStones.contains(pos)) {
-//                        ownershipCounter++;
-//                        millStones.add((Integer) stone.getNode().getID());
-//                    }
-//                }
+                for (Stone playerStone : player.getRemainingStones()) {
+                    if (playerStone.getNode().getID() == pos && !millStones.contains(pos)) {
+                        ownershipCounter++;
+                        millStones.add((Integer) playerStone.getNode().getID());
+                    }
+                }
             }
             // Add one formed mill to the counter
             if (ownershipCounter == 3) {
@@ -209,31 +206,22 @@ public class RuleManager {
 
     public int countMillsFormed(Node[] move, PlayerEntity player) {
         Node fromNode = move[0];
-        Stone fromNodeStone = null;
-        if (fromNode != null) {
-            fromNodeStone = fromNode.getStone();
-            fromNode.removeStone();
-            // List<Stone> stones = player.getRemainingStones();
-            // for (Stone stone : stones) {
-            // if (stone.getNode().getID() == fromNodeStone.getNode().getID()) {
-            // player.removeStone(stone);
-            // }
-            // }
-            player.removeStone(fromNodeStone);
-        }
-
         Node toNode = move[1];
-        Stone tmpStone = new Stone(player);
-        toNode.placeStone(tmpStone);
-        player.addStone(tmpStone);
+        Stone stone = null;
+        if (fromNode != null) {
+            stone = BoardManager.getInstance().getNode(fromNode.getID()).getStone();
+        } else {
+            stone = new Stone(player);
+            player.addStone(stone);
+        }
+        stone.setNode(BoardManager.getInstance().getNode(toNode.getID()));
 
-        int formedMills = countMillsFormed(tmpStone);
+        int formedMills = countMillsFormed(stone);
 
-        player.removeStone(tmpStone);
-        toNode.removeStone();
-        if (fromNodeStone != null) {
-            player.addStone(fromNodeStone);
-            fromNode.placeStone(fromNodeStone);
+        if (fromNode != null) {
+            stone.setNode(BoardManager.getInstance().getNode(fromNode.getID()));
+        } else {
+            player.removeStone(stone);
         }
 
         return formedMills;

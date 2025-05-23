@@ -79,14 +79,14 @@ public class GameManager {
     public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
             this.playerMove = move;
-            synchronized(this) {
+            synchronized (this) {
                 this.notify();
             }
         });
 
         guiBoard.setRemoveListener(move -> {
             this.playerRemove = move;
-            synchronized(this) {
+            synchronized (this) {
                 this.notify();
             }
         });
@@ -106,7 +106,8 @@ public class GameManager {
      * Adds an initial move to the history allowing to undo until the very start of
      * the game.
      *
-     * @param mode       Can either be Singleplayer (Player and CPU) or Multiplayer (Two
+     * @param mode       Can either be Singleplayer (Player and CPU) or Multiplayer
+     *                   (Two
      *                   players).
      * @param difficulty
      */
@@ -181,11 +182,10 @@ public class GameManager {
         int round = 1;
 
         while (gameStatus) {
-            //System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
+            // System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
 
-            //System.out.println("[GAMEMANAGER] Aktuelles Board: ");
-            //boardManager.printBoard(boardManager.getBoard());
-
+            // System.out.println("[GAMEMANAGER] Aktuelles Board: ");
+            // boardManager.printBoard(boardManager.getBoard());
 
             boolean isPlayer = currentPlayer instanceof Player;
 
@@ -241,7 +241,6 @@ public class GameManager {
                 boardManager.notifyObservers();
                 millCount--;
 
-
             }
 
             if (ruleManager.isGameOver(playerWhite, playerBlack)) {
@@ -269,7 +268,7 @@ public class GameManager {
         if (isPlayer) {
             playerMove = null;
 
-            synchronized(this) {
+            synchronized (this) {
                 while (playerMove == null) {
                     try {
                         this.wait();
@@ -299,7 +298,7 @@ public class GameManager {
         if (isPlayer) {
             playerRemove = null;
 
-            synchronized(this) {
+            synchronized (this) {
                 while (playerRemove == null) {
                     try {
                         this.wait();
@@ -505,7 +504,6 @@ public class GameManager {
 
     // region Save / Restore Moves
 
-
     /**
      * Undoes a move, restoring the state before the last performed move, if there
      * is a undo move.
@@ -527,7 +525,6 @@ public class GameManager {
                 loadMove(lastMove);
             }
         }
-
 
     }
 
@@ -553,7 +550,6 @@ public class GameManager {
             }
         }
 
-
     }
 
     /**
@@ -569,17 +565,17 @@ public class GameManager {
 
         history.addMove(move);
 
-        //old
-//        currentPlayerCopy = currentPlayer.deepCopy();
-//        opponentCopy = getOpponent().deepCopy();
-//        boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
-//
-//        Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy, noMillTurnCounter, timer.getTimeLeft());
-//
-//        history.addMove(move);
+        // old
+        // currentPlayerCopy = currentPlayer.deepCopy();
+        // opponentCopy = getOpponent().deepCopy();
+        // boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
+        //
+        // Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy,
+        // noMillTurnCounter, timer.getTimeLeft());
+        //
+        // history.addMove(move);
 
     }
-
 
     /**
      * Helper-Method for undoing or redoing a move.
@@ -599,27 +595,27 @@ public class GameManager {
 
         // old
         // Restore players and set the current player
-//        PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
-//        if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
-//            playerWhite.setPlayer(currentPlayerFromMove);
-//            currentPlayer = playerWhite;
-//            playerBlack.setPlayer(move.getOpponent());
-//        }
-//        else{
-//            playerBlack.setPlayer(currentPlayerFromMove);
-//            currentPlayer = playerBlack;
-//            playerWhite.setPlayer(move.getOpponent());
-//        }
+        // PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
+        // if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
+        // playerWhite.setPlayer(currentPlayerFromMove);
+        // currentPlayer = playerWhite;
+        // playerBlack.setPlayer(move.getOpponent());
+        // }
+        // else{
+        // playerBlack.setPlayer(currentPlayerFromMove);
+        // currentPlayer = playerBlack;
+        // playerWhite.setPlayer(move.getOpponent());
+        // }
 
-//        // old
-//        currentPlayer = move.getCurrentPlayer();
-//        if (currentPlayer.getName().equalsIgnoreCase("white")) {
-//            playerWhite = currentPlayer;
-//            playerBlack = move.getOpponent();
-//        } else {
-//            playerBlack = currentPlayer;
-//            playerWhite = move.getOpponent();
-//        }
+        // // old
+        // currentPlayer = move.getCurrentPlayer();
+        // if (currentPlayer.getName().equalsIgnoreCase("white")) {
+        // playerWhite = currentPlayer;
+        // playerBlack = move.getOpponent();
+        // } else {
+        // playerBlack = currentPlayer;
+        // playerWhite = move.getOpponent();
+        // }
 
         currentPlayer = getCurrentPlayer();
         opponent = getOpponent();
@@ -687,7 +683,8 @@ public class GameManager {
         List<MoveData> undo = history.getUndoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
         List<MoveData> redo = history.getRedoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
 
-        GameStateData gameState = new GameStateData(currentData, opponentData, undo, redo, noMillTurnCounter, timePerTurn,
+        GameStateData gameState = new GameStateData(currentData, opponentData, undo, redo, noMillTurnCounter,
+                timePerTurn,
                 timer.getTimeLeft(), mode);
 
         // Write data to JSON-File
@@ -736,9 +733,9 @@ public class GameManager {
      * <p>
      * Creates a simplified board snapshot from a full board state.
      * <ul>
-     *     <li> 0 = empty</li>
-     *     <li> 1 = white</li>
-     *     <li> 2 = black</li>
+     * <li>0 = empty</li>
+     * <li>1 = white</li>
+     * <li>2 = black</li>
      * </ul>
      *
      * @param board The full board state as a map of nodes.
@@ -815,7 +812,8 @@ public class GameManager {
      * Reconstructs a PlayerEntity from a PlayerData object.
      *
      * @param data          The PlayerData containing saved state.
-     * @param opponentIfCPU The opponent of the {@code CPUPlayer}. Can be null for {@code Player}.
+     * @param opponentIfCPU The opponent of the {@code CPUPlayer}. Can be null for
+     *                      {@code Player}.
      * @return A PlayerEntity with restored name, phase, and stones.
      * @see #loadGame(File)
      */
@@ -895,7 +893,6 @@ public class GameManager {
     public void setTurnTimer(TurnTimer timer2) {
         timer = timer2;
     }
-
 
     // region GUI Update
     public void updateGamePrompt() {

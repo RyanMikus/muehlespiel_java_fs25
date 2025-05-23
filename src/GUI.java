@@ -154,7 +154,6 @@ public class GUI implements Observer {
         return help;
     }
 
-
     /**
      * Creates the "Credits" menu which displays information about the contributors
      * to the project when clicked. The menu, when interacted with, triggers a
@@ -250,7 +249,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
+        String[] buttonTexts = { "neues spiel", "spiel laden", "zurück" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -258,7 +257,7 @@ public class GUI implements Observer {
 
             int buttonIndex = i;
             button.addActionListener(e -> {
-                switch(buttonIndex) {
+                switch (buttonIndex) {
                     case 0:
                         cardLayout.show(cardPanel, "newGame");
                         break;
@@ -318,7 +317,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = {"einzelspieler", "mehrspieler", "zurück"};
+        String[] buttonTexts = { "einzelspieler", "mehrspieler", "zurück" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -376,7 +375,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = {"leicht", "mittel", "schwer", "zurück"};
+        String[] buttonTexts = { "leicht", "mittel", "schwer", "zurück" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -442,8 +441,8 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = {"auswählen", "zurück"};
-        String[] screenNames = {"", "Menu"};
+        String[] buttonTexts = { "auswählen", "zurück" };
+        String[] screenNames = { "", "Menu" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -532,7 +531,7 @@ public class GUI implements Observer {
         promptTimePanel.setOpaque(false);
 
         gamePrompt = new JLabel("Bedenkzeit einstellen und Spiel starten");
-        gamePrompt.setForeground(TURN_TIMER_COLOR); 
+        gamePrompt.setForeground(TURN_TIMER_COLOR);
         gamePrompt.setFont(TURN_TIMER_FONT);
         gamePrompt.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 50));
 
@@ -569,7 +568,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = {"undo", "redo", "speichern", "beenden"};
+        String[] buttonTexts = { "undo", "redo", "speichern", "beenden" };
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -579,12 +578,12 @@ public class GUI implements Observer {
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
-                        if (!getGuiBoard().getRemoveMode()){
+                        if (!getGuiBoard().getRemoveMode()) {
                             gameManager.undoMove();
                         }
                         break;
                     case 1:
-                        if (!getGuiBoard().getRemoveMode()){
+                        if (!getGuiBoard().getRemoveMode()) {
                             gameManager.redoMove();
                         }
                         break;
@@ -592,12 +591,13 @@ public class GUI implements Observer {
                         gameManager.stopTurnTimer();
                         JFileChooser chooser = new JFileChooser();
                         chooser.setDialogTitle("Spiel speichern");
-                        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
+                        chooser.setFileFilter(
+                                new javax.swing.filechooser.FileNameExtensionFilter("JSON-Dateien", "json"));
                         int toSave = chooser.showSaveDialog(null);
 
-                        if(toSave == JFileChooser.APPROVE_OPTION) {
+                        if (toSave == JFileChooser.APPROVE_OPTION) {
                             File selectedFile = chooser.getSelectedFile();
-                            if(!selectedFile.getName().endsWith(".json")) {
+                            if (!selectedFile.getName().endsWith(".json")) {
                                 selectedFile = new File(selectedFile.getAbsolutePath() + ".json");
                             }
 
@@ -630,7 +630,7 @@ public class GUI implements Observer {
         return panel;
 
     } // createBoardScreen
-    // endregion
+      // endregion
 
     // region Design
 
@@ -801,11 +801,10 @@ public class GUI implements Observer {
         turnTime.setText("Verbleibende Zeit: " + timeLeft + "s");
     }
 
-    public void updateStatus(String text, Color color){
+    public void updateStatus(String text, Color color) {
         gamePrompt.setText(text);
         gamePrompt.setForeground(color);
     }
-
 
     /**
      * Build the Game Over Pop-Up Window. Depending on the way the game
@@ -961,10 +960,12 @@ public class GUI implements Observer {
 
     private GUIBoard findGuiBoardIn(Container container) {
         for (Component c : container.getComponents()) {
-            if (c instanceof GUIBoard) return (GUIBoard) c;
+            if (c instanceof GUIBoard)
+                return (GUIBoard) c;
             if (c instanceof Container) {
                 GUIBoard found = findGuiBoardIn((Container) c);
-                if (found != null) return found;
+                if (found != null)
+                    return found;
             }
         }
         return null;
