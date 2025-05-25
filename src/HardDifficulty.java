@@ -2,29 +2,20 @@ import java.util.List;
 
 public class HardDifficulty extends DifficultyStrategy {
 
-    /**/
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
         List<Node[]> playerMoves = player.getAllPossibleMoves();
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
-        Node[] decidedMove = null;
 
-        decidedMove = findMill(playerMoves, player);
-        if (decidedMove != null) {
-            return decidedMove;
-        }
-
-        decidedMove = blockMill(playerMoves, opponentMoves, opponent);
-        if (decidedMove != null) {
-            return decidedMove;
-        }
-
-        decidedMove = clusterMove(playerMoves, player);
-        if (decidedMove != null) {
-            return decidedMove;
-        }
-
-        return randomMove(playerMoves);
+        return tryMoves(
+                entry("findZwickMill", () -> findZwickMill(playerMoves, player)),
+                entry("useFiggerMill", () -> useFiggerMill(playerMoves, player)),
+                entry("findMill", () -> findMill(playerMoves, player)),
+                entry("blockMill", () -> blockMill(playerMoves, opponentMoves, opponent)),
+                entry("blockZwickmill", () -> blockZwickmill(playerMoves, opponentMoves, player, opponent)),
+                entry("blockBeginnerTrap", () -> blockBeginnerTrap(playerMoves, player)),
+                entry("clusterMove", () -> clusterMove(playerMoves, player)),
+                entry("randomMove", () -> randomMove(playerMoves)));
     }
 
     @Override
@@ -32,11 +23,7 @@ public class HardDifficulty extends DifficultyStrategy {
         List<Node> removals = player.getAllPossibleRemovals(opponent);
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
 
-        Node removalNode = highValueRemoval(removals, opponentMoves, opponent);
-        if (removalNode != null) {
-            return removalNode;
-        }
-
-        return randomRemoval(removals);
+        Node removal = removeMillThreat(removals, opponentMoves, opponent);
+        return (removal != null) ? removal : randomRemoval(removals);
     }
 }
