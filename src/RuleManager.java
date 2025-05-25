@@ -178,7 +178,7 @@ public class RuleManager {
             for (int pos : mill) {
 
                 Stone stone = boardManager.getNode(pos).getStone();
-                if (stone != null && stone.getOwner() == player) {
+                if (stone != null && stone.getOwner().getName() == player.getName()) {
                     ownershipCounter++;
                     millStones.add(pos);
                 }
@@ -210,19 +210,23 @@ public class RuleManager {
         Stone stone = null;
         if (fromNode != null) {
             stone = BoardManager.getInstance().getNode(fromNode.getID()).getStone();
+            fromNode.removeStone();
         } else {
             stone = new Stone(player);
             player.addStone(stone);
         }
         stone.setNode(BoardManager.getInstance().getNode(toNode.getID()));
+        toNode.placeStone(stone);
 
         int formedMills = countMillsFormed(stone);
 
         if (fromNode != null) {
             stone.setNode(BoardManager.getInstance().getNode(fromNode.getID()));
+            fromNode.placeStone(stone);
         } else {
             player.removeStone(stone);
         }
+        toNode.removeStone();
 
         return formedMills;
     }

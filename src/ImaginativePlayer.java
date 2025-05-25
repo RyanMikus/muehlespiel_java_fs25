@@ -6,7 +6,7 @@ public class ImaginativePlayer extends PlayerEntity {
     private PlayerEntity player;
 
     public ImaginativePlayer(PlayerEntity playerSelf) {
-        super(playerSelf.name + " (imaginative)");
+        super(playerSelf.name);
         ruleManager = RuleManager.getInstance();
         this.player = playerSelf;
         this.currentPhase = player.currentPhase;
