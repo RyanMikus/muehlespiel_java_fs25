@@ -39,7 +39,11 @@ public class CPUPlayer extends PlayerEntity {
 
     public void setDifficulty(DifficultyStrategy strategy) {
         this.strategy = strategy;
-        System.out.println("set Strategy : " + strategy.getClass().getSimpleName());
+        //System.out.println("set Strategy : " + strategy.getClass().getSimpleName());
+    }
+
+    public DifficultyStrategy getStrategy() {
+        return strategy;
     }
 
     @Override

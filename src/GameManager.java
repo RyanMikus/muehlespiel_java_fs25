@@ -138,7 +138,7 @@ public class GameManager {
         // Adding the initial state of the game to the history, allowing to undo until
         boardCopy = boardManager.copyBoard(currentPlayer, getOpponent());
 
-        Move initialMove = new Move(boardCopy, 0, timer.getTimeLeft());
+        Move initialMove = new Move(0, 0, boardCopy, 0, timer.getTimeLeft());
         history.addMove(initialMove);
 
         guiManager.update();
@@ -206,7 +206,7 @@ public class GameManager {
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
 
-            System.out.println("runGame200 ---- updateGUI");
+            //System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -237,7 +237,7 @@ public class GameManager {
 
                 guiManager.getGuiBoard().setRemoveMode(false);
 
-                System.out.println("runGame231 ---- updateGUI");
+                //System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
 
@@ -559,10 +559,11 @@ public class GameManager {
      * and the time left for the move.
      */
     public void saveMove() {
+        int placedStonesWhite = playerWhite.getPlacedStones();
+        int placedStonesBlack = playerBlack.getPlacedStones();
         boardCopy = boardManager.copyBoard(getCurrentPlayer(), getOpponent());
 
-        Move move = new Move(boardCopy, noMillTurnCounter, timer.getTimeLeft());
-
+        Move move = new Move(placedStonesWhite, placedStonesBlack, boardCopy, noMillTurnCounter, timer.getTimeLeft());
         history.addMove(move);
 
         // old
@@ -639,8 +640,8 @@ public class GameManager {
         }
 
         // 3. Set the placedStones based on stone list size
-        currentPlayer.placedStones = currentPlayer.getRemainingStones().size();
-        opponent.placedStones = opponent.getRemainingStones().size();
+        currentPlayer.placedStones = move.getPlacedStonesWhite();
+        opponent.placedStones = move.getPlacedStonesBlack();
 
         // 3. Checks if the Players was in another Phase before saveMove
         currentPlayer.getPhase().nextPhase();
@@ -654,7 +655,7 @@ public class GameManager {
         currentPlayer = opponent;
         opponent = getOpponent();
 
-        System.out.println("loadMove ---- updateGUI");
+        //System.out.println("loadMove ---- updateGUI");
         boardManager.notifyObservers();
         updateGamePrompt();
 
@@ -674,18 +675,15 @@ public class GameManager {
      */
     public void saveGame(File targetFile) {
         // Get components to save
-        PlayerEntity current = currentPlayer;
-        PlayerEntity opponent = getOpponent();
-
-        PlayerData currentData = toPlayerData(current);
-        PlayerData opponentData = toPlayerData(opponent);
+        PlayerData whiteData = toPlayerData(playerWhite);
+        PlayerData blackData = toPlayerData(playerBlack);
+        boolean currentIsWhite = "white".equalsIgnoreCase(currentPlayer.getName());
 
         List<MoveData> undo = history.getUndoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
         List<MoveData> redo = history.getRedoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
 
-        GameStateData gameState = new GameStateData(currentData, opponentData, undo, redo, noMillTurnCounter,
-                timePerTurn,
-                timer.getTimeLeft(), mode);
+        GameStateData gameState = new GameStateData(whiteData, blackData, currentIsWhite, undo, redo,
+                noMillTurnCounter, timePerTurn, timer.getTimeLeft(), mode);
 
         // Write data to JSON-File
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -709,8 +707,13 @@ public class GameManager {
         List<Integer> nodeIds = player.getRemainingStones().stream().map(stone -> stone.getNode().getID())
                 .collect(Collectors.toList());
 
+        DifficultyLevel difficulty = DifficultyLevel.NONE;
+        if(player instanceof CPUPlayer cpuPlayer) {
+            difficulty = DifficultyLevel.fromStrategyClass(cpuPlayer.getStrategy().getClass());
+        }
+
         return new PlayerData(player.getName(), player.getPhase().getClass().getSimpleName(), player.placedStones,
-                nodeIds, player.getClass().getSimpleName());
+                nodeIds, player.getClass().getSimpleName(), difficulty);
     }
 
     /**
@@ -725,7 +728,8 @@ public class GameManager {
     private MoveData toMoveData(Move move) {
         Map<Integer, Integer> board = createBoardSnapshot(move.getBoardSnapshot());
 
-        return new MoveData(board, move.getNoMillTurnCounter(), move.getTimeLeft());
+        return new MoveData(move.getPlacedStonesWhite(), move.getPlacedStonesBlack(), board,
+                move.getNoMillTurnCounter(), move.getTimeLeft());
     }
 
     /**
@@ -773,34 +777,51 @@ public class GameManager {
      */
     public void loadGame(File file) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            boardManager.reset();
+
             // Read data from File
             Gson gson = new Gson();
             GameStateData state = gson.fromJson(reader, GameStateData.class);
 
-            PlayerEntity loadedCurrent = fromPlayerData(state.currentPlayer, null, true);
-            PlayerEntity loadedOpponent = fromPlayerData(state.opponentPlayer, loadedCurrent, true);
+            PlayerEntity loadedWhite = fromPlayerData(state.whiteData, null, true);
+            PlayerEntity loadedBlack = fromPlayerData(state.blackData, loadedWhite, true);
 
-            this.playerWhite = loadedCurrent.getName().equalsIgnoreCase("white") ? loadedCurrent : loadedOpponent;
-            this.playerBlack = loadedCurrent.getName().equalsIgnoreCase("black") ? loadedCurrent : loadedOpponent;
-            this.currentPlayer = loadedCurrent;
+            this.playerWhite = loadedWhite;
+            this.playerBlack = loadedBlack;
+
+            if(state.currentIsWhite) {
+                this.currentPlayer = loadedWhite;
+            } else {
+                this.currentPlayer = loadedBlack;
+            }
 
             this.noMillTurnCounter = state.noMillTurnCounter;
             this.timePerTurn = state.timePerTurn;
+            this.mode = state.gameMode;
+            guiManager.setMode(state.gameMode);
 
             // Reconstruct history
             this.history.clearUndo();
             this.history.clearRedo();
             for (MoveData moveData : state.undoMoves) {
-                this.history.getUndoMoves().add(fromMoveData(moveData, loadedCurrent, loadedOpponent));
+                this.history.getUndoMoves().add(fromMoveData(moveData, loadedWhite, loadedBlack));
             }
             for (MoveData moveData : state.redoMoves) {
-                this.history.getRedoMoves().add(fromMoveData(moveData, loadedCurrent, loadedOpponent));
+                this.history.getRedoMoves().add(fromMoveData(moveData, loadedWhite, loadedBlack));
             }
 
             gameStatus = true;
             startTurnTimer();
+            boardManager.printBoard(boardManager.getBoard());
+
+            //TODO: Something in the undoMove / loadMove fixes the issue of the wrong board references after loading
+            // -> implement
+            undoMove();
+            redoMove();
+
             gameThread = new Thread(this::runGame);
             gameThread.start();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -824,6 +845,13 @@ public class GameManager {
             player = new Player(data.name);
         } else {
             player = new CPUPlayer(data.name, opponentIfCPU);
+
+            switch(data.difficulty) {
+                case EASY -> ((CPUPlayer)player).setDifficulty(new EasyDifficulty());
+                case MEDIUM -> ((CPUPlayer)player).setDifficulty(new MediumDifficulty());
+                case HARD -> ((CPUPlayer)player).setDifficulty(new HardDifficulty());
+                default -> throw new IllegalStateException("Invalid difficulty: " + data.difficulty);
+            }
         }
 
         player.placedStones = data.placedStones;
@@ -841,9 +869,8 @@ public class GameManager {
         if (placeStones) {
             for (Integer nodeId : data.stonePositions) {
                 Stone stone = new Stone(player);
-                Node node = BoardManager.getInstance().getNode(nodeId);
-                node.placeStone(stone);
                 player.addStone(stone);
+                boardManager.placeStone(player,stone, boardManager.getNode(nodeId));
             }
         }
 
@@ -859,7 +886,7 @@ public class GameManager {
      * @return A reconstructed Move object.
      * @see #loadGame(File)
      */
-    private Move fromMoveData(MoveData data, PlayerEntity loadedCurrent, PlayerEntity loadedOpponent) {
+    private Move fromMoveData(MoveData data, PlayerEntity loadedWhite, PlayerEntity loadedBlack) {
         Map<Integer, Node> board = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : data.boardSnapshot.entrySet()) {
             int id = entry.getKey();
@@ -867,7 +894,7 @@ public class GameManager {
             Node node = new Node(id);
 
             if (ownerCode == 1 || ownerCode == 2) {
-                PlayerEntity owner = (ownerCode == 1) ? loadedCurrent : loadedOpponent;
+                PlayerEntity owner = (ownerCode == 1) ? loadedWhite : loadedBlack;
                 Stone stone = new Stone(owner);
                 node.placeStone(stone);
                 owner.addStone(stone);
@@ -876,7 +903,8 @@ public class GameManager {
             board.put(id, node);
         }
 
-        return new Move(board, data.noMillTurnCounter, data.timeLeft);
+        return new Move(data.placedStonesWhite, data.placedStonesBlack, board,
+                data.noMillTurnCounter, data.timeLeft);
     }
 
     // endregion

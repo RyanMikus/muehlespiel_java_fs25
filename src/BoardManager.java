@@ -144,7 +144,7 @@ public class BoardManager extends Observable {
         // Place stone and update GUI
         toNode.placeStone(stone);
         //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
-        System.out.println("placeStone ---- updateGUI");
+        //System.out.println("placeStone ---- updateGUI");
         notifyObservers();
 
 //        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
@@ -199,7 +199,7 @@ public class BoardManager extends Observable {
         fromNode.removeStone();
         //System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
 
-        System.out.println("moveStone ---- updateGUI");
+        //System.out.println("moveStone ---- updateGUI");
         notifyObservers();
 
         return true;
@@ -262,7 +262,7 @@ public class BoardManager extends Observable {
      * If there is no stone the owner is "-", else the name of the owner is printed.
      */
     public void printBoard(Map<Integer, Node> board) {
-        //System.out.println("-- BOARD -- ");
+        System.out.println("-- BOARD -- ");
         for (Node node : board.values()) {
             if (node.getStone() != null){
                 String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
@@ -307,7 +307,7 @@ public class BoardManager extends Observable {
     public void reset() {
         nodes.clear();
         initializeBoard();
-        System.out.println("reset ---- updateGUI");
+        //System.out.println("reset ---- updateGUI");
         notifyObservers();
     }
 }

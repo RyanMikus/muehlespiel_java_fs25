@@ -7,6 +7,8 @@ import java.util.Map;
  */
 public class Move {
     // region Fields
+    private final int placedStonesWhite;
+    private final int placedStonesBlack;
     private final Map<Integer, Node> boardSnapshot;
     private final int noMillTurnCounter;
     private final int timeLeft;
@@ -19,13 +21,33 @@ public class Move {
      * @param noMillTurnCounter The number of consecutive turns without a formed mill.
      * @param timeLeft          The remaining time for the move in seconds.
      */
-    public Move(Map<Integer, Node> boardSnapshot, int noMillTurnCounter, int timeLeft) {
+    public Move(int placedStonesWhite, int placedStonesBlack, Map<Integer, Node> boardSnapshot, int noMillTurnCounter, int timeLeft) {
+        this.placedStonesWhite = placedStonesWhite;
+        this.placedStonesBlack = placedStonesBlack;
         this.boardSnapshot = boardSnapshot;
         this.noMillTurnCounter = noMillTurnCounter;
         this.timeLeft = timeLeft;
     }
 
     // region Getters
+
+    /**
+     * Returns the number of stones the white player has already placed.
+     *
+     * @return The amount of placed stones.
+     */
+    public int getPlacedStonesWhite() {
+        return placedStonesWhite;
+    }
+
+    /**
+     * Returns the number of stones the black player has already placed.
+     *
+     * @return The amount of placed stones.
+     */
+    public int getPlacedStonesBlack() {
+        return placedStonesBlack;
+    }
 
     /**
      * Returns the snapshot of the board when this move was made.

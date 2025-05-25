@@ -1,8 +1,9 @@
 import java.util.List;
 
 public class GameStateData {
-    public final PlayerData currentPlayer;
-    public final PlayerData opponentPlayer;
+    public final PlayerData whiteData;
+    public final PlayerData blackData;
+    public boolean currentIsWhite;
     public final List<MoveData> undoMoves;
     public final List<MoveData> redoMoves;
     public final int noMillTurnCounter;
@@ -10,9 +11,10 @@ public class GameStateData {
     public final int timeLeft;
     public final String gameMode;
 
-    public GameStateData(PlayerData currentPlayer, PlayerData opponentPlayer, List<MoveData> undoMoves, List<MoveData> redoMoves, int noMillTurnCounter, int timePerTurn, int timeLeft, String gameMode) {
-        this.currentPlayer = currentPlayer;
-        this.opponentPlayer = opponentPlayer;
+    public GameStateData(PlayerData whiteData, PlayerData blackData, boolean currentIsWhite, List<MoveData> undoMoves, List<MoveData> redoMoves, int noMillTurnCounter, int timePerTurn, int timeLeft, String gameMode) {
+        this.whiteData = whiteData;
+        this.blackData = blackData;
+        this.currentIsWhite = currentIsWhite;
         this.undoMoves = undoMoves;
         this.redoMoves = redoMoves;
         this.noMillTurnCounter = noMillTurnCounter;

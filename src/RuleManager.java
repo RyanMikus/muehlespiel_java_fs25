@@ -192,7 +192,7 @@ public class RuleManager {
             }
             // Add one formed mill to the counter
             if (ownershipCounter == 3) {
-                System.out.println("[DEBUG] Mill formed on nodes: " + millStones);
+                //System.out.println("[DEBUG] Mill formed on nodes: " + millStones);
                 millCount++;
                 if (millCount > 2) {
                     throw new IllegalStateException("More than 2 mills formed — invalid state.");

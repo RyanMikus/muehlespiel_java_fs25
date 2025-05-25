@@ -56,7 +56,7 @@ public abstract class DifficultyStrategy {
                         }
                     }
                     if (stoneNeighbor >= 2 && unoccupiedNeighborCount >= 1) {
-                        System.out.println("Real magic does exist");
+                        //System.out.println("Real magic does exist");
                         for (Node[] move : playerMoves) {
                             if (move[1].getID() == nodeNeighbor.getID())
                                 return move;

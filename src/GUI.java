@@ -924,6 +924,10 @@ public class GUI implements Observer {
         return guiBoard;
     }
 
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
     /**
      * This method gets called, whenever the board gets updated (by its observable).
      * Repaints the GUI.
