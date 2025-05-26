@@ -588,6 +588,10 @@ public class GUI implements Observer {
                         }
                         break;
                     case 2:
+                        if(!gameManager.getGameStatus()) {
+                            break;
+                        }
+
                         gameManager.stopTurnTimer();
                         JFileChooser chooser = new JFileChooser();
                         chooser.setDialogTitle("Spiel speichern");
