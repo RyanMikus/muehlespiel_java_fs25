@@ -3,23 +3,17 @@ import java.util.List;
 public class MediumDifficulty extends DifficultyStrategy {
 
     /**/
+
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {
         List<Node[]> playerMoves = player.getAllPossibleMoves();
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
-        Node[] decidedMove = null;
 
-        decidedMove = findMill(playerMoves, player);
-        if (decidedMove != null) {
-            return decidedMove;
-        }
-
-        decidedMove = blockMill(playerMoves, opponentMoves, opponent);
-        if (decidedMove != null) {
-            return decidedMove;
-        }
-
-        return randomMove(playerMoves);
+        return tryMoves(
+                entry("findMill", () -> findMill(playerMoves, player)),
+                entry("blockMill", () -> blockMill(playerMoves, opponentMoves, opponent)),
+                entry("clusterMove", () -> clusterMove(playerMoves, player)),
+                entry("randomMove", () -> randomMove(playerMoves)));
     }
 
     @Override
@@ -27,7 +21,7 @@ public class MediumDifficulty extends DifficultyStrategy {
         List<Node> removals = player.getAllPossibleRemovals(opponent);
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
 
-        Node removalNode = highValueRemoval(removals, opponentMoves, opponent);
+        Node removalNode = removeMillThreat(removals, opponentMoves, opponent);
         if (removalNode != null) {
             return removalNode;
         }

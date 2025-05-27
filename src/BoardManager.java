@@ -137,18 +137,19 @@ public class BoardManager extends Observable {
 
         // Check if the stone can be placed correctly
         if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
-            //System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
+            // System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
             return false;
         }
 
         // Place stone and update GUI
         toNode.placeStone(stone);
-        //System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
-        //System.out.println("placeStone ---- updateGUI");
+        // System.out.println("[DEBUG] → Stein platziert auf Node " + toNode.getID());
+        // System.out.println("placeStone ---- updateGUI");
         notifyObservers();
 
-//        System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +
-//                "] - Placed stone on node " + toNode.getID());
+        // System.out.println("[" + (player.getName().equalsIgnoreCase("white") ?
+        // "WHITE" : "BLACK") +
+        // "] - Placed stone on node " + toNode.getID());
         return true;
     }
 
@@ -197,9 +198,11 @@ public class BoardManager extends Observable {
         Stone stone = fromNode.getStone();
         toNode.placeStone(stone);
         fromNode.removeStone();
-        //System.out.println("[" + (player.getName().equalsIgnoreCase("white") ? "WHITE" : "BLACK") +                "] - Move stone from " + fromNode.getID() + " to " + toNode.getID());
+        // System.out.println("[" + (player.getName().equalsIgnoreCase("white") ?
+        // "WHITE" : "BLACK") + "] - Move stone from " + fromNode.getID() + " to " +
+        // toNode.getID());
 
-        //System.out.println("moveStone ---- updateGUI");
+        // System.out.println("moveStone ---- updateGUI");
         notifyObservers();
 
         return true;
@@ -226,6 +229,32 @@ public class BoardManager extends Observable {
         return nodes.get(id);
     }
 
+    public List<Node> getRingNodes(int nodeID) {
+        BoardManager boardManager = BoardManager.getInstance();
+
+        // Ringe definieren
+        int[][] rings = {
+                { 0, 1, 2, 9, 10, 11, 21, 22, 23 }, // äußerer Ring
+                { 3, 4, 5, 10, 11, 12, 18, 19, 20 }, // mittlerer Ring
+                { 6, 7, 8, 15, 16, 17 } // innerer Ring
+        };
+
+        for (int[] ring : rings) {
+            for (int id : ring) {
+                if (id == nodeID) {
+                    // Ring gefunden → Nodes sammeln
+                    List<Node> nodes = new ArrayList<>();
+                    for (int ringID : ring) {
+                        nodes.add(boardManager.getNode(ringID));
+                    }
+                    return nodes;
+                }
+            }
+        }
+
+        return new ArrayList<>(); // nodeID gehört zu keinem bekannten Ring
+    }
+
     /**
      * Sets the board to a new one, updating all nodes and their parameters.
      *
@@ -234,14 +263,17 @@ public class BoardManager extends Observable {
     public void setBoard(Map<Integer, Node> newBoard, PlayerEntity currentPlayer, PlayerEntity opponent) {
         nodes.clear();
 
-        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue Map legen
+        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue
+        // Map legen
         for (Map.Entry<Integer, Node> entry : newBoard.entrySet()) {
             Node originalNode = entry.getValue();
             Node copyNode = originalNode.deepCopy(currentPlayer, opponent);
             nodes.put(entry.getKey(), copyNode);
         }
-        // Nach dieser Schleife haben wir eine neue Map mit 24 kopierten Knoten. Die Kopien
-        // besitzen ebenso kopierte Steine wenn welche vorhanden waren. Der kopierte Knoten
+        // Nach dieser Schleife haben wir eine neue Map mit 24 kopierten Knoten. Die
+        // Kopien
+        // besitzen ebenso kopierte Steine wenn welche vorhanden waren. Der kopierte
+        // Knoten
         // wurde auf den kopierten Stein gesetzt und umgekehrt.
         // Die LinkedList mit den Nachbarn ist bei allen Kopien aktuell noch LEER!
 
@@ -264,7 +296,7 @@ public class BoardManager extends Observable {
     public void printBoard(Map<Integer, Node> board) {
         System.out.println("-- BOARD -- ");
         for (Node node : board.values()) {
-            if (node.getStone() != null){
+            if (node.getStone() != null) {
                 String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
                 String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
                 System.out.println(line);
@@ -285,7 +317,8 @@ public class BoardManager extends Observable {
     public Map<Integer, Node> copyBoard(PlayerEntity currentPlayer, PlayerEntity opponent) {
         Map<Integer, Node> copiedBoard = new HashMap<>();
 
-        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue Map legen
+        // 1. Jeden Knoten aus der Map holen, ID vom Original und Node als Kopie in neue
+        // Map legen
         for (Map.Entry<Integer, Node> entry : nodes.entrySet()) {
             Node originalNode = entry.getValue();
             Node copyNode = originalNode.deepCopy(currentPlayer, opponent);
@@ -307,7 +340,7 @@ public class BoardManager extends Observable {
     public void reset() {
         nodes.clear();
         initializeBoard();
-        //System.out.println("reset ---- updateGUI");
+        // System.out.println("reset ---- updateGUI");
         notifyObservers();
     }
 }
