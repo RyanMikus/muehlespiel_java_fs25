@@ -1,12 +1,10 @@
 import java.awt.Color;
 import java.io.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 
 public class GameManager {
     // region Fields
@@ -16,6 +14,7 @@ public class GameManager {
     private final RuleManager ruleManager;
     private final GUI guiManager;
     private History history;
+    private GamePersistenceManager persistenceManager;
 
     // Players
     private PlayerEntity playerWhite;
@@ -57,6 +56,7 @@ public class GameManager {
         guiManager = GUI.getInstance();
 
         history = new History();
+        persistenceManager = new GamePersistenceManager();
     }
 
     /**
@@ -79,14 +79,14 @@ public class GameManager {
     public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
             this.playerMove = move;
-            synchronized (this) {
+            synchronized(this) {
                 this.notify();
             }
         });
 
         guiBoard.setRemoveListener(move -> {
             this.playerRemove = move;
-            synchronized (this) {
+            synchronized(this) {
                 this.notify();
             }
         });
@@ -268,7 +268,7 @@ public class GameManager {
         if (isPlayer) {
             playerMove = null;
 
-            synchronized (this) {
+            synchronized(this) {
                 while (playerMove == null) {
                     try {
                         this.wait();
@@ -298,7 +298,7 @@ public class GameManager {
         if (isPlayer) {
             playerRemove = null;
 
-            synchronized (this) {
+            synchronized(this) {
                 while (playerRemove == null) {
                     try {
                         this.wait();
@@ -565,17 +565,6 @@ public class GameManager {
 
         Move move = new Move(placedStonesWhite, placedStonesBlack, boardCopy, noMillTurnCounter, timer.getTimeLeft());
         history.addMove(move);
-
-        // old
-        // currentPlayerCopy = currentPlayer.deepCopy();
-        // opponentCopy = getOpponent().deepCopy();
-        // boardCopy = boardManager.copyBoard(currentPlayerCopy, opponentCopy);
-        //
-        // Move move = new Move(opponentCopy, currentPlayerCopy, boardCopy,
-        // noMillTurnCounter, timer.getTimeLeft());
-        //
-        // history.addMove(move);
-
     }
 
     /**
@@ -593,30 +582,6 @@ public class GameManager {
             new Exception().printStackTrace(); // <-- zeigt dir die Stelle
             return;
         }
-
-        // old
-        // Restore players and set the current player
-        // PlayerEntity currentPlayerFromMove = move.getCurrentPlayer();
-        // if (currentPlayerFromMove.getName().equalsIgnoreCase("white")) {
-        // playerWhite.setPlayer(currentPlayerFromMove);
-        // currentPlayer = playerWhite;
-        // playerBlack.setPlayer(move.getOpponent());
-        // }
-        // else{
-        // playerBlack.setPlayer(currentPlayerFromMove);
-        // currentPlayer = playerBlack;
-        // playerWhite.setPlayer(move.getOpponent());
-        // }
-
-        // // old
-        // currentPlayer = move.getCurrentPlayer();
-        // if (currentPlayer.getName().equalsIgnoreCase("white")) {
-        // playerWhite = currentPlayer;
-        // playerBlack = move.getOpponent();
-        // } else {
-        // playerBlack = currentPlayer;
-        // playerWhite = move.getOpponent();
-        // }
 
         currentPlayer = getCurrentPlayer();
         opponent = getOpponent();
@@ -666,247 +631,75 @@ public class GameManager {
     // region Save / Restore Game
 
     /**
-     * Saves the current game state to a JSON-File.
+     * Saves the current game state to a JSON file.
+     * <p>
+     * This method creates a {@link GameStateData} object containing the current players,
+     * their phases, the board state, and other relevant information.
+     * <p>
+     * After saving, it restarts the turn timer to ensure the game continues
+     * correctly.
      *
      * @param targetFile The target file to which the game state should be saved.
-     * @see #toPlayerData(PlayerEntity)
-     * @see #toMoveData(Move)
-     * @see #createBoardSnapshot(Map)
      */
     public void saveGame(File targetFile) {
-        // Get components to save
-        PlayerData whiteData = toPlayerData(playerWhite);
-        PlayerData blackData = toPlayerData(playerBlack);
-        boolean currentIsWhite = "white".equalsIgnoreCase(currentPlayer.getName());
-
-        List<MoveData> undo = history.getUndoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
-        List<MoveData> redo = history.getRedoMoves().stream().map(this::toMoveData).collect(Collectors.toList());
-
-        GameStateData gameState = new GameStateData(whiteData, blackData, currentIsWhite, undo, redo,
-                noMillTurnCounter, timePerTurn, timer.getTimeLeft(), mode);
-
-        // Write data to JSON-File
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter writer = new FileWriter(targetFile)) {
-            gson.toJson(gameState, writer);
-            startTurnTimer();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GameStateData gameState = persistenceManager.createGameState(
+                playerWhite, playerBlack, currentPlayer, history, noMillTurnCounter,
+                timePerTurn, timer.getTimeLeft(), mode
+        );
+        persistenceManager.saveGameState(gameState, targetFile);
+        startTurnTimer();
     }
 
     /**
-     * Helpermethod for the saveGame-Method.
-     * Converts a PlayerEntity to its corresponding serializable PlayerData.
-     *
-     * @param player The player entity to convert.
-     * @return A PlayerData object containing serializable fields.
-     * @see #saveGame(File)
-     */
-    private PlayerData toPlayerData(PlayerEntity player) {
-        List<Integer> nodeIds = player.getRemainingStones().stream().map(stone -> stone.getNode().getID())
-                .collect(Collectors.toList());
-
-        DifficultyLevel difficulty = DifficultyLevel.NONE;
-        if(player instanceof CPUPlayer cpuPlayer) {
-            difficulty = DifficultyLevel.fromStrategyClass(cpuPlayer.getStrategy().getClass());
-        }
-
-        return new PlayerData(player.getName(), player.getPhase().getClass().getSimpleName(), player.placedStones,
-                nodeIds, player.getClass().getSimpleName(), difficulty);
-    }
-
-    /**
-     * Helpermethod for the saveGame-Method.
+     * Loads a game state from a JSON file.
      * <p>
-     * Converts a Move to its corresponding serializable MoveData.
-     *
-     * @param move The move to convert.
-     * @return A MoveData object containing serializable fields.
-     * @see #saveGame(File)
-     */
-    private MoveData toMoveData(Move move) {
-        Map<Integer, Integer> board = createBoardSnapshot(move.getBoardSnapshot());
-
-        return new MoveData(move.getPlacedStonesWhite(), move.getPlacedStonesBlack(), board,
-                move.getNoMillTurnCounter(), move.getTimeLeft());
-    }
-
-    /**
-     * Helpermethod for the saveGame-Method.
+     * This method reads the saved game state from the specified file and reconstructs
+     * the players, their phases, and the board state.
      * <p>
-     * Creates a simplified board snapshot from a full board state.
-     * <ul>
-     * <li>0 = empty</li>
-     * <li>1 = white</li>
-     * <li>2 = black</li>
-     * </ul>
-     *
-     * @param board The full board state as a map of nodes.
-     * @return A simplified map of node IDs to owner codes.
-     * @see #saveGame(File)
-     */
-    private Map<Integer, Integer> createBoardSnapshot(Map<Integer, Node> board) {
-        Map<Integer, Integer> snapshot = new HashMap<>();
-
-        for (Map.Entry<Integer, Node> entry : board.entrySet()) {
-            Node node = entry.getValue();
-            int ownerId = 0;
-
-            if (node.isOccupied()) {
-                String ownerName = node.getStone().getOwner().getName().toLowerCase();
-                ownerId = switch (ownerName) {
-                    case "white" -> 1;
-                    case "black" -> 2;
-                    default -> 0;
-                };
-            }
-
-            snapshot.put(entry.getKey(), ownerId);
-        }
-
-        return snapshot;
-    }
-
-    /**
-     * Loads a saved game state from a JSON-File and restores it.
+     * After loading, it updates the {@link GUI} and starts the game thread to continue
+     * gameplay.
      *
      * @param file The JSON file containing the saved game state.
-     * @see #fromPlayerData(PlayerData, PlayerEntity, boolean)
-     * @see #fromMoveData(MoveData, PlayerEntity, PlayerEntity)
      */
     public void loadGame(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            boardManager.reset();
+        GameStateData data = persistenceManager.restoreGameState(file);
 
-            // Read data from File
-            Gson gson = new Gson();
-            GameStateData state = gson.fromJson(reader, GameStateData.class);
+        PlayerEntity loadedWhite = persistenceManager.fromPlayerData(data.whiteData, null, true);
+        PlayerEntity loadedBlack = persistenceManager.fromPlayerData(data.blackData, loadedWhite, true);
+        this.playerWhite = loadedWhite;
+        this.playerBlack = loadedBlack;
 
-            PlayerEntity loadedWhite = fromPlayerData(state.whiteData, null, true);
-            PlayerEntity loadedBlack = fromPlayerData(state.blackData, loadedWhite, true);
-
-            this.playerWhite = loadedWhite;
-            this.playerBlack = loadedBlack;
-
-            if(state.currentIsWhite) {
-                this.currentPlayer = loadedWhite;
-            } else {
-                this.currentPlayer = loadedBlack;
-            }
-
-            this.noMillTurnCounter = state.noMillTurnCounter;
-            this.timePerTurn = state.timePerTurn;
-            this.mode = state.gameMode;
-            guiManager.setMode(state.gameMode);
-
-            // Reconstruct history
-            this.history.clearUndo();
-            this.history.clearRedo();
-            for (MoveData moveData : state.undoMoves) {
-                this.history.getUndoMoves().add(fromMoveData(moveData, loadedWhite, loadedBlack));
-            }
-            for (MoveData moveData : state.redoMoves) {
-                this.history.getRedoMoves().add(fromMoveData(moveData, loadedWhite, loadedBlack));
-            }
-
-            gameStatus = true;
-            startTurnTimer();
-            boardManager.printBoard(boardManager.getBoard());
-
-            //TODO: Something in the undoMove / loadMove fixes the issue of the wrong board references after loading
-            // -> implement
-            undoMove();
-            redoMove();
-
-            gameThread = new Thread(this::runGame);
-            gameThread.start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Helpermethod for the loadGame-Method.
-     * <p>
-     * Reconstructs a PlayerEntity from a PlayerData object.
-     *
-     * @param data          The PlayerData containing saved state.
-     * @param opponentIfCPU The opponent of the {@code CPUPlayer}. Can be null for
-     *                      {@code Player}.
-     * @return A PlayerEntity with restored name, phase, and stones.
-     * @see #loadGame(File)
-     */
-    private PlayerEntity fromPlayerData(PlayerData data, PlayerEntity opponentIfCPU, boolean placeStones) {
-        PlayerEntity player;
-
-        if ("Player".equalsIgnoreCase(data.type)) {
-            player = new Player(data.name);
+        if (data.currentIsWhite) {
+            this.currentPlayer = loadedWhite;
         } else {
-            player = new CPUPlayer(data.name, opponentIfCPU);
-
-            switch(data.difficulty) {
-                case EASY -> ((CPUPlayer)player).setDifficulty(new EasyDifficulty());
-                case MEDIUM -> ((CPUPlayer)player).setDifficulty(new MediumDifficulty());
-                case HARD -> ((CPUPlayer)player).setDifficulty(new HardDifficulty());
-                default -> throw new IllegalStateException("Invalid difficulty: " + data.difficulty);
-            }
+            this.currentPlayer = loadedBlack;
         }
 
-        player.placedStones = data.placedStones;
+        noMillTurnCounter = data.noMillTurnCounter;
+        timePerTurn = data.timePerTurn;
+        mode = data.gameMode;
+        guiManager.setMode(data.gameMode);
 
-        // Reconstruct phase
-        switch (data.phase) {
-            case "SettingPhase" -> player.setPhase(new SettingPhase(player));
-            case "MovingPhase" -> player.setPhase(new MovingPhase(player));
-            case "JumpingPhase" -> player.setPhase(new JumpingPhase(player));
-            case "GameOverPhase" -> player.setPhase(new GameOverPhase(player));
-            default -> throw new IllegalStateException("Unknown Phase: " + data.phase);
+        // Reconstruct history
+        history = new History();
+        for (MoveData moveData : data.undoMoves) {
+            history.getUndoMoves().add(persistenceManager.fromMoveData(moveData, loadedWhite, loadedBlack));
+        }
+        for (MoveData moveData : data.redoMoves) {
+            history.getRedoMoves().add(persistenceManager.fromMoveData(moveData, loadedWhite, loadedBlack));
         }
 
-        // Assign stones
-        if (placeStones) {
-            for (Integer nodeId : data.stonePositions) {
-                Stone stone = new Stone(player);
-                player.addStone(stone);
-                boardManager.placeStone(player,stone, boardManager.getNode(nodeId));
-            }
-        }
+        gameStatus = true;
+        startTurnTimer();
+        boardManager.printBoard(boardManager.getBoard());
 
-        return player;
+        undoMove();
+        redoMove();
+
+        gameThread = new Thread(this::runGame);
+        gameThread.start();
+
     }
-
-    /**
-     * Helpermethod for the loadGame-Method.
-     * <p>
-     * Converts a MoveData object back into a Move for use in the history stacks.
-     *
-     * @param data The MoveData to convert.
-     * @return A reconstructed Move object.
-     * @see #loadGame(File)
-     */
-    private Move fromMoveData(MoveData data, PlayerEntity loadedWhite, PlayerEntity loadedBlack) {
-        Map<Integer, Node> board = new HashMap<>();
-        for (Map.Entry<Integer, Integer> entry : data.boardSnapshot.entrySet()) {
-            int id = entry.getKey();
-            int ownerCode = entry.getValue();
-            Node node = new Node(id);
-
-            if (ownerCode == 1 || ownerCode == 2) {
-                PlayerEntity owner = (ownerCode == 1) ? loadedWhite : loadedBlack;
-                Stone stone = new Stone(owner);
-                node.placeStone(stone);
-                owner.addStone(stone);
-            }
-
-            board.put(id, node);
-        }
-
-        return new Move(data.placedStonesWhite, data.placedStonesBlack, board,
-                data.noMillTurnCounter, data.timeLeft);
-    }
-
     // endregion
 
     // for UndoRedotest
