@@ -86,7 +86,7 @@ public abstract class DifficultyStrategy {
                         }
                     }
                     if (stoneNeighbor >= 2 && unoccupiedNeighborCount >= 1) {
-                        //System.out.println("Real magic does exist");
+                        // System.out.println("Real magic does exist");
                         for (Node[] move : playerMoves) {
                             if (move[1].getID() == nodeNeighbor.getID())
                                 return move;
@@ -104,54 +104,49 @@ public abstract class DifficultyStrategy {
             return null;
         }
 
-        List<int[]> playerAlmostMills = new ArrayList<>();
-        List<Integer> playerStonesID = new ArrayList<>();
-
-        // IDs aller Steine des Spielers sammeln
+        List<Integer> placedStonesID = new ArrayList<>();
         for (Stone stone : player.getRemainingStones()) {
-            if (stone.getNode() != null) {
-                playerStonesID.add(stone.getNode().getID());
-            }
+            placedStonesID.add(stone.getNode().getID());
         }
 
-        // Finde alle Almost-Mills (2 besetzt, 1 frei)
+        // gather mills that only contains a single stone from the player, none from the
+        // opponent
+        List<int[]> singleStoneMills = new ArrayList<>();
         for (int[] mill : BoardManager.getInstance().potentialMills) {
-            int owned = 0;
-            int freeCount = 0;
-            int freePos = -1;
-
+            int stoneCounter = 0;
+            boolean opponentInMill = false;
             for (int pos : mill) {
-                if (playerStonesID.contains(pos)) {
-                    owned++;
-                } else {
-                    Node node = BoardManager.getInstance().getNode(pos);
-                    if (!node.isOccupied()) {
-                        freeCount++;
-                        freePos = pos;
+                if (placedStonesID.contains(pos)) {
+                    stoneCounter++;
+                } else { // if it does not contain but is occupied, it belongs to the opponent
+                    if (BoardManager.getInstance().getNode(pos).isOccupied()) {
+                        opponentInMill = true;
                     }
                 }
             }
-
-            if (owned == 2 && freeCount == 1) {
-                playerAlmostMills.add(mill);
+            if (stoneCounter == 1 && !opponentInMill) {
+                singleStoneMills.add(mill);
             }
         }
 
-        // Finde Züge, bei denen ein Ziel in zwei Almost-Mills gleichzeitig liegt
-        for (Node[] move : playerMoves) {
-            Node fromNode = move[0];
-            Node toNode = move[1];
-            int toID = toNode.getID();
+        // extract positions which are shared in singleStoneMills
+        Map<Integer, Integer> posCountMap = new HashMap<>();
+        for (int[] mill : singleStoneMills) {
+            for (int pos : mill) {
+                posCountMap.put(pos, posCountMap.getOrDefault(pos, 0) + 1);
+            }
+        }
+        List<Integer> sharedMillPos = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : posCountMap.entrySet()) {
+            if (entry.getValue() >= 2) {
+                sharedMillPos.add(entry.getKey());
+            }
+        }
 
-            // Prüfe, in wie vielen Almost-Mills das Ziel liegt
-            int matchingAlmostMills = 0;
-            for (int[] mill : playerAlmostMills) {
-                if (isInMill(toID, mill)) {
-                    matchingAlmostMills++;
-                    if (matchingAlmostMills >= 2) {
-                        return new Node[] { fromNode, toNode };
-                    }
-                }
+        // find a player move which is in sharedMillPos
+        for (Node[] move : playerMoves) {
+            if (sharedMillPos.contains(move[1].getID())) {
+                return move;
             }
         }
 
@@ -165,65 +160,14 @@ public abstract class DifficultyStrategy {
             return null;
         }
 
-        List<Integer> opponentStones = new ArrayList<>();
-        List<int[]> opponentAlmostMills = new ArrayList<>();
-
-        // 1. IDs aller gegnerischen Steine sammeln
-        for (Stone stone : opponent.getRemainingStones()) {
-            if (stone.getNode() != null) {
-                opponentStones.add(stone.getNode().getID());
-            }
+        Node[] zwickMill = findZwickMill(opponentMoves, opponent);
+        if (zwickMill == null) {
+            return null;
         }
 
-        // 2. Almost-Mills des Gegners finden (2 Steine + 1 leer)
-        for (int[] mill : BoardManager.getInstance().potentialMills) {
-            int owned = 0;
-            int freeCount = 0;
-            int freePos = -1;
-
-            for (int pos : mill) {
-                if (opponentStones.contains(pos)) {
-                    owned++;
-                } else {
-                    Node node = BoardManager.getInstance().getNode(pos);
-                    if (!node.isOccupied()) {
-                        freeCount++;
-                        freePos = pos;
-                    }
-                }
-            }
-
-            if (owned == 2 && freeCount == 1) {
-                opponentAlmostMills.add(mill);
-            }
-        }
-
-        // 3. Zähle, welche freien Felder mehrfach in diesen Mills vorkommen
-        Map<Integer, Integer> dangerZoneCounts = new HashMap<>();
-
-        for (int[] mill : opponentAlmostMills) {
-            for (int pos : mill) {
-                Node node = BoardManager.getInstance().getNode(pos);
-                if (!node.isOccupied() && !opponentStones.contains(pos)) {
-                    dangerZoneCounts.put(pos, dangerZoneCounts.getOrDefault(pos, 0) + 1);
-                }
-            }
-        }
-
-        // 4. Wähle das "gefährlichste" freie Feld, das in mehreren gegnerischen
-        // Almost-Mills vorkommt
-        for (Map.Entry<Integer, Integer> entry : dangerZoneCounts.entrySet()) {
-            int pos = entry.getKey();
-            int count = entry.getValue();
-
-            if (count >= 2) {
-                // 5. Können wir dorthin ziehen? Dann blockieren!
-                for (Node[] move : playerMoves) {
-                    Node toNode = move[1];
-                    if (toNode.getID() == pos) {
-                        return move;
-                    }
-                }
+        for (Node[] move : playerMoves) {
+            if (move[1].getID() == zwickMill[1].getID()) {
+                return move;
             }
         }
 
@@ -237,39 +181,47 @@ public abstract class DifficultyStrategy {
 
         BoardManager boardManager = BoardManager.getInstance();
 
-        // Eckenpaare: {gegnerEcke, gegner gegenüber}
-        int[][] cornerPairs = {
-                { 0, 23 }, { 2, 21 }, { 6, 17 }, { 8, 15 },
-                { 18, 5 }, { 20, 3 }, { 14, 9 }, { 12, 11 }
-        };
+        int[][] cornerPairs = { { 0, 23 }, { 2, 21 }, { 3, 20 }, { 5, 18 }, { 6, 17 }, { 18, 15 } };
 
         for (int[] pair : cornerPairs) {
-            int opponentCorner = pair[0];
-            int oppositeCorner = pair[1];
+            int corner0 = pair[0];
+            int corner1 = pair[1];
 
-            Node opponentNode = boardManager.getNode(opponentCorner);
-            Node oppositeNode = boardManager.getNode(oppositeCorner);
+            Node corner0Node = boardManager.getNode(corner0);
+            Node corner1Node = boardManager.getNode(corner1);
 
-            // Wenn Ecke vom Gegner belegt, aber Gegenecke frei
-            if (opponentNode.isOccupied() &&
-                    !oppositeNode.isOccupied() &&
-                    !opponentNode.getStone().getOwner().getName().equals(player.getName())) {
+            boolean corner0Opponent = false; // is coner0 occupied by opponent
+            if (corner0Node.isOccupied() && corner0Node.getStone().getOwner().getName() != player.getName()) {
+                corner0Opponent = true;
+            }
+            boolean corner1Opponent = false; // is coner1 occupied by opponent
+            if (corner1Node.isOccupied() && corner1Node.getStone().getOwner().getName() != player.getName()) {
+                corner1Opponent = true;
+            }
 
-                // Prüfen, ob der Ring ansonsten leer ist
+            // get the corner occupied by the opponent, set playerCorner to the opposite
+            // corner
+            int opponentCorner = -1;
+            int playerCorner = -1;
+            if (corner0Opponent) {
+                opponentCorner = corner0;
+                playerCorner = corner1;
+            }
+            if (corner1Opponent) {
+                opponentCorner = corner1;
+                playerCorner = corner0;
+            }
+
+            if (corner0Opponent || corner1Opponent) {
                 boolean ringEmpty = true;
-
-                List<Node> ringNodes = boardManager.getRingNodes(opponentCorner);
-                for (Node ringNode : ringNodes) {
-                    if (ringNode.isOccupied() && ringNode != opponentNode) {
+                for (Node ringNode : boardManager.getRingNodes(corner0)) {
+                    if (ringNode.getID() != opponentCorner && ringNode.isOccupied()) {
                         ringEmpty = false;
-                        break;
                     }
                 }
-
                 if (ringEmpty) {
-                    // Suche Move, der zu diesem Ziel führt
                     for (Node[] move : playerMoves) {
-                        if (move[1].getID() == oppositeCorner) {
+                        if (move[1].getID() == playerCorner) {
                             return move;
                         }
                     }

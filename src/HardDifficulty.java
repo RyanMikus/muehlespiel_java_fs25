@@ -8,10 +8,10 @@ public class HardDifficulty extends DifficultyStrategy {
         List<Node[]> opponentMoves = opponent.getAllPossibleMoves();
 
         return tryMoves(
-                entry("findZwickMill", () -> findZwickMill(playerMoves, player)),
                 entry("useFiggerMill", () -> useFiggerMill(playerMoves, player)),
                 entry("findMill", () -> findMill(playerMoves, player)),
                 entry("blockMill", () -> blockMill(playerMoves, opponentMoves, opponent)),
+                entry("findZwickMill", () -> findZwickMill(playerMoves, player)),
                 entry("blockZwickmill", () -> blockZwickmill(playerMoves, opponentMoves, player, opponent)),
                 entry("blockBeginnerTrap", () -> blockBeginnerTrap(playerMoves, player)),
                 entry("clusterMove", () -> clusterMove(playerMoves, player)),

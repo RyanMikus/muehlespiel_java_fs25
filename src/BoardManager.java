@@ -234,9 +234,9 @@ public class BoardManager extends Observable {
 
         // Ringe definieren
         int[][] rings = {
-                { 0, 1, 2, 9, 10, 11, 21, 22, 23 }, // äußerer Ring
-                { 3, 4, 5, 10, 11, 12, 18, 19, 20 }, // mittlerer Ring
-                { 6, 7, 8, 15, 16, 17 } // innerer Ring
+                { 0, 1, 2, 9, 14, 21, 22, 23 }, // äußerer Ring
+                { 3, 4, 5, 10, 13, 18, 19, 20 }, // mittlerer Ring
+                { 6, 7, 8, 11, 12, 15, 16, 17 } // innerer Ring
         };
 
         for (int[] ring : rings) {
