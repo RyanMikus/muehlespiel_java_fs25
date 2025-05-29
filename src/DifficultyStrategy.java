@@ -43,27 +43,65 @@ public abstract class DifficultyStrategy {
         return moves.get(random.nextInt(moves.size()));
     }
 
-    protected Node[] findMill(List<Node[]> moves, ImaginativePlayer player) {
-        for (Node[] playerMove : moves) {
+    protected Node[] findMill(List<Node[]> playerMoves, ImaginativePlayer player) {
+        for (Node[] playerMove : playerMoves) {
             if (RuleManager.getInstance().countMillsFormed(playerMove, player) >= 1) {
                 return playerMove;
             }
         }
         return null;
+
     }
 
     protected Node[] blockMill(List<Node[]> playerMoves, List<Node[]> opponentMoves, ImaginativePlayer opponent) {
-        for (Node[] opponentMove : opponentMoves) {
-            if (RuleManager.getInstance().countMillsFormed(opponentMove, opponent) >= 1) {
-                int targetNodeID = opponentMove[1].getID();
-                for (Node[] playerMove : playerMoves) {
-                    if (playerMove[1].getID() == targetNodeID) {
-                        return playerMove;
+        List<Integer> almostMills = findAlmostMills(opponent);
+        for (Node[] move : playerMoves) {
+            if (almostMills.contains(move[1].getID())) {
+                for (Node[] opponentMove : opponentMoves) {
+                    if (opponentMove[1].getID() == move[1].getID()) {
+                        return move;
                     }
                 }
             }
         }
         return null;
+    }
+
+    private List<Integer> findAlmostMills(ImaginativePlayer player) {
+        List<Integer> playerStonesID = new ArrayList<>();
+        List<Integer> playerAlmostMills = new ArrayList<>();
+
+        // IDs aller Steine des Spielers sammeln
+        for (Stone stone : player.getRemainingStones()) {
+            if (stone.getNode() != null) {
+                playerStonesID.add(stone.getNode().getID());
+            }
+        }
+
+        // Finde alle Almost-Mills (2 besetzt, 1 frei)
+        for (int[] mill : BoardManager.getInstance().potentialMills) {
+            int owned = 0;
+            int freeCount = 0;
+            int freePos = -1;
+
+            for (int pos : mill) {
+                if (playerStonesID.contains(pos)) {
+                    owned++;
+                } else {
+                    Node node = BoardManager.getInstance().getNode(pos);
+                    if (!node.isOccupied()) {
+                        freeCount++;
+                        freePos = pos;
+                    }
+                }
+            }
+
+            if (owned == 2 && freeCount == 1) {
+                playerAlmostMills.add(freePos);
+            }
+        }
+
+        return playerAlmostMills;
     }
 
     protected Node[] clusterMove(List<Node[]> playerMoves, ImaginativePlayer player) {
@@ -181,7 +219,7 @@ public abstract class DifficultyStrategy {
 
         BoardManager boardManager = BoardManager.getInstance();
 
-        int[][] cornerPairs = { { 0, 23 }, { 2, 21 }, { 3, 20 }, { 5, 18 }, { 6, 17 }, { 18, 15 } };
+        int[][] cornerPairs = { { 0, 23 }, { 2, 21 }, { 3, 20 }, { 5, 18 }, { 6, 17 }, { 8, 15 } };
 
         for (int[] pair : cornerPairs) {
             int corner0 = pair[0];
@@ -301,6 +339,46 @@ public abstract class DifficultyStrategy {
                         return new Node[] { fromNode, toNode };
                     }
                 }
+            }
+        }
+
+        return null;
+    }
+
+    protected Node[] openMill(List<Node[]> playerMoves, ImaginativePlayer player, ImaginativePlayer opponent) {
+        if (player.getPhase() instanceof SettingPhase) {
+            return null;
+        }
+
+        // Extract moves from player which move a stone out of a mill
+        List<Node[]> fromMillMoves = new ArrayList<>();
+        for (Node[] move : playerMoves) {
+            for (int[] mill : BoardManager.getInstance().potentialMills) {
+                boolean isMill = false;
+                for (int pos : mill) {
+                    Node node = BoardManager.getInstance().getNode(pos);
+                    if (node.isOccupied() && node.getStone().getOwner().getName() == player.getName()) {
+                        isMill = true;
+                    }
+                }
+                if (isMill) {
+                    fromMillMoves.add(move);
+                }
+            }
+        }
+
+        // Return a move which does not have stone from the opponent as a neighbor to
+        // the target node
+        for (Node[] move : fromMillMoves) {
+            List<Node> neighbors = move[0].getNeighbors();
+            boolean opponentNeighbor = false;
+            for (Node neighbor : neighbors) {
+                if (neighbor.isOccupied() && neighbor.getStone().getOwner().getName() == opponent.getName()) {
+                    opponentNeighbor = true;
+                }
+            }
+            if (!opponentNeighbor) {
+                return move;
             }
         }
 

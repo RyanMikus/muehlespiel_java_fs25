@@ -15,6 +15,7 @@ public class HardDifficulty extends DifficultyStrategy {
                 entry("blockZwickmill", () -> blockZwickmill(playerMoves, opponentMoves, player, opponent)),
                 entry("blockBeginnerTrap", () -> blockBeginnerTrap(playerMoves, player)),
                 entry("clusterMove", () -> clusterMove(playerMoves, player)),
+                entry("openMill", () -> openMill(playerMoves, player, opponent)),
                 entry("randomMove", () -> randomMove(playerMoves)));
     }
 
