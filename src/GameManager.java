@@ -79,14 +79,14 @@ public class GameManager {
     public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
             this.playerMove = move;
-            synchronized(this) {
+            synchronized (this) {
                 this.notify();
             }
         });
 
         guiBoard.setRemoveListener(move -> {
             this.playerRemove = move;
-            synchronized(this) {
+            synchronized (this) {
                 this.notify();
             }
         });
@@ -206,7 +206,7 @@ public class GameManager {
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
 
-            //System.out.println("runGame200 ---- updateGUI");
+            // System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -237,7 +237,7 @@ public class GameManager {
 
                 guiManager.getGuiBoard().setRemoveMode(false);
 
-                //System.out.println("runGame231 ---- updateGUI");
+                // System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
 
@@ -268,7 +268,7 @@ public class GameManager {
         if (isPlayer) {
             playerMove = null;
 
-            synchronized(this) {
+            synchronized (this) {
                 while (playerMove == null) {
                     try {
                         this.wait();
@@ -298,7 +298,7 @@ public class GameManager {
         if (isPlayer) {
             playerRemove = null;
 
-            synchronized(this) {
+            synchronized (this) {
                 while (playerRemove == null) {
                     try {
                         this.wait();
@@ -620,7 +620,7 @@ public class GameManager {
         currentPlayer = opponent;
         opponent = getOpponent();
 
-        //System.out.println("loadMove ---- updateGUI");
+        // System.out.println("loadMove ---- updateGUI");
         boardManager.notifyObservers();
         updateGamePrompt();
 
