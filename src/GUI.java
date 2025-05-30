@@ -933,6 +933,10 @@ public class GUI implements Observer {
         this.mode = mode;
     }
 
+    public void setDifficulty(DifficultyStrategy difficulty) {
+        this.difficulty = difficulty;
+    }
+
     /**
      * This method gets called, whenever the board gets updated (by its observable).
      * Repaints the GUI.

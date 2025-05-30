@@ -69,7 +69,7 @@ public class GamePersistenceManager {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(targetFile)) {
             gson.toJson(gameState, writer);
-        } catch (IOException e) {
+        } catch (IOException _) {
             throw new JsonIOException("Writing data to JSON failed!");
         }
     }
@@ -158,7 +158,7 @@ public class GamePersistenceManager {
             // Read data from File
             Gson gson = new Gson();
             return gson.fromJson(reader, GameStateData.class);
-        } catch (IOException e) {
+        } catch (IOException _) {
             throw new JsonIOException("Reading data from JSON failed");
         }
     }
@@ -182,13 +182,14 @@ public class GamePersistenceManager {
             player = new Player(data.name);
         } else {
             player = new CPUPlayer(data.name, opponentIfCPU);
-
-            switch (data.difficulty) {
-                case EASY -> ((CPUPlayer) player).setDifficulty(new EasyDifficulty());
-                case MEDIUM -> ((CPUPlayer) player).setDifficulty(new MediumDifficulty());
-                case HARD -> ((CPUPlayer) player).setDifficulty(new HardDifficulty());
+            DifficultyStrategy loadedDifficulty = switch (data.difficulty) {
+                case EASY -> new EasyDifficulty();
+                case MEDIUM -> new MediumDifficulty();
+                case HARD -> new HardDifficulty();
                 default -> throw new IllegalStateException("Invalid difficulty: " + data.difficulty);
-            }
+            };
+            ((CPUPlayer) player).setDifficulty(loadedDifficulty);
+            GUI.getInstance().setDifficulty(loadedDifficulty);
         }
 
         player.placedStones = data.placedStones;

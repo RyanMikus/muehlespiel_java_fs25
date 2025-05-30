@@ -2,6 +2,15 @@ import java.awt.*;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Manages the game flow, including player turns, moves, and game state.
+ * <p>
+ * This class is a singleton and provides methods to start, run, and reset the game,
+ * as well as to handle player moves and game over conditions.
+ * <p>
+ * It also manages the game timer and provides functionality for saving and loading
+ * game states.
+ */
 public class GameManager {
     // region Fields
     // Managers
@@ -11,40 +20,38 @@ public class GameManager {
     private final GUI guiManager;
     private History history;
     private GamePersistenceManager persistenceManager;
+    private TurnTimer timer;
 
     // Players
     private PlayerEntity playerWhite;
     private PlayerEntity playerBlack;
     private PlayerEntity currentPlayer;
-    private PlayerEntity opponent;
-
-    // Copys
-    private PlayerEntity currentPlayerCopy;
-    private PlayerEntity opponentCopy;
-    private Map<Integer, Node> boardCopy;
-
-    public enum LossCause {
-        NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
-    }
-
-    public LossCause lossCause = LossCause.NONE;
-
-    private boolean gameStatus; // true when game is running
     private volatile Node[] playerMove; // Store current move input
     private volatile Node playerRemove; // Store removal move input
 
-    private Thread gameThread;
-    private String mode;
+    private Map<Integer, Node> boardCopy;
+
+    // Loss Cause
+    public enum LossCause {
+        NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
+    }
+    public LossCause lossCause = LossCause.NONE;
     private PlayerEntity winner;
-    private int noMillTurnCounter = 0;
+
+    // Game State
+    private Thread gameThread;
+    private boolean gameStatus; // true when game is running
+    private String mode;
     private int timePerTurn = 30;
-    private TurnTimer timer;
+    private int noMillTurnCounter = 0;
+    public static final String WHITE_NAME = "white";
     // endregion
 
     // region Initialization
 
     /**
-     * Initialize managers
+     * Private constructor to enforce singleton pattern.
+     * Initializes managers and sets up the game state.
      */
     private GameManager() {
         boardManager = BoardManager.getInstance();
@@ -56,9 +63,11 @@ public class GameManager {
     }
 
     /**
-     * Creates a new Instance of this Manager, if there is none already.
+     * Returns the singleton instance of {@code GameManager}.
+     * <p>
+     * If the instance is not yet created, it initializes a new one.
      *
-     * @return Instance if one already existed, creates a new one otherwise.
+     * @return The singleton instance of GameManager.
      */
     public static GameManager getInstance() {
         if (instance == null) {
@@ -68,9 +77,12 @@ public class GameManager {
     }
 
     /**
-     * Registers a listener in the GUI that receives completed player moves.
+     * Initializes listeners for player moves and removals on the provided GUI board.
      * <p>
-     * When a move is received, it stores it and wakes up the waiting game loop.
+     * This method sets up the move and remove listeners on the {@link GUIBoard} to
+     * capture player input.
+     *
+     * @param guiBoard The GUI board to which the listeners should be attached.
      */
     public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
@@ -96,24 +108,22 @@ public class GameManager {
      * Gets called when the startbutton gets pressed and initializes the game in a
      * separate thread.
      * <p>
-     * Creates players according to chosen mode and sets the gameStatus to true,
+     * Creates players according to chosen {@code mode} and sets the {@code gameStatus} to {@code true},
      * indicating the game is running.
      * <p>
      * Adds an initial move to the history allowing to undo until the very start of
      * the game.
      *
      * @param mode       Can either be Singleplayer (Player and CPU) or Multiplayer
-     *                   (Two
-     *                   players).
-     * @param difficulty
+     *                   (Two players).
+     * @param difficulty The difficulty of the CPU player in Singleplayer mode.
      */
     public void startGame(String mode, DifficultyStrategy difficulty) {
-        System.out.format("-- Starting game in mode: %s --\n\n", mode);
         this.mode = mode;
 
         // Starting Singleplayer mode with a Player and a CPUPlayer
         if (mode.equalsIgnoreCase("singleplayer")) {
-            playerWhite = new Player("white");
+            playerWhite = new Player(WHITE_NAME);
             playerBlack = new CPUPlayer("black", playerWhite);
             ((CPUPlayer) playerBlack).setDifficulty(difficulty);
             gameStatus = true;
@@ -122,7 +132,7 @@ public class GameManager {
         }
         // Starting Multiplayer mode with 2 Players
         else if (mode.equalsIgnoreCase("multiplayer")) {
-            playerWhite = new Player("white");
+            playerWhite = new Player(WHITE_NAME);
             playerBlack = new Player("black");
             gameStatus = true;
             currentPlayer = playerWhite;
@@ -175,23 +185,14 @@ public class GameManager {
         Node[] move;
         Node remove;
 
-        int round = 1;
-
         while (gameStatus) {
-            // System.out.println("\n[GAMEMANAGER] runGame Runde " + round + " gestartet");
-
-            // System.out.println("[GAMEMANAGER] Aktuelles Board: ");
-            // boardManager.printBoard(boardManager.getBoard());
-
             boolean isPlayer = currentPlayer instanceof Player;
-
-            // update game prompt
-            updateGamePrompt();
+            GUIPrompt.updateGamePrompt(currentPlayer, WHITE_NAME);
 
             // Handle moves of players
             move = getMoveInput(isPlayer);
 
-            if (move == null) {
+            if (move.length == 0) {
                 System.out.println("[INFO] - Game thread interrupted during move input.");
                 return;
             }
@@ -202,7 +203,6 @@ public class GameManager {
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
 
-            // System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -210,13 +210,8 @@ public class GameManager {
 
             // Handle removal of stones
             int millCount = ruleManager.countMillsFormed(toNode.getStone());
-            if (millCount > 0) {
-                System.out.println("[" + (currentPlayer.getName().equalsIgnoreCase("white")
-                        ? "WHITE"
-                        : "BLACK") + "] - Formed " + millCount + " " + ((millCount == 1) ? "mill" : "mills"));
-            }
             while (millCount > 0) {
-                updateRemovePrompt();
+                GUIPrompt.updateRemovePrompt(currentPlayer, WHITE_NAME);
                 noMillTurnCounter = 0;
                 guiManager.getGuiBoard().setRemoveMode(true);
                 remove = getRemoveInput(isPlayer);
@@ -232,11 +227,8 @@ public class GameManager {
                 }
 
                 guiManager.getGuiBoard().setRemoveMode(false);
-
-                // System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
-
             }
 
             if (ruleManager.isGameOver(playerWhite, playerBlack)) {
@@ -246,19 +238,17 @@ public class GameManager {
 
             saveMove();
             switchPlayer();
-            round++;
         }
     }
 
     /**
-     * Helpermethod for the runGame-Method.
+     * Helpermethod for {@link #runGame()}.
      * <p>
      * Waits for a valid player input (via drag & drop) or performs the CPU move.
      *
-     * @param isPlayer true if the current player is human, false if it's a
+     * @param isPlayer {@code true} if the current player is human, {@code false} if it's a
      *                 CPUPlayer.
      * @return A Node array [fromNode, toNode], or null if interrupted
-     * @see #runGame()
      */
     private Node[] getMoveInput(boolean isPlayer) {
         if (isPlayer) {
@@ -268,9 +258,9 @@ public class GameManager {
                 while (playerMove == null) {
                     try {
                         this.wait();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException _) {
                         Thread.currentThread().interrupt();
-                        return null;
+                        return new Node[0];
                     }
                 }
             }
@@ -281,14 +271,13 @@ public class GameManager {
     }
 
     /**
-     * Helpermethod for the runGame-Method.
+     * Helpermethod for {@link #runGame()}
      * <p>
      * Waits for the selection of an opponent's stone to remove, or lets the CPU
      * automatically choose a stone to remove.
      *
      * @param isPlayer true if the current player is human
      * @return The Node selected for removal, or null if interrupted
-     * @see #runGame()
      */
     private Node getRemoveInput(boolean isPlayer) {
         if (isPlayer) {
@@ -298,7 +287,7 @@ public class GameManager {
                 while (playerRemove == null) {
                     try {
                         this.wait();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException _) {
                         Thread.currentThread().interrupt();
                         return null;
                     }
@@ -311,16 +300,12 @@ public class GameManager {
     }
 
     /**
-     * Switches the current player, that can perform moves.
-     * Resets and starts the timer again for the next player.
+     * Switches the current player to the opponent.
+     * <p>
+     * Updates the timer for the new current player and resets the timer.
      */
     public void switchPlayer() {
         currentPlayer = getOpponent();
-
-        if (currentPlayer.getName().equalsIgnoreCase("white")) {
-            System.out.println("[INFO] - Turns without mill: " + noMillTurnCounter + "\n");
-        }
-
         guiManager.updateTimer(timePerTurn);
         timer.resetTimer();
     }
@@ -345,7 +330,6 @@ public class GameManager {
         stopTurnTimer();
         gameStatus = false;
         guiManager.showGameOverMsg(winner, winner == currentPlayer ? getOpponent() : currentPlayer);
-        System.out.println("-- Ending Game --");
     }
 
     /**
@@ -364,12 +348,6 @@ public class GameManager {
      * @see #runGame()
      */
     public void resetGame() {
-        /*
-         * if(!gameStatus) {
-         * return;
-         * }
-         */
-
         stopTurnTimer();
         gameStatus = false;
         noMillTurnCounter = 0;
@@ -387,10 +365,8 @@ public class GameManager {
         guiManager.reset();
 
         System.out.println("Everything reset");
-        if (!(gameThread == null)) {
-            if (gameThread.isAlive()) {
-                gameThread.interrupt();
-            }
+        if (gameThread != null && gameThread.isAlive()) {
+            gameThread.interrupt();
         }
 
     }
@@ -446,15 +422,6 @@ public class GameManager {
      */
     public void setTimePerTurn(int timePerTurn) {
         this.timePerTurn = timePerTurn;
-    }
-
-    /**
-     * Getter for the ruleManager.
-     *
-     * @return The RuleManager-Instance.
-     */
-    public RuleManager getRuleManager() {
-        return ruleManager;
     }
 
     /**
@@ -526,7 +493,6 @@ public class GameManager {
                 loadMove(lastMove);
             }
         }
-
     }
 
     /**
@@ -550,7 +516,6 @@ public class GameManager {
                 loadMove(nextMove);
             }
         }
-
     }
 
     /**
@@ -563,7 +528,7 @@ public class GameManager {
         int placedStonesWhite = playerWhite.getPlacedStones();
         int placedStonesBlack = playerBlack.getPlacedStones();
         boardCopy = boardManager.copyBoard(getCurrentPlayer(), getOpponent());
-        boolean currentIsWhite = !(currentPlayer.getName().equalsIgnoreCase("white"));
+        boolean currentIsWhite = !(currentPlayer.getName().equalsIgnoreCase(WHITE_NAME));
         GamePhase phaseWhite = playerWhite.getPhase();
         GamePhase phaseBlack = playerBlack.getPhase();
 
@@ -576,18 +541,17 @@ public class GameManager {
      * Resets all Parameters that got changed after performing a move.
      *
      * @param move The move that should be loaded. Can be an undo or redo move.
+     * @throws IllegalArgumentException if the move is null.
      * @see #undoMove()
      * @see #redoMove()
      */
     public void loadMove(Move move) {
         if (move == null) {
-            System.out.println("[FATAL] loadMove wurde mit null aufgerufen – verbotener Pfad!");
-            new Exception().printStackTrace(); // <-- zeigt dir die Stelle
-            return;
+            throw new IllegalArgumentException("[FATAL] loadMove wurde mit null aufgerufen – verbotener Pfad!");
         }
 
         currentPlayer = (move.getCurrentIsWhite() ? playerWhite : playerBlack);
-        opponent = getOpponent();
+        PlayerEntity opponent = getOpponent();
 
         // 1. Restore the Board
         Map<Integer, Node> boardFromMove = move.getBoardSnapshot();
@@ -619,13 +583,8 @@ public class GameManager {
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
 
-        // 5. switch the Players...why?
-        //currentPlayer = opponent;
-        //opponent = getOpponent();
-
         boardManager.notifyObservers();
-        updateGamePrompt();
-
+        GUIPrompt.updateGamePrompt(currentPlayer, WHITE_NAME);
     }
 
     // endregion
@@ -703,70 +662,4 @@ public class GameManager {
 
     }
     // endregion
-
-    // for UndoRedotest
-    public void setCurrentPlayer(PlayerEntity player) {
-        currentPlayer = player;
-    }
-
-    public void setOpponent(PlayerEntity player) {
-        opponent = player;
-    }
-
-    public void setTurnTimer(TurnTimer timer2) {
-        timer = timer2;
-    }
-
-    // region GUI Update
-    public void updateGamePrompt() {
-        String text = "";
-
-        // player text
-        if (currentPlayer.getName().equalsIgnoreCase("white")) {
-            text += "Weiss: ";
-        } else {
-            text += "Schwarz: ";
-        }
-
-        switch (currentPlayer.getPhase().getClass().getSimpleName()) {
-            case "SettingPhase":
-                text += "Stein setzen";
-                break;
-
-            case "MovingPhase":
-                text += "Stein ziehen";
-                break;
-
-            case "JumpingPhase":
-                text += "Stein bewegen (Sprung erlaubt)";
-                break;
-
-            case "GameOverPhase":
-
-                break;
-
-            default:
-                break;
-        }
-        guiManager.updateStatus(text, new Color(255, 230, 0));
-    }
-
-    public void updateErrorPrompt(String text) {
-        guiManager.updateStatus(text, new Color(255, 0, 0));
-    }
-
-    public void updateRemovePrompt() {
-        String text = "";
-
-        // player text
-        if (currentPlayer.getName().equalsIgnoreCase("white")) {
-            text = "Mühle Weiss : Stein entfernen";
-        } else {
-            text = "Mühle Schwarz : Stein entfernen";
-        }
-
-        guiManager.updateStatus(text, new Color(0, 153, 255));
-    }
-
-    // enregion
 }

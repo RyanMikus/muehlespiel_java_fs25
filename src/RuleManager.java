@@ -34,7 +34,7 @@ public class RuleManager {
             if (!fromNode.isOccupied()) {
                 errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
                 if (gameManager.getCurrentPlayer() instanceof Player) {
-                    gameManager.updateErrorPrompt("Wähle ein Feld mit einem eigenen Stein.");
+                    GUIPrompt.updateErrorPrompt("Wähle ein Feld mit einem eigenen Stein.");
                 }
             }
 
@@ -42,7 +42,7 @@ public class RuleManager {
                 errors += "The stone on node (id=" + fromNode.getID()
                         + ") does not belong to the player whose turn it is (" + player.getName() + "!\n";
                 if (gameManager.getCurrentPlayer() instanceof Player) {
-                    gameManager.updateErrorPrompt("Du kannst nur deine eigenen Steine bewegen.");
+                    GUIPrompt.updateErrorPrompt("Du kannst nur deine eigenen Steine bewegen.");
                 }
             }
 
@@ -50,14 +50,14 @@ public class RuleManager {
         if (fromNode == toNode && !(player.getPhase() instanceof SettingPhase)) {
             errors += "You can not place a stone onto itself!\n";
             if (gameManager.getCurrentPlayer() instanceof Player) {
-                gameManager.updateErrorPrompt("Du kannst keinen Stein auf dasselbe Feld setzen.");
+                GUIPrompt.updateErrorPrompt("Du kannst keinen Stein auf dasselbe Feld setzen.");
             }
         }
 
         if (fromNode != toNode && toNode.isOccupied()) {
             errors += "You can not place a stone onto another stone!\n";
             if (gameManager.getCurrentPlayer() instanceof Player) {
-                gameManager.updateErrorPrompt("Dieses Feld ist bereits besetzt.");
+                GUIPrompt.updateErrorPrompt("Dieses Feld ist bereits besetzt.");
             }
 
         }
@@ -72,7 +72,7 @@ public class RuleManager {
                 errors += "Can only move to neighbors! A stone can not be moved from " + fromNode.getID() + " to "
                         + toNode.getID() + "!\n";
                 if (gameManager.getCurrentPlayer() instanceof Player) {
-                    gameManager.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");
+                    GUIPrompt.updateErrorPrompt("Du darfst nur auf benachbarte Felder ziehen.");
                 }
 
             }
@@ -82,14 +82,14 @@ public class RuleManager {
         } else if (currentPhase instanceof GameOverPhase) {
             errors += "Game is already over. You must not make moves!";
             if (gameManager.getCurrentPlayer() instanceof Player) {
-                gameManager.updateErrorPrompt("Das Spiel ist bereits vorbei.");
+                GUIPrompt.updateErrorPrompt("Das Spiel ist bereits vorbei.");
             }
 
         } else {
             errors += "Player is not in a legal phase! Player " + player.getName() + " is in phase "
                     + player.getPhase().getClass().getSimpleName() + "\n";
             if (gameManager.getCurrentPlayer() instanceof Player) {
-                gameManager.updateErrorPrompt("Ungültige Spielphase für " + player.getName() + ".");
+                GUIPrompt.updateErrorPrompt("Ungültige Spielphase für " + player.getName() + ".");
             }
 
         }

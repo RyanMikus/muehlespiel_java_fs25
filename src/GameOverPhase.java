@@ -1,22 +1,15 @@
+/**
+ * Represents the game over phase in the game.
+ * This phase is active when the game has ended.
+ */
 public class GameOverPhase extends GamePhase {
     /**
-     * Sets the context.
+     * Constructor for GameOverPhase.
+     * Initializes the game over phase with the specified player entity.
      *
-     * @param playerEntity Context that uses the phase.
+     * @param playerEntity The player entity associated with this game phase.
      */
     public GameOverPhase(PlayerEntity playerEntity) {
         super(playerEntity);
     }
-
-    /**
-     * Creates a deep copy of this GameOverPhase with a new player context.
-     *
-     * @param newOwner The copied player to whom this phase should belong.
-     * @return A new instance of GameOverPhase assigned to the specified player.
-     */
-    @Override
-    public GamePhase deepCopy(PlayerEntity newOwner) {
-        return new GameOverPhase(newOwner);
-    }
-
 }

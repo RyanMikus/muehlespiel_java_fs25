@@ -138,7 +138,7 @@ public class GUIBoard extends JPanel {
                         //System.out.println("  MR - Current Player -> " + currentPlayer.getName());
 
                         // Check if move is valid
-                        if (gameManager.getRuleManager().isMoveValid(currentPlayer, fromNode, toNode)) {
+                        if (RuleManager.getInstance().isMoveValid(currentPlayer, fromNode, toNode)) {
                             // debug
                             //System.out.println("   MR - Move was valid");
                             //System.out.println("    MR - Handle Move.. Player Phase -> " + currentPlayer.getPhase().getClass().getSimpleName());
