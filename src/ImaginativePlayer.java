@@ -25,14 +25,14 @@ public class ImaginativePlayer extends PlayerEntity {
             for (int i = 0; i <= 23; i++) {
                 Node node = BoardManager.getInstance().getNode(i);
                 if (ruleManager.isMoveValid(this, null, node)) {
-                    possibleMoves.add(new Node[] { null, node });
+                    possibleMoves.add(new Node[]{null, node});
                 }
             }
         } else if (this.getPhase() instanceof MovingPhase) {
             for (Stone stone : this.getRemainingStones()) {
                 for (Node neighbor : stone.getNode().getNeighbors()) {
                     if (ruleManager.isMoveValid(this, stone.getNode(), neighbor)) {
-                        possibleMoves.add(new Node[] { stone.getNode(), neighbor });
+                        possibleMoves.add(new Node[]{stone.getNode(), neighbor});
                     }
                 }
             }
@@ -41,7 +41,7 @@ public class ImaginativePlayer extends PlayerEntity {
                 for (int i = 0; i <= 23; i++) {
                     Node node = BoardManager.getInstance().getNode(i);
                     if (ruleManager.isMoveValid(this, stone.getNode(), node)) {
-                        possibleMoves.add(new Node[] { stone.getNode(), node });
+                        possibleMoves.add(new Node[]{stone.getNode(), node});
                     }
                 }
             }
@@ -58,21 +58,5 @@ public class ImaginativePlayer extends PlayerEntity {
             }
         }
         return possibleRemovals;
-    }
-
-    @Override
-    public PlayerEntity deepCopy() {
-        return null;
-    }
-
-    @Override
-    public void setPlayer(PlayerEntity player) {
-        this.name = player.getName();
-        this.stones.clear();
-        for (Stone stone : player.getRemainingStones()) {
-            this.stones.add(stone.deepCopy(this));
-        }
-        this.currentPhase = player.getPhase().deepCopy(this);
-        this.placedStones = player.placedStones;
     }
 }

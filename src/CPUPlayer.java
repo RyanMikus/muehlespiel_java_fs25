@@ -1,30 +1,67 @@
+/**
+ * Represents a CPU player in the game, which operates based on a specific strategy.
+ * The CPU player uses a provided difficulty strategy to calculate its move and removal operations.
+ * It simulates actions as if it were a human player, with a slight delay to mimic real-time decisions.
+ */
 public class CPUPlayer extends PlayerEntity {
     private DifficultyStrategy strategy;
     private PlayerEntity opponent;
 
+    /**
+     * Constructs a CPU player with the specified name and an opposing player.
+     * The CPU player uses its strategy to calculate moves and removals during gameplay.
+     *
+     * @param name     The name of the CPU player.
+     * @param opponent The opponent player that the CPU player will compete against.
+     */
     public CPUPlayer(String name, PlayerEntity opponent) {
         super(name);
         this.opponent = opponent;
         this.strategy = null;
     }
 
+    /**
+     * Calculates the next move for the current CPU player based on the defined strategy.
+     * This method creates imaginative representations of the CPU player and its opponent
+     * to simulate possible moves and evaluate them using the assigned strategy.
+     * <p>
+     * To mimic the behavior of a human player, the method includes a delay before
+     * determining and returning the calculated move.
+     * <p>
+     * If the sleeping thread is interrupted, an informational message is logged,
+     * and the method returns null.
+     *
+     * @return An array of Node objects representing the calculated move, or null if
+     * the process is interrupted.
+     */
     public Node[] makeMove() {
-        RuleManager ruleManager = RuleManager.getInstance();
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this);
         ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent);
-        // strategy.buildGameTree(imaginativeSelf, imaginativeOpponent);
         Node[] calculatedMove = strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
         try {
             Thread.sleep(800);
         } catch (InterruptedException e) {
             System.out.println("[INFO] - Sleep interrupted, exiting early.");
-            return null;
+            return new Node[0];
         }
         return calculatedMove;
     }
 
+    /**
+     * Calculates the next removal action for the current CPU player based on the defined strategy.
+     * This method creates imaginative representations of the CPU player and its opponent
+     * to simulate possible removal scenarios and evaluate them using the assigned strategy.
+     * <p>
+     * To mimic the behavior of a human player, the method includes a delay before
+     * determining and returning the calculated removal.
+     * <p>
+     * If the sleeping thread is interrupted, an informational message is logged,
+     * and the method returns null.
+     *
+     * @return A Node object representing the calculated removal action, or null if
+     * the process is interrupted.
+     */
     public Node makeRemove() {
-        RuleManager ruleManager = RuleManager.getInstance();
         ImaginativePlayer imaginativeSelf = new ImaginativePlayer(this);
         ImaginativePlayer imaginativeOpponent = new ImaginativePlayer(opponent);
         Node calculatedRemoval = strategy.calculateRemoval(imaginativeSelf, imaginativeOpponent);
@@ -37,74 +74,23 @@ public class CPUPlayer extends PlayerEntity {
         return calculatedRemoval;
     }
 
+    /**
+     * Sets the difficulty level of the CPU player by assigning a new strategy.
+     * The strategy determines how the CPU player calculates moves and removals during gameplay.
+     *
+     * @param strategy The difficulty strategy to be applied to the CPU player's behavior.
+     */
     public void setDifficulty(DifficultyStrategy strategy) {
         this.strategy = strategy;
-        //System.out.println("set Strategy : " + strategy.getClass().getSimpleName());
     }
 
-    public DifficultyStrategy getStrategy() {
+    /**
+     * Retrieves the difficulty strategy currently assigned to the CPU player.
+     * The difficulty strategy determines how the CPU player makes decisions during gameplay.
+     *
+     * @return The DifficultyStrategy assigned to the CPU player.
+     */
+    public DifficultyStrategy getDifficulty() {
         return strategy;
-    }
-
-    @Override
-    public PlayerEntity deepCopy() {
-        // System.out.println("[DEBUG] Starte Kopiervorgang für Spieler: " + this.name);
-        PlayerEntity opponentCopy = opponent.deepCopy();
-        // 1. Neuen Spieler mit gleichem Namen erzeugen
-        CPUPlayer copy = new CPUPlayer(this.name, opponentCopy);
-        // System.out.println("[DEBUG] Neuer Spieler erstellt mit Name: " + copy.name);
-
-        // 2. Steine tief kopieren (falls Liste nicht null)
-        if (this.stones != null) {
-            // System.out.println("[DEBUG] Kopiere " + this.stones.size() + " Steine für
-            // Spieler: " + this.name);
-            for (int i = 0; i < this.stones.size(); i++) {
-                Stone originalStone = this.stones.get(i);
-                if (originalStone != null) {
-                    Stone copiedStone = originalStone.deepCopy(copy); // ← Kopie erzeugen
-                    copy.addStone(copiedStone); // ← Kopie dem neuen Spieler hinzufügen
-                    // System.out.println("[DEBUG] -> Stein " + i + " kopiert: " + originalStone + "
-                    // → " + copiedStone);
-                } else {
-                    // System.out.println("[WARN] -> Stein " + i + " war null und wurde
-                    // übersprungen.");
-                }
-            }
-        } else {
-            // System.out.println("[WARN] Steine-Liste war null bei Spieler " + this.name);
-        }
-
-        // 3. Phase tief kopieren, falls vorhanden
-        if (this.currentPhase != null) {
-            // System.out.println("[DEBUG] Kopiere Phase: " +
-            // this.currentPhase.getClass().getSimpleName());
-            GamePhase copiedPhase = this.currentPhase.deepCopy(copy);
-            copy.setPhase(copiedPhase);
-        } else {
-            // System.out.println("[WARN] Phase war null bei Spieler " + this.name);
-            copy.setPhase(null);
-        }
-
-        // 4. Platzierte Steine übernehmen
-        copy.placedStones = this.placedStones;
-        // System.out.println("[DEBUG] Platzierte Steine übernommen: " +
-        // this.placedStones);
-
-        // 5. Abschluss
-        // System.out.println("[DEBUG] Kopiervorgang für Spieler '" + this.name + "'
-        // abgeschlossen.\n");
-
-        return copy;
-    }
-
-    @Override
-    public void setPlayer(PlayerEntity player) {
-        this.name = player.getName();
-        this.stones.clear();
-        for (Stone stone : player.getRemainingStones()) {
-            this.stones.add(stone.deepCopy(this));
-        }
-        this.currentPhase = player.getPhase().deepCopy(this);
-        this.placedStones = player.placedStones;
     }
 }

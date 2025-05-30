@@ -99,15 +99,6 @@ public abstract class PlayerEntity {
         this.placedStones = placedStones;
     }
 
-    /**
-     * Creates a deep Copy of a Player inclusive Stones and Phase.
-     *
-     * @return Deep Copy of a new Player
-     */
-    public abstract PlayerEntity deepCopy();
-
-    public abstract void setPlayer(PlayerEntity player);
-
     public void printCopy() {
         //System.out.printf(" Player %s | %s | %d\n", this.name, this.currentPhase.getClass().getSimpleName(), this.placedStones);
         for (Stone stone : this.stones) {
