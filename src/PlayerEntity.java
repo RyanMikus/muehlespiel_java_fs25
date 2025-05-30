@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,18 +95,22 @@ public abstract class PlayerEntity {
     }
 
 
+    public void setPlacedStones(int placedStones) {
+        this.placedStones = placedStones;
+    }
+
     /**
      * Creates a deep Copy of a Player inclusive Stones and Phase.
-     * 
+     *
      * @return Deep Copy of a new Player
      */
     public abstract PlayerEntity deepCopy();
 
     public abstract void setPlayer(PlayerEntity player);
 
-    public void printCopy(){
+    public void printCopy() {
         //System.out.printf(" Player %s | %s | %d\n", this.name, this.currentPhase.getClass().getSimpleName(), this.placedStones);
-        for(Stone stone : this.stones){
+        for (Stone stone : this.stones) {
             //System.out.printf("Stone ID : %d | Node : %d |Owner : %s\n", stone.getNode().getID(),stone.getNode().getID(), stone.getOwner().getName());
         }
     }

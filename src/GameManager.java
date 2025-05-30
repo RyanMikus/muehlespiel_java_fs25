@@ -1,10 +1,6 @@
-import java.awt.Color;
-import java.io.*;
-import java.util.HashMap;
+import java.awt.*;
+import java.io.File;
 import java.util.Map;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
 
 public class GameManager {
     // region Fields
@@ -383,8 +379,13 @@ public class GameManager {
         playerRemove = null;
         lossCause = LossCause.NONE;
 
+        // FIX
+        playerWhite.setPlacedStones(0);
+        playerBlack.setPlacedStones(0);
+
         boardManager.reset();
         guiManager.reset();
+
         System.out.println("Everything reset");
         if (!(gameThread == null)) {
             if (gameThread.isAlive()) {

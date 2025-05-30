@@ -1,6 +1,5 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -249,7 +248,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "neues spiel", "spiel laden", "zurück" };
+        String[] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -317,7 +316,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "einzelspieler", "mehrspieler", "zurück" };
+        String[] buttonTexts = {"einzelspieler", "mehrspieler", "zurück"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -375,7 +374,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "leicht", "mittel", "schwer", "zurück" };
+        String[] buttonTexts = {"leicht", "mittel", "schwer", "zurück"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -441,8 +440,8 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
-        String[] buttonTexts = { "auswählen", "zurück" };
-        String[] screenNames = { "", "Menu" };
+        String[] buttonTexts = {"auswählen", "zurück"};
+        String[] screenNames = {"", "Menu"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -568,7 +567,7 @@ public class GUI implements Observer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 5);
 
-        String[] buttonTexts = { "undo", "redo", "speichern", "beenden" };
+        String[] buttonTexts = {"undo", "redo", "speichern", "beenden"};
 
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
@@ -588,7 +587,7 @@ public class GUI implements Observer {
                         }
                         break;
                     case 2:
-                        if(!gameManager.getGameStatus()) {
+                        if (!gameManager.getGameStatus()) {
                             break;
                         }
 
@@ -634,7 +633,7 @@ public class GUI implements Observer {
         return panel;
 
     } // createBoardScreen
-      // endregion
+    // endregion
 
     // region Design
 
@@ -826,6 +825,8 @@ public class GUI implements Observer {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setSize(600, 600);
         dialog.setLocationRelativeTo(null);
+        dialog.setResizable(false);
+
 
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(GAME_OVER_BACKGROUND_COLOR);
@@ -886,12 +887,12 @@ public class GUI implements Observer {
             case STONECOUNT:
                 gifLabel.setIcon(new ImageIcon(winGif));
                 winnerText.setText("Sieger: " + winnerOutput);
-                infoText.setText("Siegursache: " + loserOutput + " hat weniger als 3 Steine");
+                infoText.setText(loserOutput + " hat weniger als 3 Steine");
                 break;
             case BLOCKED:
                 gifLabel.setIcon(new ImageIcon(winGif));
                 winnerText.setText("Sieger: " + winnerOutput);
-                infoText.setText("Siegursache: " + loserOutput + " wurde blockiert. Keine Züge mehr möglich");
+                infoText.setText(loserOutput + " wurde blockiert. Keine Züge mehr möglich");
                 break;
             case STALEMATE:
                 gifLabel.setIcon(new ImageIcon(drawGif));
@@ -901,7 +902,7 @@ public class GUI implements Observer {
             case TIMEOUT:
                 gifLabel.setIcon(new ImageIcon(winGif));
                 winnerText.setText("Sieger: " + winnerOutput);
-                infoText.setText("Siegursache: Spielzeit von " + loserOutput + " abgelaufen");
+                infoText.setText("Spielzeit von " + loserOutput + " abgelaufen");
                 break;
         }
 
