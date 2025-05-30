@@ -134,7 +134,7 @@ public class GameManager {
         // Adding the initial state of the game to the history, allowing to undo until
         boardCopy = boardManager.copyBoard(currentPlayer, getOpponent());
 
-        Move initialMove = new Move(0, 0, boardCopy, 0, timer.getTimeLeft());
+        Move initialMove = new Move(0, 0, boardCopy, true, new SettingPhase(playerWhite), new SettingPhase(playerBlack), 0, timer.getTimeLeft());
         history.addMove(initialMove);
 
         guiManager.update();
@@ -563,8 +563,11 @@ public class GameManager {
         int placedStonesWhite = playerWhite.getPlacedStones();
         int placedStonesBlack = playerBlack.getPlacedStones();
         boardCopy = boardManager.copyBoard(getCurrentPlayer(), getOpponent());
+        boolean currentIsWhite = !(currentPlayer.getName().equalsIgnoreCase("white"));
+        GamePhase phaseWhite = playerWhite.getPhase();
+        GamePhase phaseBlack = playerBlack.getPhase();
 
-        Move move = new Move(placedStonesWhite, placedStonesBlack, boardCopy, noMillTurnCounter, timer.getTimeLeft());
+        Move move = new Move(placedStonesWhite, placedStonesBlack, boardCopy, currentIsWhite, phaseWhite, phaseBlack, noMillTurnCounter, timer.getTimeLeft());
         history.addMove(move);
     }
 
@@ -577,14 +580,13 @@ public class GameManager {
      * @see #redoMove()
      */
     public void loadMove(Move move) {
-
         if (move == null) {
             System.out.println("[FATAL] loadMove wurde mit null aufgerufen – verbotener Pfad!");
             new Exception().printStackTrace(); // <-- zeigt dir die Stelle
             return;
         }
 
-        currentPlayer = getCurrentPlayer();
+        currentPlayer = (move.getCurrentIsWhite() ? playerWhite : playerBlack);
         opponent = getOpponent();
 
         // 1. Restore the Board
@@ -606,22 +608,21 @@ public class GameManager {
         }
 
         // 3. Set the placedStones based on stone list size
-        currentPlayer.placedStones = move.getPlacedStonesWhite();
-        opponent.placedStones = move.getPlacedStonesBlack();
+        playerWhite.placedStones = move.getPlacedStonesWhite();
+        playerBlack.placedStones = move.getPlacedStonesBlack();
 
         // 3. Checks if the Players was in another Phase before saveMove
-        currentPlayer.getPhase().nextPhase();
-        opponent.getPhase().nextPhase();
+        playerWhite.setPhase(move.getPhaseWhite());
+        playerBlack.setPhase(move.getPhaseBlack());
 
         // 4. Restore the primitive Fields
         noMillTurnCounter = move.getNoMillTurnCounter();
         timer.setTimeLeft(move.getTimeLeft());
 
         // 5. switch the Players...why?
-        currentPlayer = opponent;
-        opponent = getOpponent();
+        //currentPlayer = opponent;
+        //opponent = getOpponent();
 
-        // System.out.println("loadMove ---- updateGUI");
         boardManager.notifyObservers();
         updateGamePrompt();
 

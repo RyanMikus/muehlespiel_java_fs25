@@ -10,6 +10,9 @@ public class Move {
     private final int placedStonesWhite;
     private final int placedStonesBlack;
     private final Map<Integer, Node> boardSnapshot;
+    private final boolean currentIsWhite;
+    private final GamePhase phaseWhite;
+    private final GamePhase phaseBlack;
     private final int noMillTurnCounter;
     private final int timeLeft;
     // endregion
@@ -21,10 +24,13 @@ public class Move {
      * @param noMillTurnCounter The number of consecutive turns without a formed mill.
      * @param timeLeft          The remaining time for the move in seconds.
      */
-    public Move(int placedStonesWhite, int placedStonesBlack, Map<Integer, Node> boardSnapshot, int noMillTurnCounter, int timeLeft) {
+    public Move(int placedStonesWhite, int placedStonesBlack, Map<Integer, Node> boardSnapshot, boolean currentIsWhite, GamePhase phaseWhite, GamePhase phaseBlack, int noMillTurnCounter, int timeLeft) {
         this.placedStonesWhite = placedStonesWhite;
         this.placedStonesBlack = placedStonesBlack;
         this.boardSnapshot = boardSnapshot;
+        this.currentIsWhite = currentIsWhite;
+        this.phaseWhite = phaseWhite;
+        this.phaseBlack = phaseBlack;
         this.noMillTurnCounter = noMillTurnCounter;
         this.timeLeft = timeLeft;
     }
@@ -56,6 +62,18 @@ public class Move {
      */
     public Map<Integer, Node> getBoardSnapshot() {
         return boardSnapshot;
+    }
+
+    public boolean getCurrentIsWhite() {
+        return currentIsWhite;
+    }
+
+    public GamePhase getPhaseWhite() {
+        return phaseWhite;
+    }
+
+    public GamePhase getPhaseBlack() {
+        return phaseBlack;
     }
 
     /**

@@ -106,8 +106,8 @@ public class GamePersistenceManager {
     private MoveData toMoveData(Move move) {
         Map<Integer, Integer> board = createBoardSnapshot(move.getBoardSnapshot());
 
-        return new MoveData(move.getPlacedStonesWhite(), move.getPlacedStonesBlack(), board,
-                move.getNoMillTurnCounter(), move.getTimeLeft());
+        return new MoveData(move.getPlacedStonesWhite(), move.getPlacedStonesBlack(), board, move.getCurrentIsWhite(),
+                move.getPhaseWhite().getClass().getSimpleName(), move.getPhaseBlack().getClass().getSimpleName(), move.getNoMillTurnCounter(), move.getTimeLeft());
     }
 
     /**
@@ -242,8 +242,21 @@ public class GamePersistenceManager {
             board.put(id, node);
         }
 
-        return new Move(data.placedStonesWhite, data.placedStonesBlack, board,
+        GamePhase loadedPhaseWhite = fromPhaseData(data.phaseWhite, loadedWhite);
+        GamePhase loadedPhaseBlack = fromPhaseData(data.phaseBlack, loadedBlack);
+
+        return new Move(data.placedStonesWhite, data.placedStonesBlack, board, data.currentIsWhite, loadedPhaseWhite, loadedPhaseBlack,
                 data.noMillTurnCounter, data.timeLeft);
+    }
+
+    private GamePhase fromPhaseData(String phase, PlayerEntity player) {
+        return switch (phase) {
+            case "SettingPhase" -> new SettingPhase(player);
+            case "MovingPhase" -> new MovingPhase(player);
+            case "JumpingPhase" -> new JumpingPhase(player);
+            case "GameOverPhase" -> new GameOverPhase(player);
+            default -> throw new IllegalStateException("Unknown Phase: " + phase);
+        };
     }
 
     // endregion

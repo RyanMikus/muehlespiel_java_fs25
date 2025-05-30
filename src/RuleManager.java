@@ -30,7 +30,7 @@ public class RuleManager {
         // General possible errors
         String errors = "";
 
-        if (fromNode != null) {
+        if (fromNode != null && !(player.getPhase() instanceof SettingPhase)) {
             if (!fromNode.isOccupied()) {
                 errors += "No stone is placed on node (id=" + fromNode.getID() + ")!\n";
                 if (gameManager.getCurrentPlayer() instanceof Player) {
@@ -47,7 +47,7 @@ public class RuleManager {
             }
 
         }
-        if (fromNode == toNode) {
+        if (fromNode == toNode && !(player.getPhase() instanceof SettingPhase)) {
             errors += "You can not place a stone onto itself!\n";
             if (gameManager.getCurrentPlayer() instanceof Player) {
                 gameManager.updateErrorPrompt("Du kannst keinen Stein auf dasselbe Feld setzen.");

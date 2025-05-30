@@ -577,7 +577,7 @@ public class GUI implements Observer {
             button.addActionListener(e -> {
                 switch (buttonIndex) {
                     case 0:
-                        if (!getGuiBoard().getRemoveMode()) {
+                        if (!getGuiBoard().getRemoveMode() && !(gameManager.getCurrentPlayer() instanceof CPUPlayer)) {
                             gameManager.undoMove();
                         }
                         break;
