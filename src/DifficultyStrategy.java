@@ -19,7 +19,7 @@ public abstract class DifficultyStrategy {
         for (Map.Entry<String, Supplier<Node[]>> strategy : strategies) {
             Node[] move = strategy.getValue().get();
             if (move != null) {
-                System.out.println("Strategy used: " + strategy.getKey());
+                System.out.println("[AI] + Strategy used: " + strategy.getKey());
                 return move;
             }
         }
@@ -57,6 +57,9 @@ public abstract class DifficultyStrategy {
         List<Integer> almostMills = findAlmostMills(opponent);
         for (Node[] move : playerMoves) {
             if (almostMills.contains(move[1].getID())) {
+                if (opponent.getPhase() instanceof JumpingPhase) {
+                    return move;
+                }
                 for (Node[] opponentMove : opponentMoves) {
                     if (opponentMove[1].getID() == move[1].getID()) {
                         return move;

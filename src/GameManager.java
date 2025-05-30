@@ -206,7 +206,7 @@ public class GameManager {
             // Perform move according to choices of players
             handleMove(currentPlayer, fromNode, toNode);
 
-            //System.out.println("runGame200 ---- updateGUI");
+            // System.out.println("runGame200 ---- updateGUI");
             boardManager.notifyObservers();
             if (!(currentPlayer.getPhase() instanceof SettingPhase)) {
                 noMillTurnCounter++;
@@ -237,7 +237,7 @@ public class GameManager {
 
                 guiManager.getGuiBoard().setRemoveMode(false);
 
-                //System.out.println("runGame231 ---- updateGUI");
+                // System.out.println("runGame231 ---- updateGUI");
                 boardManager.notifyObservers();
                 millCount--;
 
@@ -655,7 +655,7 @@ public class GameManager {
         currentPlayer = opponent;
         opponent = getOpponent();
 
-        //System.out.println("loadMove ---- updateGUI");
+        // System.out.println("loadMove ---- updateGUI");
         boardManager.notifyObservers();
         updateGamePrompt();
 
@@ -708,7 +708,7 @@ public class GameManager {
                 .collect(Collectors.toList());
 
         DifficultyLevel difficulty = DifficultyLevel.NONE;
-        if(player instanceof CPUPlayer cpuPlayer) {
+        if (player instanceof CPUPlayer cpuPlayer) {
             difficulty = DifficultyLevel.fromStrategyClass(cpuPlayer.getStrategy().getClass());
         }
 
@@ -789,7 +789,7 @@ public class GameManager {
             this.playerWhite = loadedWhite;
             this.playerBlack = loadedBlack;
 
-            if(state.currentIsWhite) {
+            if (state.currentIsWhite) {
                 this.currentPlayer = loadedWhite;
             } else {
                 this.currentPlayer = loadedBlack;
@@ -814,7 +814,8 @@ public class GameManager {
             startTurnTimer();
             boardManager.printBoard(boardManager.getBoard());
 
-            //TODO: Something in the undoMove / loadMove fixes the issue of the wrong board references after loading
+            // TODO: Something in the undoMove / loadMove fixes the issue of the wrong board
+            // references after loading
             // -> implement
             undoMove();
             redoMove();
@@ -846,10 +847,10 @@ public class GameManager {
         } else {
             player = new CPUPlayer(data.name, opponentIfCPU);
 
-            switch(data.difficulty) {
-                case EASY -> ((CPUPlayer)player).setDifficulty(new EasyDifficulty());
-                case MEDIUM -> ((CPUPlayer)player).setDifficulty(new MediumDifficulty());
-                case HARD -> ((CPUPlayer)player).setDifficulty(new HardDifficulty());
+            switch (data.difficulty) {
+                case EASY -> ((CPUPlayer) player).setDifficulty(new EasyDifficulty());
+                case MEDIUM -> ((CPUPlayer) player).setDifficulty(new MediumDifficulty());
+                case HARD -> ((CPUPlayer) player).setDifficulty(new HardDifficulty());
                 default -> throw new IllegalStateException("Invalid difficulty: " + data.difficulty);
             }
         }
@@ -870,7 +871,7 @@ public class GameManager {
             for (Integer nodeId : data.stonePositions) {
                 Stone stone = new Stone(player);
                 player.addStone(stone);
-                boardManager.placeStone(player,stone, boardManager.getNode(nodeId));
+                boardManager.placeStone(player, stone, boardManager.getNode(nodeId));
             }
         }
 
