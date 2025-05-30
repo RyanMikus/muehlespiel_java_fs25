@@ -88,7 +88,7 @@ public class GamePersistenceManager {
 
         DifficultyLevel difficulty = DifficultyLevel.NONE;
         if (player instanceof CPUPlayer cpuPlayer) {
-            difficulty = DifficultyLevel.fromStrategyClass(cpuPlayer.getStrategy().getClass());
+            difficulty = DifficultyLevel.fromStrategyClass(cpuPlayer.getDifficulty().getClass());
         }
 
         return new PlayerData(player.getName(), player.getPhase().getClass().getSimpleName(), player.placedStones,
