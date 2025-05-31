@@ -1,6 +1,11 @@
-import java.util.Map;
 import java.util.Stack;
 
+/**
+ * This class is responsible for managing the history of moves made in the game.
+ * It allows for undoing and redoing moves, as well as storing the current state of the game.
+ * <p>
+ * The history is represented by two stacks: one for undoing moves and another for redoing them.
+ */
 public class History {
     private Stack<Move> undoMoves = new Stack<>();
     private Stack<Move> redoMoves = new Stack<>();
@@ -16,19 +21,6 @@ public class History {
     public void addMove(Move move) {
         undoMoves.push(move);
         clearRedo();
-
-
-//        System.out.println("[HISTORY] Neuer Move gespeichert → UndoStack Größe: " + undoMoves.size());
-//        System.out.println("[HISTORY] Gespeichertes Board mit Knotenreferenzen: ");
-//        Map<Integer, Node> snapshot = move.getBoardSnapshot();
-//        for (Node node : snapshot.values()) {
-//            if (node.getStone() != null) {
-//                String owner = (node.getStone() == null) ? "-" : node.getStone().getOwner().getName();
-//                String line = String.format("ID: %2d, Owner: %s", node.getID(), owner);
-//                System.out.println(line);
-//            }
-//        }
-
     }
 
     /**
@@ -43,7 +35,6 @@ public class History {
         if(undoMoves.size() > 1) {
             Move undoMove = undoMoves.pop();
             redoMoves.push(undoMove);
-            //System.out.println("[HISTORY] - Undo aufgerufen");
             return undoMoves.peek();
         }
         return null;
@@ -61,21 +52,10 @@ public class History {
         if (!redoMoves.empty()) {
             Move redoMove = redoMoves.pop();
             undoMoves.push(redoMove);
-            //System.out.println("[HISTORY] RedoMove aufgerufen → RedoStack Größe danach: " + redoMoves.size());
             return redoMove;
         }
     
-        System.out.println("[HISTORY] RedoMove → Stack war leer");
         return null;
-    }
-
-    /**
-     * Clears the redo stack by removing every element.
-     */
-    public void clearUndo() {
-        if (!undoMoves.isEmpty()) {
-            undoMoves.clear();
-        }
     }
 
     /**
@@ -89,18 +69,20 @@ public class History {
         }
     }
 
-
-    public Move peekUndo() {
-        if (!undoMoves.isEmpty()) {
-            return undoMoves.peek();
-        }
-        return null;
-    }
-
+    /**
+     * Getter for the undo moves stack.
+     *
+     * @return The stack containing the moves that can be undone.
+     */
     public Stack<Move> getUndoMoves() {
         return undoMoves;
     }
 
+    /**
+     * Getter for the redo moves stack.
+     *
+     * @return The stack containing the moves that can be redone.
+     */
     public Stack<Move> getRedoMoves() {
         return redoMoves;
     }

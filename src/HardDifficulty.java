@@ -1,5 +1,10 @@
 import java.util.List;
 
+/**
+ * Represents a strategy for the hard difficulty in the game.
+ * This class extends the DifficultyStrategy to implement complex move calculations
+ * and removal strategies for players.
+ */
 public class HardDifficulty extends DifficultyStrategy {
 
     @Override

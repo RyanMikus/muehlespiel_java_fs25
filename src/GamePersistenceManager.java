@@ -189,7 +189,7 @@ public class GamePersistenceManager {
                 default -> throw new IllegalStateException("Invalid difficulty: " + data.difficulty);
             };
             ((CPUPlayer) player).setDifficulty(loadedDifficulty);
-            GUI.getInstance().setDifficulty(loadedDifficulty);
+            GUI.difficulty = loadedDifficulty;
         }
 
         player.placedStones = data.placedStones;

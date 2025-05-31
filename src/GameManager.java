@@ -213,7 +213,7 @@ public class GameManager {
             while (millCount > 0) {
                 GUIPrompt.updateRemovePrompt(currentPlayer, WHITE_NAME);
                 noMillTurnCounter = 0;
-                guiManager.getGuiBoard().setRemoveMode(true);
+                BoardScreenPanel.guiBoard.setRemoveMode(true);
                 remove = getRemoveInput(isPlayer);
 
                 if (remove == null) {
@@ -226,7 +226,7 @@ public class GameManager {
                     continue;
                 }
 
-                guiManager.getGuiBoard().setRemoveMode(false);
+                BoardScreenPanel.guiBoard.setRemoveMode(false);
                 boardManager.notifyObservers();
                 millCount--;
             }
@@ -329,7 +329,7 @@ public class GameManager {
     public void gameOver() {
         stopTurnTimer();
         gameStatus = false;
-        guiManager.showGameOverMsg(winner, winner == currentPlayer ? getOpponent() : currentPlayer);
+        guiManager.showGameOverMsg(winner);
     }
 
     /**
@@ -639,7 +639,7 @@ public class GameManager {
         noMillTurnCounter = data.noMillTurnCounter;
         timePerTurn = data.timePerTurn;
         mode = data.gameMode;
-        guiManager.setMode(data.gameMode);
+        GUI.mode = data.gameMode;
 
         // Reconstruct history
         history = new History();
