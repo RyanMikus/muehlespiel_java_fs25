@@ -1,14 +1,17 @@
 package persistance;
 
-import boardLogic.*;
-import difficulties.*;
-import phases.*;
-import players.*;
-import view.*;
-
+import boardLogic.BoardManager;
+import boardLogic.Node;
+import boardLogic.Stone;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+import difficulties.*;
+import phases.*;
+import players.CPUPlayer;
+import players.Player;
+import players.PlayerEntity;
+import view.GUI;
 
 import java.io.*;
 import java.util.HashMap;
@@ -77,7 +80,7 @@ public class GamePersistenceManager {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(targetFile)) {
             gson.toJson(gameState, writer);
-        } catch (IOException _) {
+        } catch (IOException e) {
             throw new JsonIOException("Writing data to JSON failed!");
         }
     }
@@ -166,7 +169,7 @@ public class GamePersistenceManager {
             // Read data from File
             Gson gson = new Gson();
             return gson.fromJson(reader, GameStateData.class);
-        } catch (IOException _) {
+        } catch (IOException e) {
             throw new JsonIOException("Reading data from JSON failed");
         }
     }

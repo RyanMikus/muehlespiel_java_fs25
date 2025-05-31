@@ -1,10 +1,16 @@
 package boardLogic;
 
-import difficulties.*;
+import difficulties.DifficultyStrategy;
 import persistance.*;
-import phases.*;
-import players.*;
-import view.*;
+import phases.GamePhase;
+import phases.SettingPhase;
+import players.CPUPlayer;
+import players.Player;
+import players.PlayerEntity;
+import view.BoardScreenPanel;
+import view.GUI;
+import view.GUIBoard;
+import view.GUIPrompt;
 
 import java.io.File;
 import java.util.Map;
@@ -42,6 +48,7 @@ public class GameManager {
     public enum LossCause {
         NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
     }
+
     public LossCause lossCause = LossCause.NONE;
     private PlayerEntity winner;
 
@@ -94,14 +101,14 @@ public class GameManager {
     public void initializeListeners(GUIBoard guiBoard) {
         guiBoard.setMoveListener(move -> {
             this.playerMove = move;
-            synchronized (this) {
+            synchronized(this) {
                 this.notify();
             }
         });
 
         guiBoard.setRemoveListener(move -> {
             this.playerRemove = move;
-            synchronized (this) {
+            synchronized(this) {
                 this.notify();
             }
         });
@@ -261,11 +268,11 @@ public class GameManager {
         if (isPlayer) {
             playerMove = null;
 
-            synchronized (this) {
+            synchronized(this) {
                 while (playerMove == null) {
                     try {
                         this.wait();
-                    } catch (InterruptedException _) {
+                    } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         return new Node[0];
                     }
@@ -290,11 +297,11 @@ public class GameManager {
         if (isPlayer) {
             playerRemove = null;
 
-            synchronized (this) {
+            synchronized(this) {
                 while (playerRemove == null) {
                     try {
                         this.wait();
-                    } catch (InterruptedException _) {
+                    } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         return null;
                     }
@@ -355,7 +362,7 @@ public class GameManager {
      * @see #runGame()
      */
     public void resetGame() {
-        if(gameStatus) {
+        if (gameStatus) {
             playerWhite.setPlacedStones(0);
             playerBlack.setPlacedStones(0);
         }

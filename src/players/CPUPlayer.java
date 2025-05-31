@@ -46,7 +46,7 @@ public class CPUPlayer extends PlayerEntity {
         Node[] calculatedMove = strategy.calculateMove(imaginativeSelf, imaginativeOpponent);
         try {
             Thread.sleep(800);
-        } catch (InterruptedException _) {
+        } catch (InterruptedException e) {
             System.out.println("[INFO] - Sleep interrupted, exiting early.");
             return new Node[0];
         }
@@ -73,7 +73,7 @@ public class CPUPlayer extends PlayerEntity {
         Node calculatedRemoval = strategy.calculateRemoval(imaginativeSelf, imaginativeOpponent);
         try {
             Thread.sleep(400);
-        } catch (InterruptedException _) {
+        } catch (InterruptedException e) {
             System.out.println("[INFO] - Sleep interrupted, exiting early.");
             return null;
         }
