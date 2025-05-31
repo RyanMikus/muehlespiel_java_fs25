@@ -1,12 +1,12 @@
 @startuml
 
-class GameManager{
-- ruleManager : RuleManager
+class boardLogic.GameManager{
+- ruleManager : boardLogic.RuleManager
 - boardManager : Boardmanager
 - guiManager : GUIManager
-- playerWhite : PlayerEntity
-- playerBlack : PlayerEntity
-- currentPlayer : PlayerEntity
+- playerWhite : players.PlayerEntity
+- playerBlack : players.PlayerEntity
+- currentPlayer : players.PlayerEntity
 --
 + startGame()
 + switchPlayer()
@@ -18,7 +18,7 @@ class GameManager{
 + loadGame()
 }
 
-class RuleManager{
+class boardLogic.RuleManager{
 --
 + isMoveValid() : boolean
 + isMillFormed() : boolean
@@ -28,7 +28,7 @@ class RuleManager{
 + isStalemate() : boolean
 }
 
-class BoardManager{
+class boardLogic.BoardManager{
 - nodes : Nodes[][]
 --
 - initializeBoard()
@@ -38,7 +38,7 @@ class BoardManager{
 }
 
 class GUIManager{
-- gameManager : GameManager
+- gameManager : boardLogic.GameManager
 - boardPanel : JPanel
 - controlPanel : JPanel
 --
@@ -52,48 +52,48 @@ class GUIManager{
 + setDifficulty()
 }
 
-interface GamePhase{
+interface phases.GamePhase{
 --
 + {abstract} handleMove()
 }
 
-class SettingPhase{
+class phases.SettingPhase{
 --
 + handleMove()
 }
 
-class MovingPhase{
+class phases.MovingPhase{
 --
 + handleMove()
 }
 
-class JumpingPhase{
+class phases.JumpingPhase{
 --
 + handleMove()
 }
 
-class GameOverPhase{
+class phases.GameOverPhase{
 --
 + handleMove()
 }
 
-class Stone{
-- owner : PlayerEntity
-- currentNode : Node
+class boardLogic.Stone{
+- owner : players.PlayerEntity
+- currentNode : boardLogic.Node
 --
 + moveToNode()
 }
 
-class Node{
+class boardLogic.Node{
 - position : Position
 --
 + isOccupied()
 }
 
-abstract class PlayerEntity{
+abstract class players.PlayerEntity{
 # name : String
 # stones : List<Stones>
-# currentState : GamePhase
+# currentState : phases.GamePhase
 --
 + {abstract} makeMove()
 + handleMove()
@@ -104,94 +104,94 @@ abstract class PlayerEntity{
 + getName()
 }
 
-class Player{
+class players.Player{
 --
 + makeMove()
 }
 
-class CPUPlayer{
+class players.CPUPlayer{
 - strategy : 
 --
 + makeMove()
 + setDifficulty()
 }
 
-class History{
-- moves : Stack<Move>
-- redoMoves : Stack<Move>
+class persistance.History{
+- moves : Stack<persistance.Move>
+- redoMoves : Stack<persistance.Move>
 --
 + addMove()
-+ undo() : Move
-+ redo() : Move
++ undo() : persistance.Move
++ redo() : persistance.Move
 + clearRedo()
 }
 
-class Move{
-- stone : Stone
-- fromNode : Node
-- toNode : Node
-- removedStone : Stone
-- currentState : GamePhase
+class persistance.Move{
+- stone : boardLogic.Stone
+- fromNode : boardLogic.Node
+- toNode : boardLogic.Node
+- removedStone : boardLogic.Stone
+- currentState : phases.GamePhase
 }
 
-class Observable{
-- observers : Observer[]
+class view.Observable{
+- observers : view.Observer[]
 --
 + addObserver()
 + removeObserver()
 + notifyObservers()
 }
 
-class Observer{
-- observable : Observable
+class view.Observer{
+- observable : view.Observable
 --
 + update()
 }
 
-interface DifficultyStrategy{
+interface difficulties.DifficultyStrategy{
 + calculateMove()
 }
 
-class EasyDifficulty{
+class difficulties.EasyDifficulty{
 + calculateMove()
 }
 
-class MediumDifficulty{
+class difficulties.MediumDifficulty{
 + calculateMove()
 }
 
-class HardDifficulty{
+class difficulties.HardDifficulty{
 + calculateMove()
 }
 
-RuleManager -o GameManager
-GUIManager o-- GameManager
-GameManager o- BoardManager
-History -- GameManager
-GameManager o-- PlayerEntity
+boardLogic.RuleManager -o boardLogic.GameManager
+GUIManager o-- boardLogic.GameManager
+boardLogic.GameManager o- boardLogic.BoardManager
+persistance.History -- boardLogic.GameManager
+boardLogic.GameManager o-- players.PlayerEntity
 
-GamePhase <|.. SettingPhase
-GamePhase <|.. JumpingPhase
-GamePhase <|.. MovingPhase
-GamePhase <|.. GameOverPhase
-GamePhase -o PlayerEntity
+phases.GamePhase <|.. phases.SettingPhase
+phases.GamePhase <|.. phases.JumpingPhase
+phases.GamePhase <|.. phases.MovingPhase
+phases.GamePhase <|.. phases.GameOverPhase
+phases.GamePhase -o players.PlayerEntity
 
-PlayerEntity <|-- Player
-PlayerEntity <|-- CPUPlayer
-CPUPlayer o- DifficultyStrategy
-PlayerEntity *- Stone
+players.PlayerEntity <|-- players.Player
+players.PlayerEntity <|-- players.CPUPlayer
+players.CPUPlayer o- difficulties.DifficultyStrategy
+players.PlayerEntity *- boardLogic.Stone
 
-DifficultyStrategy <|.. EasyDifficulty
-DifficultyStrategy <|.. MediumDifficulty
-DifficultyStrategy <|.. HardDifficulty
+difficulties.DifficultyStrategy <|.. difficulties.EasyDifficulty
+difficulties.DifficultyStrategy <|.. difficulties.MediumDifficulty
+difficulties.DifficultyStrategy <|.. difficulties.HardDifficulty
 
-BoardManager *-- Node
-BoardManager -|> Observable
-Stone *- Node
-Node - Node
+boardLogic.BoardManager *-- boardLogic.Node
+boardLogic.BoardManager -|> view.Observable
+boardLogic.Stone *- boardLogic.Node
+boardLogic.Node - boardLogic.Node
 
-Move - History
+persistance.Move - persistance.History
 
-GUIManager -|> Observer
+GUIManager -|> view.Observer
 
 @enduml
