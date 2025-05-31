@@ -167,7 +167,7 @@ public class BoardManager extends Observable {
 
         // Check if the stone can be placed correctly
         if (!ruleManager.isMoveValid(player, stone.getNode(), toNode)) {
-            System.out.println("[DEBUG] -> Move ungültig laut Regelwerk.");
+            System.out.println("[RULE] -> Invalid move.");
             return false;
         }
 

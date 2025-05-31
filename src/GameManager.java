@@ -365,7 +365,6 @@ public class GameManager {
         boardManager.reset();
         guiManager.reset();
 
-        System.out.println("Everything reset");
         if (gameThread != null && gameThread.isAlive()) {
             gameThread.interrupt();
         }
@@ -653,7 +652,6 @@ public class GameManager {
 
         gameStatus = true;
         startTurnTimer();
-        boardManager.printBoard(boardManager.getBoard());
 
         undoMove();
         redoMove();

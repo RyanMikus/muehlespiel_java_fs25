@@ -13,33 +13,40 @@ public class GUIBoard extends JPanel {
     // region Fields
     private Integer fromNodeId = null;
     private Node fromNode = null;
-
     private boolean removeMode = false;
+
+    private static final String WHITE_NAME = "white";
+    private static final String BLACK_NAME = "black";
+
+    // Listeners
     private Consumer<Node[]> moveListener = null;
     private Consumer<Node> removeListener = null;
 
+    // Positions
     private final Map<Integer, Point> nodePositions = new HashMap<>();
-    private final int boardSize = 400;
-    private int offsetX, offsetY;
+    private static final int BOARD_SIZE = 400;
+    private int offsetX;
+    private int offsetY;
 
     // Drag & Drop
     private Point dragPosition = null;
     private Color draggedColor = null;
-    private final int stoneRadius = 15;
+    private static final int STONE_RADIUS = 15;
 
-    // Steine links/rechts
+    // Stones on the side of the board
     private final List<Point> whiteStoneSlots = new ArrayList<>();
     private final List<Point> blackStoneSlots = new ArrayList<>();
-    private final int MAX_STONES = 9;
+    private static final int MAX_STONES = 9;
 
     // Colors
-    private final Color BEIGE = new Color(16, 104, 166);
+    private static final Color BEIGE = new Color(16, 104, 166);
 
     // endregion
 
+    // region Initialization
+
     public GUIBoard() {
         GameManager gameManager = GameManager.getInstance();
-        BoardManager boardManager = BoardManager.getInstance();
 
         setPreferredSize(new Dimension(700, 500));
         setOpaque(false);
@@ -47,6 +54,13 @@ public class GUIBoard extends JPanel {
         initStoneSlots();
 
         addMouseListener(new MouseAdapter() {
+            /**
+             * Handles mouse press events for selecting nodes or picking up stones.
+             * If the remove mode is active, it allows the player to remove a stone.
+             *
+             * @param e The mouse event containing the click position.
+             */
+            @Override
             public void mousePressed(MouseEvent e) {
                 if (!gameManager.getGameStatus()) {
                     return;
@@ -54,113 +68,44 @@ public class GUIBoard extends JPanel {
 
                 if (!removeMode) {
                     PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
-                    int stonesLeft = MAX_STONES - currentPlayer.getPlacedStones();
-
-                    // Checks if the white player wants to move his own stone
-                    if (currentPlayer.getName().equalsIgnoreCase("white")) {
-                        for (int i = 0; i < stonesLeft; i++) {
-                            if (whiteStoneSlots.get(i).distance(e.getPoint()) < stoneRadius) {
-                                draggedColor = Color.WHITE;
-                                dragPosition = e.getPoint();
-                                return;
-                            }
-                        }
+                    if (handleStonePickup(e, currentPlayer)) {
+                        return;
                     }
-
-                    // Checks if the black player wants to move his own stone
-                    if (currentPlayer.getName().equalsIgnoreCase("black")) {
-                        for (int i = 0; i < stonesLeft; i++) {
-                            if (blackStoneSlots.get(i).distance(e.getPoint()) < stoneRadius) {
-                                draggedColor = Color.BLACK;
-                                dragPosition = e.getPoint();
-                                return;
-                            }
-                        }
-                    }
-
-                    // Checks if a node has been clicked (not necessary for the setting phase) and gets it if so
-                    for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
-                        int guiNodeId = entry.getKey();
-                        Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
-
-                        if (p.distance(e.getPoint()) < stoneRadius && !(currentPlayer.getPhase() instanceof SettingPhase)) {
-                            Node node = boardManager.getNode(guiNodeId);
-
-                            // debug
-                            //System.out.println("MP - Snapping Node Board -> " + node.getID());
-
-                            // Valid node clicked
-                            if (node.isOccupied() && node.getStone().getOwner() == currentPlayer) {
-                                fromNodeId = guiNodeId;
-                                dragPosition = e.getPoint();
-                                draggedColor = node.getStone().getOwner().getName().equals("white") ? Color.WHITE
-                                        : Color.BLACK;
-
-                                // debug
-                                //System.out.println(" MP - Stone from Gui Node -> " + fromNodeId);
-
-                                return;
-                            }
-                        }
-                    }
+                    handleNodeSelection(e, currentPlayer);
                 } else {
                     signalPlayerRemove(e.getPoint());
                 }
             }
 
+            /**
+             * Handles mouse release events for executing player moves.
+             * If a stone is being dragged, it checks if the release position is valid.
+             *
+             * @param e The mouse event containing the release position.
+             */
+            @Override
             public void mouseReleased(MouseEvent e) {
                 if (!gameManager.getGameStatus() || draggedColor == null) {
                     return;
                 }
 
-                // Checks if a stone has been released over a node and gets it if so
-                for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
-                    int guiNodeId = entry.getKey();
-                    Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
+                tryExecutePlayerMove(e);
+                repaint();  // When the player "loses" the stone without snapping into a valid Node
 
-                    if (p.distance(e.getPoint()) < stoneRadius) {
-                        Node toNode = boardManager.getNode(guiNodeId);
-
-                        // debug
-                        //System.out.println("MR - Snapping Node Board -> " + toNode.getID());
-
-                        // Checks if the stone was played from outside the edge of the game board or not
-                        if (fromNodeId != null) {
-                            fromNode = boardManager.getNode(fromNodeId);
-
-                            // debug
-                            //System.out.println(" MR - Stone from Board Node ->" + fromNode.getID());
-                        }
-
-                        PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
-
-                        // debug
-                        //System.out.println("  MR - Current Player -> " + currentPlayer.getName());
-
-                        // Check if move is valid
-                        if (RuleManager.getInstance().isMoveValid(currentPlayer, fromNode, toNode)) {
-                            // debug
-                            //System.out.println("   MR - Move was valid");
-                            //System.out.println("    MR - Handle Move.. Player Phase -> " + currentPlayer.getPhase().getClass().getSimpleName());
-
-                            signalPlayerMove(fromNode, toNode);
-                            fromNode = null;
-                            toNode = null;
-                            break;
-                        }
-                    }
-                }
-
-                // When player "loses" the stone without snapping into a valid Node
-                repaint();
-
-                // Reset der Drag-Infos
+                // Reset dragging information
                 dragPosition = null;
                 draggedColor = null;
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
+            /**
+             * Handles mouse drag events to update the position of the dragged stone.
+             * If a stone is being dragged, it updates the drag position and repaints the board.
+             *
+             * @param e The mouse event containing the current position of the mouse.
+             */
+            @Override
             public void mouseDragged(MouseEvent e) {
                 if (!gameManager.getGameStatus()) {
                     return;
@@ -172,13 +117,11 @@ public class GUIBoard extends JPanel {
                 }
             }
         });
-
     }
-    // region Initialization
 
     /**
-     * Initialize the Map with 24 Entrys, with a specific position (Point) on the Board
-     * The points are necessary for Mouse listeners
+     * Initialize the Map with 24 Entries, with a specific position (Point) on the Board
+     * The points are necessary for Mouse listeners.
      */
     private void initNodePositions() {
         nodePositions.put(0, new Point(0, 0));
@@ -209,7 +152,7 @@ public class GUIBoard extends JPanel {
 
     /**
      * Initialize the Array with 9 Stones, with a specific position (Point) on the Board
-     * The points are necessary for Mouse listeners
+     * The points are necessary for Mouse listeners.
      */
     private void initStoneSlots() {
         for (int i = 0; i < 9; i++) {
@@ -219,7 +162,110 @@ public class GUIBoard extends JPanel {
     }
     // endregion
 
-    // region Events
+    // region Mouse Interaction
+
+    /**
+     * Handles the logic for picking up a stone from the side of the board.
+     * Checks if the current player is trying to pick up their own stone.
+     *
+     * @param e             The mouse event containing the click position.
+     * @param currentPlayer The player who is currently taking their turn.
+     * @return {@code true} if a stone was successfully picked up, {@code false} otherwise.
+     */
+    private boolean handleStonePickup(MouseEvent e, PlayerEntity currentPlayer) {
+        int stonesLeft = MAX_STONES - currentPlayer.getPlacedStones();
+
+        // Checks if the white player wants to move his own stone
+        if (currentPlayer.getName().equalsIgnoreCase(WHITE_NAME)) {
+            for (int i = 0; i < stonesLeft; i++) {
+                if (whiteStoneSlots.get(i).distance(e.getPoint()) < STONE_RADIUS) {
+                    draggedColor = Color.WHITE;
+                    dragPosition = e.getPoint();
+                    return true;
+                }
+            }
+        }
+
+        // Checks if the black player wants to move his own stone
+        if (currentPlayer.getName().equalsIgnoreCase(BLACK_NAME)) {
+            for (int i = 0; i < stonesLeft; i++) {
+                if (blackStoneSlots.get(i).distance(e.getPoint()) < STONE_RADIUS) {
+                    draggedColor = Color.BLACK;
+                    dragPosition = e.getPoint();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Handles the logic for selecting a node on the board.
+     * Checks if the node has been clicked and gets it if so. Not necessary for the setting phase.
+     *
+     * @param e             The mouse event containing the click position.
+     * @param currentPlayer The player who is currently taking their turn.
+     */
+    private void handleNodeSelection(MouseEvent e, PlayerEntity currentPlayer) {
+        if (currentPlayer.getPhase() instanceof SettingPhase) {
+            return;
+        }
+
+        for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
+            int guiNodeId = entry.getKey();
+            Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
+
+            if (p.distance(e.getPoint()) < STONE_RADIUS) {
+                Node node = BoardManager.getInstance().getNode(guiNodeId);
+
+                // Valid node clicked
+                if (node.isOccupied() && node.getStone().getOwner() == currentPlayer) {
+                    fromNodeId = guiNodeId;
+                    dragPosition = e.getPoint();
+                    draggedColor = node.getStone().getOwner().getName().equals(WHITE_NAME)
+                            ? Color.WHITE : Color.BLACK;
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * Attempts to execute a player move by checking if the mouse was released over a valid node.
+     * If a valid node is found, it signals the player move.
+     *
+     * @param e The mouse event containing the release position.
+     */
+    private void tryExecutePlayerMove(MouseEvent e) {
+        BoardManager boardManager = BoardManager.getInstance();
+        GameManager gameManager = GameManager.getInstance();
+
+        // Checks if a stone has been released over a node and gets it if so
+        for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
+            int guiNodeId = entry.getKey();
+            Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
+
+            if (p.distance(e.getPoint()) < STONE_RADIUS) {
+                Node toNode = boardManager.getNode(guiNodeId);
+
+                // Checks if the stone was played from outside the edge of the game board or not
+                if (fromNodeId != null) {
+                    fromNode = boardManager.getNode(fromNodeId);
+                }
+                PlayerEntity currentPlayer = gameManager.getCurrentPlayer();
+
+                // Check if move is valid
+                if (RuleManager.getInstance().isMoveValid(currentPlayer, fromNode, toNode)) {
+                    signalPlayerMove(fromNode, toNode);
+                    fromNode = null;
+                    break;
+                }
+            }
+        }
+    }
+    // endregion
+
+    // region Move / Remove Handlers
 
     /**
      * Sets a listener that will be notified when a complete move (from and to node) is selected.
@@ -266,10 +312,14 @@ public class GUIBoard extends JPanel {
         removeMode = toState;
     }
 
+    /**
+     * Returns the current state of the remove mode.
+     *
+     * @return {@code true} if the remove mode is active, {@code false} otherwise.
+     */
     public boolean getRemoveMode() {
         return removeMode;
     }
-
 
     /**
      * When a mill is formed the player chooses one stone over the gui
@@ -278,9 +328,6 @@ public class GUIBoard extends JPanel {
      */
     public void signalPlayerRemove(Point targetPoint) {
         BoardManager boardManager = BoardManager.getInstance();
-
-        // debug
-        //System.out.println("RSM - currentRemover -> " + currentRemover.getName());
 
         for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
             int nodeId = entry.getKey();
@@ -299,10 +346,22 @@ public class GUIBoard extends JPanel {
             }
         }
     }
+    // endregion
+
+    //region GUI Rendering
 
     /**
+     *
      * When GUI-Board is initialized, this method will be called automatically to draw the Lines, Nodes and Stones.
-     * Can also be manually called by repaint()
+     * Can also be manually called by {@link #repaint()}
+     *
+     * @param g the {@code Graphics} object
+     * @see #drawBoardFrame(Graphics2D)
+     * @see #drawNodes(Graphics2D)
+     * @see #drawPlacedStones(Graphics2D)
+     * @see #drawStonePlaceholders(Graphics2D)
+     * @see #drawRemainingStones(Graphics2D)
+     * @see #drawDraggedStone(Graphics2D)
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -310,11 +369,28 @@ public class GUIBoard extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        offsetX = (getWidth() - boardSize) / 2;
-        offsetY = (getHeight() - boardSize) / 2;
+        offsetX = (getWidth() - BOARD_SIZE) / 2;
+        offsetY = (getHeight() - BOARD_SIZE) / 2;
 
+        drawBoardFrame(g2);
+        drawNodes(g2);
+        drawPlacedStones(g2);
+        drawStonePlaceholders(g2);
+        drawRemainingStones(g2);
+        drawDraggedStone(g2);
+    }
+
+    /**
+     * Helper method for {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws the frame of the board with lines and rectangles.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     */
+    private void drawBoardFrame(Graphics2D g2) {
         g2.setColor(Color.LIGHT_GRAY);
         g2.setStroke(new BasicStroke(2));
+
         g2.drawRect(offsetX, offsetY, 400, 400);
         g2.drawRect(offsetX + 50, offsetY + 50, 300, 300);
         g2.drawRect(offsetX + 100, offsetY + 100, 200, 200);
@@ -322,13 +398,31 @@ public class GUIBoard extends JPanel {
         g2.drawLine(offsetX + 200, offsetY + 300, offsetX + 200, offsetY + 400);
         g2.drawLine(offsetX, offsetY + 200, offsetX + 100, offsetY + 200);
         g2.drawLine(offsetX + 300, offsetY + 200, offsetX + 400, offsetY + 200);
+    }
 
+    /**
+     * Helper method for {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws the nodes on the board based on their positions.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     */
+    private void drawNodes(Graphics2D g2) {
         for (Point p : nodePositions.values()) {
             int x = offsetX + p.x;
             int y = offsetY + p.y;
             g2.fillOval(x - 5, y - 5, 10, 10);
         }
+    }
 
+    /**
+     * Helper method for {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws the placed stones on the board, including their borders and filling colors.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     */
+    private void drawPlacedStones(Graphics2D g2) {
         for (Map.Entry<Integer, Point> entry : nodePositions.entrySet()) {
             int id = entry.getKey();
             Point p = new Point(offsetX + entry.getValue().x, offsetY + entry.getValue().y);
@@ -338,19 +432,29 @@ public class GUIBoard extends JPanel {
                 Stone stone = node.getStone();
                 PlayerEntity owner = stone.getOwner();
 
-                boolean isWhite = owner.getName().equalsIgnoreCase("white");
+                boolean isWhite = owner.getName().equalsIgnoreCase(WHITE_NAME);
                 Color fillColor = isWhite ? Color.WHITE : Color.BLACK;
-                Color borderColor = isWhite ? Color.BLACK : Color.WHITE;
 
-                // Rand
+                // Border
                 g2.setColor(BEIGE);
-                g2.fillOval(p.x - stoneRadius - 4, p.y - stoneRadius - 4, (stoneRadius + 4) * 2, (stoneRadius + 4) * 2);
-                // Stein
+                g2.fillOval(p.x - STONE_RADIUS - 4, p.y - STONE_RADIUS - 4, (STONE_RADIUS + 4) * 2, (STONE_RADIUS + 4) * 2);
+
+                // Filling
                 g2.setColor(fillColor);
-                g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
+                g2.fillOval(p.x - STONE_RADIUS, p.y - STONE_RADIUS, STONE_RADIUS * 2, STONE_RADIUS * 2);
             }
         }
+    }
 
+    /**
+     * Helper method for {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws placeholders for stones that can be placed on the board.
+     * These are small circles indicating where stones can be displayed.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     */
+    private void drawStonePlaceholders(Graphics2D g2) {
         int placeholderRadius = 5;
         g2.setColor(Color.WHITE);
         for (Point p : whiteStoneSlots) {
@@ -361,7 +465,18 @@ public class GUIBoard extends JPanel {
             g2.fillOval(p.x - placeholderRadius, p.y - placeholderRadius, placeholderRadius * 2, placeholderRadius * 2
             );
         }
+    }
 
+    /**
+     * Helper method for {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws the remaining stones that can be placed by each player.
+     * Displays how many stones are left for each player.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     * @see #drawReserveStones(Graphics2D, int, List, Color)
+     */
+    private void drawRemainingStones(Graphics2D g2) {
         GameManager gameManager = GameManager.getInstance();
         PlayerEntity playerWhite = gameManager.getPlayerWhite();
         PlayerEntity playerBlack = gameManager.getPlayerBlack();
@@ -373,36 +488,54 @@ public class GUIBoard extends JPanel {
         int whiteLeft = 9 - playerWhite.getPlacedStones();
         int blackLeft = 9 - playerBlack.getPlacedStones();
 
-        for (int i = 0; i < whiteLeft; i++) {
-            Point p = whiteStoneSlots.get(i);
-            // Schwarzer Rand
+        drawReserveStones(g2, whiteLeft, whiteStoneSlots, Color.WHITE);
+        drawReserveStones(g2, blackLeft, blackStoneSlots, Color.BLACK);
+    }
+
+    /**
+     * Helper method for the {@link #drawRemainingStones(Graphics2D)} method.
+     * <p>
+     * It draws the stones that are left for each player in their respective slots.
+     *
+     * @param g2          The Graphics2D object used for drawing.
+     * @param stonesLeft  The number of stones left for the player.
+     * @param stoneSlots  The list of points where the stones should be drawn.
+     * @param fillColor   The color to fill the stones with (white or black).
+     */
+    private void drawReserveStones(Graphics2D g2, int stonesLeft, List<Point> stoneSlots, Color fillColor) {
+        for (int i = 0; i < stonesLeft; i++) {
+            Point p = stoneSlots.get(i);
+            // Border
             g2.setColor(BEIGE);
-            g2.fillOval(p.x - stoneRadius - 3, p.y - stoneRadius - 3, (stoneRadius + 3) * 2, (stoneRadius + 3) * 2);
-            // Weißer Stein
-            g2.setColor(Color.WHITE);
-            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
-        }
+            g2.fillOval(p.x - STONE_RADIUS - 3, p.y - STONE_RADIUS - 3, (STONE_RADIUS + 3) * 2, (STONE_RADIUS + 3) * 2);
 
-        for (int i = 0; i < blackLeft; i++) {
-            Point p = blackStoneSlots.get(i);
-            // Weisser Rand
-            g2.setColor(BEIGE);
-            g2.fillOval(p.x - stoneRadius - 3, p.y - stoneRadius - 3, (stoneRadius + 3) * 2, (stoneRadius + 3) * 2);
-            // Schwarzer Stein
-            g2.setColor(Color.BLACK);
-            g2.fillOval(p.x - stoneRadius, p.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
-        }
-
-
-        if (draggedColor != null && dragPosition != null) {
-            g2.setColor(BEIGE);
-            g2.fillOval(dragPosition.x - stoneRadius - 3, dragPosition.y - stoneRadius - 3, (stoneRadius + 3) * 2, (stoneRadius + 3) * 2);
-
-            g2.setColor(draggedColor);
-            g2.fillOval(dragPosition.x - stoneRadius, dragPosition.y - stoneRadius, stoneRadius * 2, stoneRadius * 2);
+            // Filling
+            g2.setColor(fillColor);
+            g2.fillOval(p.x - STONE_RADIUS, p.y - STONE_RADIUS, STONE_RADIUS * 2, STONE_RADIUS * 2);
         }
     }
 
+    /**
+     * Helper method for the {@link #paintComponent(Graphics)} method.
+     * <p>
+     * Draws the stone that is currently being dragged by the player.
+     *
+     * @param g2 The Graphics2D object used for drawing.
+     */
+    private void drawDraggedStone(Graphics2D g2) {
+        if (draggedColor != null && dragPosition != null) {
+            g2.setColor(BEIGE);
+            g2.fillOval(dragPosition.x - STONE_RADIUS - 3, dragPosition.y - STONE_RADIUS - 3, (STONE_RADIUS + 3) * 2, (STONE_RADIUS + 3) * 2);
+
+            g2.setColor(draggedColor);
+            g2.fillOval(dragPosition.x - STONE_RADIUS, dragPosition.y - STONE_RADIUS, STONE_RADIUS * 2, STONE_RADIUS * 2);
+        }
+    }
+
+    /**
+     * Resets the state of the GUIBoard, clearing any selected nodes and removing the dragged stone.
+     * This is useful for resetting the board after restarting a game.
+     */
     public void resetState() {
         fromNodeId = null;
         fromNode = null;

@@ -62,9 +62,7 @@ public class History {
      * Clears the redo stack by removing every element.
      */
     public void clearRedo() {
-        System.out.println("[HISTORY] clearRedo() aufgerufen – RedoStack Größe: " + redoMoves.size());
         if (!redoMoves.isEmpty()) {
-            System.out.println("[HISTORY] RedoStack wird geleert (" + redoMoves.size() + " Einträge)");
             redoMoves.clear();
         }
     }

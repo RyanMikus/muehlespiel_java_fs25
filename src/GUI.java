@@ -257,6 +257,8 @@ public class GUI implements Observer {
     /**
      * Resets the game state and the GUI components to their initial state.
      * This method is called when a new game starts or when the user wants to reset the current game.
+     *
+     * @throws IllegalStateException if the GUIBoard cannot be found in the current board panel.
      */
     public void reset() {
         slider.setValue(30);
@@ -281,7 +283,7 @@ public class GUI implements Observer {
             newGuiBoard.resetState();
             GameManager.getInstance().initializeListeners(newGuiBoard);
         } else {
-            System.err.println("[ERROR] - Konnte GUIBoard im neuen BoardPanel nicht finden!");
+            throw new IllegalStateException("[ERROR] - GUIBoard could not be found in the BoardScreen!");
         }
     }
 
@@ -301,5 +303,5 @@ public class GUI implements Observer {
 
     public static void main(String[] args) {
         GameManager.getInstance();
-    } // main
-} // GUi
+    }
+}

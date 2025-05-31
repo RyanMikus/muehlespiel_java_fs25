@@ -50,7 +50,7 @@ public abstract class DifficultyStrategy {
         for (Map.Entry<String, Supplier<Node[]>> tactic : tactics) {
             Node[] move = tactic.getValue().get();
             if (move != null) {
-                System.out.println("[AI] + Strategy used: " + tactic.getKey());
+                System.out.println("[CPU] - Strategy used: " + tactic.getKey());
                 return move;
             }
         }
