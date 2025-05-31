@@ -1,15 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * This class is used to style different components in the GUI.
+ * It provides methods to style buttons with specific colors, fonts, and hover effects.
+ */
 public class StyleComponents {
     /**
-     * Styles a button by changing its colors, font, opacity and border.
+     * Styles a button for general purposes by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
      *
      * @param button The button that should get styled.
      */
     public static void styleButton(JButton button) {
-
         // Style
         button.setPreferredSize(new Dimension(180, 50));
         button.setBackground(GUI.BACKGROUND_COLOR);
@@ -36,16 +39,15 @@ public class StyleComponents {
                 button.setForeground(GUI.BUTTON_COLOR);
             }
         });
-    }// styleButton
+    }
 
     /**
-     * Styles a button by changing its colors, font, opacity and border.
+     * Styles a button for the board by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
      *
      * @param button The button that should get styled.
      */
     public static void styleBoardButton(JButton button) {
-
         // Style
         button.setPreferredSize(new Dimension(130, 40));
         button.setMinimumSize(new Dimension(130, 40));
@@ -77,7 +79,7 @@ public class StyleComponents {
     }
 
     /**
-     * Styles a button by changing its colors, font, opacity and border.
+     * Styles a button for the game over message by changing its colors, font, opacity and border.
      * Also changes the behaviour on hovering over the button.
      *
      * @param button The button that should get styled.
@@ -112,5 +114,4 @@ public class StyleComponents {
             }
         });
     }
-
 }

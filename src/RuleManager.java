@@ -154,8 +154,6 @@ public class RuleManager {
         BoardManager boardManager = BoardManager.getInstance();
         PlayerEntity player = lastPlacedStone.getOwner();
 
-        player.printCopy();
-
         int placedPos = lastPlacedStone.getNode().getID();
         int millCount = 0;
 

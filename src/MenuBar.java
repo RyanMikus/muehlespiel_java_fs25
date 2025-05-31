@@ -2,6 +2,11 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * This class creates the menu bar for the game, which includes a "Help" menu
+ * and a "Credits" menu. The "Help" menu provides game rules, while the "Credits"
+ * menu displays information about the contributors to the project.
+ */
 public class MenuBar {
     /**
      * Creates the "Help" menu of the application, which contains items providing

@@ -348,6 +348,11 @@ public class GameManager {
      * @see #runGame()
      */
     public void resetGame() {
+        if(gameStatus) {
+            playerWhite.setPlacedStones(0);
+            playerBlack.setPlacedStones(0);
+        }
+
         stopTurnTimer();
         gameStatus = false;
         noMillTurnCounter = 0;
@@ -356,10 +361,6 @@ public class GameManager {
         playerMove = null;
         playerRemove = null;
         lossCause = LossCause.NONE;
-
-        // FIX
-        playerWhite.setPlacedStones(0);
-        playerBlack.setPlacedStones(0);
 
         boardManager.reset();
         guiManager.reset();

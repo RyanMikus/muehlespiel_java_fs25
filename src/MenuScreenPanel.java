@@ -3,6 +3,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
+/**
+ * This class creates the menu screen panel for the game, which includes buttons
+ * for starting a new game, loading a game, and returning to the home screen.
+ */
 public class MenuScreenPanel {
     /**
      * Creates the Menu Screen JPanel
@@ -22,8 +26,10 @@ public class MenuScreenPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0; // same row
 
+        // Create Buttons
         String[] buttonTexts = {"neues spiel", "spiel laden", "zurück"};
 
+        // Add actions
         for (int i = 0; i < buttonTexts.length; i++) {
             JButton button = new JButton(buttonTexts[i]);
             StyleComponents.styleButton(button);
@@ -57,6 +63,7 @@ public class MenuScreenPanel {
                 }
             });
 
+            // Position
             gbc.gridx = i;
             gbc.insets = new Insets(0, 0, 0, (i < buttonTexts.length - 1) ? 20 : 0);
             buttonPanel.add(button, gbc);

@@ -1,14 +1,19 @@
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * This class creates the New Game Screen JPanel.
+ * It contains buttons for singleplayer, multiplayer, and back to the main menu.
+ */
 public class NewGameScreenPanel {
     /**
      * Creates the New Game Screen JPanel.
      *
-     * @return The new game screen panel.
+     * @param cardLayout The CardLayout used for switching screens.
+     * @param cardPanel  The JPanel that contains all the screens.
+     * @return A JPanel representing the New Game Screen.
      */
     public static JPanel createNewGameScreen(CardLayout cardLayout, JPanel cardPanel) {
-        // main panel New Game Screen
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
@@ -23,6 +28,14 @@ public class NewGameScreenPanel {
         return panel;
     }
 
+    /**
+     * Creates a button panel with buttons for singleplayer, multiplayer, and back to the main menu.
+     *
+     * @param cardLayout The CardLayout used for switching screens.
+     * @param cardPanel  The JPanel that contains all the screens.
+     * @return A JPanel containing the buttons.
+     * @throws IllegalStateException if an unexpected button index is encountered.
+     */
     private static JPanel createButtonPanel(CardLayout cardLayout, JPanel cardPanel) {
         // Buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
@@ -54,7 +67,8 @@ public class NewGameScreenPanel {
                     case 2:
                         cardLayout.show(cardPanel, "Menu");
                         break;
-
+                    default:
+                        throw new IllegalStateException("Unexpected button index: " + buttonIndex);
                 }
             });
 

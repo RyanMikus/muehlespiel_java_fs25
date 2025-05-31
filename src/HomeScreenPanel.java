@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * This class creates the Home Screen JPanel for the game.
+ * It serves as the starting point for the game, allowing users to navigate to the menu.
+ */
 public class HomeScreenPanel {
     public static final String LOGO_PATH = "/resources/muehle_logo.png";
     public static final String BOARD_IMAGE_PATH = "/resources/muehle_board.png";
@@ -8,7 +12,12 @@ public class HomeScreenPanel {
     /**
      * Creates the Home Screen JPanel.
      *
+     * @param cardLayout The CardLayout used for switching panels.
+     * @param cardPanel  The main panel containing all cards.
      * @return The home screen panel.
+     *
+     * @see #createHomeLogo()
+     * @see #createHomeImage()
      */
     public static JPanel createHomeScreen(CardLayout cardLayout, JPanel cardPanel) {
         JPanel panel = new JPanel();
@@ -22,7 +31,7 @@ public class HomeScreenPanel {
         JButton startButton = new JButton("spiel starten");
         StyleComponents.styleButton(startButton);
 
-        startButton.addActionListener((e) -> {
+        startButton.addActionListener(e -> {
             cardLayout.show(cardPanel, "Menu");
         });
 

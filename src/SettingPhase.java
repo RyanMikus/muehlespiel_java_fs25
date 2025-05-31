@@ -1,3 +1,7 @@
+/**
+ * This class represents the setting phase of the game where players can place stones to unoccupied nodes.
+ * It extends the GamePhase class and implements the handleMove method to allow placing stones.
+ */
 public class SettingPhase extends GamePhase {
     /**
      * Sets the context.
@@ -15,7 +19,7 @@ public class SettingPhase extends GamePhase {
      *
      * @param fromNode The origin node (not used here).
      * @param toNode   The target node.
-     * @return true if the move was successful, false otherwise.
+     * @return {@code true} if the move was successful, {@code false} otherwise.
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
@@ -41,7 +45,8 @@ public class SettingPhase extends GamePhase {
         if (playerEntity.allStonesPlaced()) {
             playerEntity.setPhase(new MovingPhase(playerEntity));
 
-            //System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")                    ? "WHITE" : "BLACK") + "] - Changed to MOVINGPHASE");
+            System.out.println("[" + (playerEntity.getName().equalsIgnoreCase("white")
+                    ? "WHITE" : "BLACK") + "] - Changed to MOVINGPHASE");
         }
     }
 }

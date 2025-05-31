@@ -1,4 +1,3 @@
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,11 +17,16 @@ public class Move {
     // endregion
 
     /**
-     * Creates a new Move capturing the current game state.
+     * Constructs a Move object representing the game state at a specific moment.
      *
-     * @param boardSnapshot     The snapshot of the board at the time of the move.
-     * @param noMillTurnCounter The number of consecutive turns without a formed mill.
-     * @param timeLeft          The remaining time for the move in seconds.
+     * @param placedStonesWhite The number of stones placed by the white player.
+     * @param placedStonesBlack The number of stones placed by the black player.
+     * @param boardSnapshot A snapshot of the board state at this move.
+     * @param currentIsWhite Indicates if it is currently the white player's turn.
+     * @param phaseWhite The game phase for the white player.
+     * @param phaseBlack The game phase for the black player.
+     * @param noMillTurnCounter The number of turns without a formed mill.
+     * @param timeLeft The time left for the move in seconds.
      */
     public Move(int placedStonesWhite, int placedStonesBlack, Map<Integer, Node> boardSnapshot, boolean currentIsWhite, GamePhase phaseWhite, GamePhase phaseBlack, int noMillTurnCounter, int timeLeft) {
         this.placedStonesWhite = placedStonesWhite;
@@ -64,14 +68,29 @@ public class Move {
         return boardSnapshot;
     }
 
+    /**
+     * Returns whether it is currently the white player's turn.
+     *
+     * @return {@code true} if it is white's turn, {@code false} otherwise.
+     */
     public boolean getCurrentIsWhite() {
         return currentIsWhite;
     }
 
+    /**
+     * Returns the game phase for the white player at the time of this move.
+     *
+     * @return The game phase for white.
+     */
     public GamePhase getPhaseWhite() {
         return phaseWhite;
     }
 
+    /**
+     * Returns the game phase for the black player at the time of this move.
+     *
+     * @return The game phase for black.
+     */
     public GamePhase getPhaseBlack() {
         return phaseBlack;
     }

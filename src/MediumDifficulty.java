@@ -1,8 +1,11 @@
 import java.util.List;
 
+/**
+ * Represents a strategy for the medium difficulty in the game.
+ * This class extends the DifficultyStrategy to implement complex move calculations
+ * and removal strategies for players.
+ */
 public class MediumDifficulty extends DifficultyStrategy {
-
-    /**/
 
     @Override
     public Node[] calculateMove(ImaginativePlayer player, ImaginativePlayer opponent) {

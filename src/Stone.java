@@ -1,3 +1,6 @@
+/**
+ * Represents a stone in the game, which is owned by a player and placed on a node.
+ */
 public class Stone {
     private PlayerEntity owner;
     private Node currentNode;

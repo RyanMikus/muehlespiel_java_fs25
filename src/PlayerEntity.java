@@ -1,6 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents the abstract base class for different players.
+ * It provides a common structure for all players in the game.
+ */
 public abstract class PlayerEntity {
     protected String name;
     protected List<Stone> stones;
@@ -48,7 +52,7 @@ public abstract class PlayerEntity {
     /**
      * Checks if all the stones of the player have been placed already.
      *
-     * @return true if all stones have been placed, false otherwise.
+     * @return {@code true} if all stones have been placed, {@code false} otherwise.
      */
     public boolean allStonesPlaced() {
         return placedStones == 9;
@@ -81,6 +85,11 @@ public abstract class PlayerEntity {
         return currentPhase;
     }
 
+    /**
+     * Getter for the number of stones that have been placed by the player.
+     *
+     * @return The number of placed stones.
+     */
     public int getPlacedStones() {
         return placedStones;
     }
@@ -94,17 +103,12 @@ public abstract class PlayerEntity {
         currentPhase = phase;
     }
 
-
+    /**
+     * Sets the number of placed stones for the player.
+     *
+     * @param placedStones The number of stones that have been placed by the player.
+     */
     public void setPlacedStones(int placedStones) {
         this.placedStones = placedStones;
     }
-
-    public void printCopy() {
-        //System.out.printf(" Player %s | %s | %d\n", this.name, this.currentPhase.getClass().getSimpleName(), this.placedStones);
-        for (Stone stone : this.stones) {
-            //System.out.printf("Stone ID : %d | Node : %d |Owner : %s\n", stone.getNode().getID(),stone.getNode().getID(), stone.getOwner().getName());
-        }
-    }
-
-
 }

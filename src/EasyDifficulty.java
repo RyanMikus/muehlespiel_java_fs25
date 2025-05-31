@@ -1,11 +1,9 @@
 import java.util.List;
 
 /**
- * EasyDifficulty is a strategy class that represents a simple difficulty level
- * for an imaginative player in a game. It provides basic implementations for
- * calculating moves and removals by selecting random options from the available
- * possibilities. This strategy is designed to offer a low-challenge gameplay
- * experience.
+ * Represents a strategy for the easy difficulty in the game.
+ * This class extends the DifficultyStrategy to implement complex move calculations
+ * and removal strategies for players.
  */
 public class EasyDifficulty extends DifficultyStrategy {
 

@@ -1,11 +1,15 @@
 import javax.swing.*;
 
+/**
+ * This class implements a turn timer that counts down the time a player has to perform a move.
+ * It executes a specified action on each tick and another action when the time runs out.
+ */
 public class TurnTimer {
     //region Fields
     private Timer timer;
     private int timeLeft;
     private final int initialTime;
-    private final int timePerTick = 1000;
+    private static final int TIME_PER_TICK = 1000;
 
     private final Runnable onTick;
     private final Runnable onTimeout;
@@ -31,7 +35,7 @@ public class TurnTimer {
      * The onTimeout event gets executed, when the remaining thinking time runs out (=0).
      */
     public void startTimer() {
-        timer = new Timer(timePerTick, e -> {
+        timer = new Timer(TIME_PER_TICK, e -> {
             timeLeft--;
 
             if(onTick != null) {

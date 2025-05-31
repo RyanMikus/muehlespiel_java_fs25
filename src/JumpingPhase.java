@@ -1,3 +1,7 @@
+/**
+ * This class represents the jumping phase of the game where players can jump to unoccupied nodes.
+ * It extends the GamePhase class and implements the handleMove method to allow jumping moves.
+ */
 public class JumpingPhase extends GamePhase {
     /**
      * Sets the context.
@@ -9,12 +13,12 @@ public class JumpingPhase extends GamePhase {
     }
 
     /**
-     * In this phase the player can jump everywhere, if the target Node is not
-     * already occupied.
+     * In this state the player can jump to unoccupied nodes, if the target Node
+     * is not already occupied.
      *
-     * @param fromNode The origin node.
+     * @param fromNode The origin node (not used here).
      * @param toNode   The target node.
-     * @return true if the move was successful, false otherwise.
+     * @return {@code true} if the move was successful, {@code false} otherwise.
      */
     @Override
     public boolean handleMove(Node fromNode, Node toNode) {
@@ -23,7 +27,7 @@ public class JumpingPhase extends GamePhase {
 
     /**
      * Checks if the condition to change the phase is met (2 stones remaining).
-     * Changes to the gameover phase if so.
+     * Changes to the {@link GameOverPhase} if so.
      */
     @Override
     public void nextPhase() {

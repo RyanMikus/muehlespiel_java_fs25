@@ -1,6 +1,11 @@
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Represents a node in the game board.
+ * Each node can contain a stone and has a list of neighboring nodes.
+ * Nodes are uniquely identified by their ID.
+ */
 public class Node {
     // region Fields
     private final int id;
@@ -10,7 +15,7 @@ public class Node {
 
     /**
      * Constructs a node with the given ID.
-     * Initializes the node with no stone and an empty list of neighbors.
+     * Initializes the node with no {@link Stone} and an empty list of neighbors.
      *
      * @param id The unique identifier of the node.
      */
@@ -21,7 +26,7 @@ public class Node {
     }
 
     /**
-     * Checks whether this node contains a stone or not.
+     * Checks whether this node contains a {@link Stone} or not.
      *
      * @return true if a stone is placed on this node, false otherwise.
      */
@@ -48,7 +53,7 @@ public class Node {
     }
 
     /**
-     * Assigns the given stone to this node and vice versa. Can only possess one
+     * Assigns the given {@link Stone} to this node and vice versa. Can only possess one
      * stone at a time.
      *
      * @param stone The stone that gets assigned to this node.
@@ -56,7 +61,7 @@ public class Node {
      */
     public void placeStone(Stone stone) {
         if (this.stone != null) {
-            throw new IllegalStateException("Node is already occupied");
+            throw new IllegalStateException("Node is occupied and rule did not catch error!");
         }
         this.stone = stone;
         stone.setNode(this);
@@ -69,7 +74,7 @@ public class Node {
      */
     public void removeStone() {
         if (this.stone == null) {
-            throw new IllegalStateException("Node is already empty");
+            throw new IllegalStateException("Node is empty and rule did not catch error!");
         }
         stone = null;
     }
