@@ -1,0 +1,321 @@
+@startuml
+
+class boardLogic.GameManager{
++ startGame()
++ runGame()
++ switchPlayer()
++ handleMove()
++ gameOveR()
++ undoMove()
++ redoMove()
++ saveGame()
++ loadGame()
+}
+
+class boardLogic.RuleManager{
++ isMoveValid()
++ isRemovalValid()
++ countMillsFormed()
++ isGameOver()
+}
+
+class boardLogic.BoardManager{
++ initializeBoard()
++ placeStone()
++ removeStone()
++ moveStone()
+}
+
+class boardLogic.Stone{
++ setNode()
++ getOwner()
+}
+
+class boardLogic.Node{
++ isOccupied()
++ addNeighbor()
+}
+
+class boardLogic.TurnTimer{
++ startTimer()
++ stopTimer()
++ resetTimer()
+}
+
+
+
+
+
+abstract class difficulties.DifficultyStrategy{
++ {abstract} calculateMove()
++ {abstract} calculateRemoval()
+# randomMove()
+# randomRemoval()
+# findMill()
+# blockMill()
+# findAlmostMills()
+# clusterMove()
+# findZwickMill()
+# blockZwickMill()
+# blockBeginnerTrap()
+# useFiggerMill()
+# openMill()
+# removeMillThreat()
+}
+
+enum difficulties.DifficultyLevel{
+NONE
+EASY
+MEDIUM
+HARD
+}
+
+class difficulties.EasyDifficulty{
++ calculateMove()
++ calculateRemoval()
+}
+
+class difficulties.MediumDifficulty{
++ calculateMove()
++ calculateRemoval()
+}
+
+class difficulties.HardDifficulty{
++ calculateMove()
++ calculateRemoval()
+}
+
+
+
+
+
+class persistance.GamePersistanceManager{
++ createGameState()
++ saveGameState()
++ restoreGameState()
+}
+
+class persistance.GameStateData{
++ whiteData
++ blackData
++ currentIsWhite
++ undoMoves
++ redoMoves
++ noMillTurnCounter
++ timePerTurn
++ timeLeft
++ gameMode
+}
+
+class persistance.History{
++ addMove()
++ undoMove()
++ redoMove()
++ clearRedo()
+}
+
+class persistance.Move{
+- placedStonesWhite
+- placedStonesBlack
+- boardSnapshot
+- currentIsWhite
+- phaseWhite
+- phaseBlack
+- noMillTurnCounter
+- timeLeft
+}
+
+class persistance.MoveData{
++ placedStonesWhite
++ placedStonesBlack
++ boardSnapshot
++ currentIsWhite
++ phaseWhite
++ phaseBlack
++ noMillTurnCounter
++ timeLeft
+}
+
+class persistance.PlayerData{
++ name
++ phase
++ placedStones
++ stonePositions
++ type
++ difficulty
+}
+
+
+
+
+
+abstract class phases.GamePhase{
++ handleMove()
++ nextPhase()
+}
+
+class phases.SettingPhase{
++ handleMove()
++ nextPhase()
+}
+
+class phases.MovingPhase{
++ handleMove()
++ nextPhase()
+}
+
+class phases.JumpingPhase{
++ handleMove()
++ nextPhase()
+}
+
+class phases.GameOverPhase{
+}
+
+
+
+
+
+abstract class players.PlayerEntity{
++ addStone()
++ removeStone()
++ stonePlaced()
++ getRemainingStones()
++ setPhase()
+}
+
+class players.Player{
+}
+
+class players.CPUPlayer{
++ makeMove()
++ makeRemove()
++ setDifficulty()
+}
+
+class players.ImaginativePlayer{
++ getAllPossibleMoves()
++ getAllPossibleRemovals()
+}
+
+
+
+
+
+class view.GUI{
++ updateTimer()
++ updateStatus()
++ showGameOverMsg()
++ update()
++ reset()
+}
+
+class view.BoardScreenPanel{
++ createBoardScreen()
+}
+
+class view.DifficultyScreenPanel{
++ createDifficultyScreen()
+}
+
+class view.GUIBoard{
+- initNodePositions()
+- initStoneSlots()
+- handleStonePickup()
+- handleNodeSelection()
++ signalPlayerMove()
++ signalPlayerRemove()
++ repaint()
++ resetState()
+}
+
+class view.GUIPrompt{
++ updateGamePrompt()
++ updateErrorPrompt()
++ updateRemovePrompt()
+}
+
+class view.HomeScreenPanel{
++ createHomeScreenPanel()
++ createHomeLogo()
++ createHomeImage()
+}
+
+class view.MenuBar{
++ createHelpMenu()
++ createCreditsMenu()
+}
+
+
+class view.MenuScreenPanel{
++ createMenuScreen()
+}
+
+class view.NewGameScreenPanel{
++ createNewGameScreen()
+}
+
+class view.Observable{
++ addObserver()
++ removeObserver()
++ notifyObservers()
+}
+
+class view.Observer{
++ update()
+}
+
+class view.StyleComponents{
++ styleButton()
++ styleBoardButton()
++ styleGameOverMsgButton()
+}
+
+boardLogic.GameManager o-- boardLogic.TurnTimer
+boardLogic.GameManager o- boardLogic.BoardManager
+
+phases.GamePhase <|-- phases.SettingPhase
+phases.GamePhase <|-- phases.JumpingPhase
+phases.GamePhase <|-- phases.MovingPhase
+phases.GamePhase <|-- phases.GameOverPhase
+phases.GamePhase -o players.PlayerEntity
+
+players.PlayerEntity <|-- players.Player
+players.PlayerEntity <|-- players.CPUPlayer
+players.PlayerEntity <|-- players.ImaginativePlayer
+players.CPUPlayer o-- difficulties.DifficultyStrategy
+players.CPUPlayer - players.ImaginativePlayer
+boardLogic.Stone o-- players.PlayerEntity
+
+difficulties.DifficultyStrategy <|-- difficulties.EasyDifficulty
+difficulties.DifficultyStrategy <|-- difficulties.MediumDifficulty
+difficulties.DifficultyStrategy <|-- difficulties.HardDifficulty
+
+boardLogic.BoardManager *-- boardLogic.Node
+boardLogic.Stone o- boardLogic.Node
+view.Observable <|-- boardLogic.BoardManager
+boardLogic.BoardManager o- boardLogic.RuleManager
+
+
+persistance.Move - persistance.History
+
+view.Observer <|- view.GUI
+view.GUI o-- boardLogic.GameManager
+view.GUI o- view.GUIBoard
+view.StyleComponents -- view.GUI
+view.GUIPrompt -- view.GUI
+view.HomeScreenPanel -- view.GUI
+view.MenuScreenPanel -- view.GUI
+view.BoardScreenPanel -- view.GUI
+view.NewGameScreenPanel -- view.GUI
+view.DifficultyScreenPanel -- view.GUI
+
+persistance.GamePersistanceManager -- persistance.GameStateData
+persistance.GamePersistanceManager -- persistance.PlayerData
+persistance.GamePersistanceManager -- persistance.MoveData
+
+persistance.History - boardLogic.GameManager
+persistance.GamePersistanceManager - boardLogic.GameManager
+
+
+@enduml
