@@ -274,7 +274,7 @@ public class GameManager {
     /**
      * Helpermethod for {@link #runGame()}.
      * <p>
-     * Waits for a valid player input (via drag & drop) or performs the CPU move.
+     * Waits for a valid player input (via drag and drop) or performs the CPU move.
      *
      * @param isPlayer {@code true} if the current player is human, {@code false} if it's a
      *                 CPUPlayer.
