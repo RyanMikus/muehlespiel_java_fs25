@@ -15,6 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * This class is responsible for rendering and managing the graphical
+ * representation of the game board in a Nine Men's Morris game.
+ * <p>
+ * It handles the visual components of the board, including drawing the board structure,
+ * placing and removing stones, highlighting potential moves, and responding to user interactions.
+ * This class forms the visual bridge between the game's logic and the user interface.
+ */
 public class GUIBoard extends JPanel {
     // region Fields
     private Integer fromNodeId = null;

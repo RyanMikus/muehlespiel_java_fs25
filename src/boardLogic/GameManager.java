@@ -45,6 +45,22 @@ public class GameManager {
     private Map<Integer, Node> boardCopy;
 
     // Loss Cause
+
+    /**
+     * Represents the various causes by which a player can lose the game.
+     * <p>
+     * This enumeration is used to determine and describe the condition under which
+     * the game ended in a loss for a player.
+     *
+     * <p>Possible loss causes include:</p>
+     * <ul>
+     *   <li>{@link #NONE} – No loss has occurred (e.g., game still ongoing).</li>
+     *   <li>{@link #STONECOUNT} – The player has fewer than three stones remaining.</li>
+     *   <li>{@link #BLOCKED} – The player has no valid moves available (all stones are blocked).</li>
+     *   <li>{@link #STALEMATE} – No mills have been formed for 20 turns.</li>
+     *   <li>{@link #TIMEOUT} – The player ran out of time to perform his move.</li>
+     * </ul>
+     */
     public enum LossCause {
         NONE, STONECOUNT, BLOCKED, STALEMATE, TIMEOUT
     }
