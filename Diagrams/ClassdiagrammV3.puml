@@ -272,7 +272,7 @@ class view.StyleComponents{
 }
 
 boardLogic.GameManager o-- players.PlayerEntity
-boardLogic.TurnTimer -o boardLogic.GameManager
+boardLogic.GameManager o-- boardLogic.TurnTimer
 boardLogic.GameManager o- boardLogic.BoardManager
 
 phases.GamePhase <|-- phases.SettingPhase
@@ -297,7 +297,6 @@ boardLogic.Stone o- boardLogic.Node
 view.Observable <|-- boardLogic.BoardManager
 boardLogic.BoardManager o- boardLogic.RuleManager
 
-
 persistance.Move - persistance.History
 
 view.Observer <|- view.GUI
@@ -315,8 +314,8 @@ persistance.GamePersistanceManager -- persistance.GameStateData
 persistance.GamePersistanceManager -- persistance.PlayerData
 persistance.GamePersistanceManager -- persistance.MoveData
 
-persistance.History - boardLogic.GameManager
-persistance.GamePersistanceManager - boardLogic.GameManager
+persistance.History -- boardLogic.GameManager
+persistance.GamePersistanceManager -- boardLogic.GameManager
 
 
 @enduml
