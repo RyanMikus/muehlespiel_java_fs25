@@ -271,7 +271,7 @@ class view.StyleComponents{
 + styleGameOverMsgButton()
 }
 
-boardLogic.GameManager o-- boardLogic.TurnTimer
+boardLogic.TurnTimer -o boardLogic.GameManager
 boardLogic.GameManager o- boardLogic.BoardManager
 
 phases.GamePhase <|-- phases.SettingPhase
