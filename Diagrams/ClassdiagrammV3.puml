@@ -273,7 +273,7 @@ class view.StyleComponents{
 
 boardLogic.GameManager o-- players.PlayerEntity
 boardLogic.GameManager o-- boardLogic.TurnTimer
-boardLogic.GameManager o- boardLogic.BoardManager
+boardLogic.GameManager -> boardLogic.BoardManager
 
 phases.GamePhase <|-- phases.SettingPhase
 phases.GamePhase <|-- phases.JumpingPhase
@@ -300,7 +300,7 @@ boardLogic.BoardManager o- boardLogic.RuleManager
 persistance.Move - persistance.History
 
 view.Observer <|- view.GUI
-view.GUI o-- boardLogic.GameManager
+view.GUI <-- boardLogic.GameManager
 view.GUI o- view.GUIBoard
 view.StyleComponents -- view.GUI
 view.GUIPrompt -- view.GUI
