@@ -295,7 +295,7 @@ difficulties.DifficultyStrategy <|-- difficulties.HardDifficulty
 boardLogic.BoardManager *-- boardLogic.Node
 boardLogic.Stone o- boardLogic.Node
 view.Observable <|-- boardLogic.BoardManager
-boardLogic.BoardManager o- boardLogic.RuleManager
+boardLogic.BoardManager -> boardLogic.RuleManager
 
 persistance.Move - persistance.History
 
